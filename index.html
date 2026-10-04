@@ -29,6 +29,10 @@ h1{font-size:21px;font-weight:800;letter-spacing:-.4px}
 .cam{width:100%;background:#15202C;color:#fff;border:none;border-radius:9px;padding:18px;
   font-size:16px;font-weight:800;letter-spacing:.4px;cursor:pointer}
 .cam:active{background:#2E86C8}
+.cam.alt{display:block;background:#fff;color:#2E4A66;border:2px solid #CBD6E2;margin-top:7px;
+  padding:14px;font-size:14px;text-align:center;-webkit-user-select:none;user-select:none}
+.cam.alt:active{background:#E8F1F9}
+.hidefile{position:absolute;width:1px;height:1px;opacity:0;overflow:hidden;border:0;padding:0;margin:-1px}
 .quick{display:flex;gap:7px;margin-top:9px}
 #code{flex:1;padding:12px;border:2px solid #CBD6E2;border-radius:9px;font-size:15px;font-weight:700;
   font-family:"SF Mono",Consolas,monospace;min-width:0;background:#fff}
@@ -94,6 +98,8 @@ h1{font-size:21px;font-weight:800;letter-spacing:-.4px}
     <button id="dOut" onclick="setDir(-1)">STOCK OUT &nbsp;–1</button>
   </div>
   <button class="cam" onclick="openCam()">📷 &nbsp;SCAN WITH CAMERA</button>
+  <label class="cam alt" for="pic">🖼 &nbsp;PICK A PICTURE</label>
+  <input type="file" id="pic" accept="image/*" class="hidefile" onchange="fromPhoto(this)">
   <div class="quick">
     <input id="code" placeholder="or type a code" autocomplete="off"
       onkeydown="if(event.key==='Enter')take(moveDir)" onpaste="setTimeout(()=>take(moveDir),60)">
@@ -10370,6 +10376,58 @@ function setDir(d){ moveDir=d;
   document.getElementById('dOut').classList.toggle('on',d<0);
   const cb=document.getElementById('camDir');
   if(cb){ cb.textContent = d>0?'IN  +1':'OUT  –1'; cb.style.background = d>0?'#2E86C8':'#B5761F'; } }
+
+/* ---------- a picture from the gallery ---------- */
+function dcv(cv,ctx){
+  const d=ctx.getImageData(0,0,cv.width,cv.height);
+  const r=jsQR(d.data,cv.width,cv.height,{inversionAttempts:'attemptBoth'});
+  return (r&&r.data)?r.data:null;
+}
+function drawAt(img,w,rot,ctx,cv){
+  const sc=w/Math.max(img.width,img.height);
+  const iw=Math.round(img.width*sc), ih=Math.round(img.height*sc);
+  if(rot%180===0){cv.width=iw;cv.height=ih;}else{cv.width=ih;cv.height=iw;}
+  ctx.fillStyle='#fff';ctx.fillRect(0,0,cv.width,cv.height);
+  ctx.save();ctx.translate(cv.width/2,cv.height/2);ctx.rotate(rot*Math.PI/180);
+  ctx.drawImage(img,-iw/2,-ih/2,iw,ih);ctx.restore();
+}
+function boost(ctx,cv,g){
+  const d=ctx.getImageData(0,0,cv.width,cv.height),a=d.data;
+  for(let i=0;i<a.length;i+=4){
+    let v=a[i]*0.299+a[i+1]*0.587+a[i+2]*0.114;
+    v=Math.max(0,Math.min(255,(v-128)*g+128));
+    a[i]=a[i+1]=a[i+2]=v;
+  }
+  ctx.putImageData(d,0,0);
+}
+async function fromPhoto(inp){
+  const f=inp.files[0]; inp.value=''; if(!f) return;
+  const lab=document.querySelector('.cam.alt'); const was=lab.innerHTML;
+  lab.textContent='\u23f3  Reading the picture\u2026';
+  const img=new Image();
+  img.onload=async()=>{
+    const cv=document.createElement('canvas'), ctx=cv.getContext('2d',{willReadFrequently:true});
+    let found=null;
+    outer:
+    for(const w of [1600,1100,800,2200,600]){
+      for(const rot of [0,90,270,180,8,-8]){
+        drawAt(img,w,rot,ctx,cv);
+        let v=dcv(cv,ctx);
+        if(!v && 'BarcodeDetector' in window){
+          try{ const det=new BarcodeDetector({formats:['qr_code','code_128','code_39','ean_13']});
+               const h=await det.detect(cv); if(h.length) v=h[0].rawValue; }catch(e){}
+        }
+        if(!v){ boost(ctx,cv,1.9); v=dcv(cv,ctx); }
+        if(v){ found=v; break outer; }
+      }
+    }
+    lab.innerHTML=was;
+    if(!found){ toast('No code in that picture \u2014 try one taken closer'); return; }
+    resolveCode(found);
+  };
+  img.onerror=()=>{ lab.innerHTML=was; toast('Could not open that picture'); };
+  img.src=URL.createObjectURL(f);
+}
 
 /* ---------- live camera ---------- */
 let camStream=null, camTimer=null, lastHit='', lastAt=0;
