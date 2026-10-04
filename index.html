@@ -1,6 +1,6 @@
 <!DOCTYPE html><html lang="en"><head><meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>MyPeps Stock</title>
+<title>MyPeps</title>
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#15202C">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -20,6 +20,75 @@ h1{font-size:21px;font-weight:800;letter-spacing:-.4px}
 .undo button{flex:1;background:transparent;border:1.6px solid rgba(255,255,255,.42);color:#fff;
   border-radius:8px;padding:9px;font-size:12px;font-weight:800;cursor:pointer}
 
+.vwrap{margin:-3px 0 9px 0;cursor:pointer}
+.vl{background:#F4F7FA;border:2px solid #DCE4EC;border-top:none;border-radius:0 0 11px 11px;
+  padding:8px 11px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.vl span{font-size:10.5px;color:#5B6B7C;font-weight:700}
+.vl span b{font-size:13px;color:#15202C;font-family:"SF Mono",Consolas,monospace}
+.vl.none{color:#8FA3B5;font-size:11px;font-weight:700;justify-content:center}
+.vl.warn{background:#FFF9F0;border-color:#E8CDA8}
+.vl.warn span{color:#8A4B12}
+.vlbar{flex:1 0 100%;height:5px;background:#DCE4EC;border-radius:3px;overflow:hidden}
+.vlbar i{display:block;height:100%;background:#2E86C8}
+.vl.warn .vlbar i{background:#C9873A}
+.dose{margin-bottom:0;border-radius:11px 11px 0 0;border-bottom:none}
+.sheet{position:fixed;inset:0;background:#0009;z-index:80;display:none;align-items:flex-end}
+.sheet.on{display:flex}
+.sheetIn{background:#fff;width:100%;max-height:92vh;overflow-y:auto;border-radius:16px 16px 0 0;
+  padding:18px 16px;padding-bottom:calc(26px + env(safe-area-inset-bottom,0px))}
+.sh{display:flex;align-items:flex-start;gap:10px;margin-bottom:4px}
+.sh h2{flex:1;font-size:22px;font-weight:800;letter-spacing:-.4px;line-height:1.15}
+.shx{width:34px;height:34px;border-radius:9px;border:2px solid #CBD6E2;background:#fff;
+  font-size:17px;font-weight:800;color:#44566A;flex-shrink:0;cursor:pointer}
+.shfor{font-size:11px;font-weight:800;letter-spacing:.9px;color:#2E86C8;margin-bottom:11px}
+.shwhat{font-size:13.5px;line-height:1.6;color:#33414F;margin-bottom:15px}
+.shgrp{font-size:10px;font-weight:800;letter-spacing:1.4px;color:#8FA3B5;margin:15px 0 8px}
+.mixbox{background:#F4F7FA;border:2px solid #DCE4EC;border-radius:11px;padding:12px}
+.mixrow{display:flex;justify-content:space-between;align-items:baseline;
+  padding:7px 0;border-bottom:1px solid #E4EAF0;font-size:13px}
+.mixrow:last-child{border-bottom:none}
+.mixrow span{color:#5B6B7C;font-weight:600}
+.mixrow b{font-family:"SF Mono",Consolas,monospace;font-weight:800;text-align:right}
+.bigdose{background:#15202C;color:#fff;border-radius:11px;padding:14px;margin-top:9px;
+  display:flex;align-items:center;gap:12px}
+.bigdose .bd1{flex:1}
+.bigdose .bd1 span{display:block;font-size:10px;font-weight:800;letter-spacing:1.2px;opacity:.65}
+.bigdose .bd1 b{font-size:17px;font-family:"SF Mono",Consolas,monospace}
+.bigdose .bd2{text-align:right}
+.bigdose .bd2 b{display:block;font-size:26px;font-weight:800;font-family:"SF Mono",Consolas,monospace;line-height:1}
+.bigdose .bd2 span{font-size:9.5px;font-weight:800;letter-spacing:1.4px;opacity:.65}
+.warnbox{background:#FFF4E6;border:2px solid #E8CDA8;border-radius:11px;padding:12px}
+.warnbox li{list-style:none;font-size:12.5px;color:#8A4B12;line-height:1.5;
+  padding-left:15px;position:relative;margin-bottom:6px}
+.warnbox li:last-child{margin-bottom:0}
+.warnbox li:before{content:"";position:absolute;left:0;top:7px;width:5px;height:5px;
+  border-radius:50%;background:#C9873A}
+.shlink{display:block;background:#2E86C8;color:#fff;text-align:center;text-decoration:none;
+  padding:13px;border-radius:10px;font-size:13.5px;font-weight:800;margin-top:15px}
+.row,.dose{cursor:pointer}
+.tabs{display:flex;gap:6px;margin-bottom:13px}
+.tabs button{flex:1;padding:12px 4px;border-radius:9px;border:2px solid #CBD6E2;background:#fff;
+  color:#7A8797;font-size:12.5px;font-weight:800;cursor:pointer;letter-spacing:.4px}
+.tabs button.on{background:#15202C;border-color:#15202C;color:#fff}
+.tgrp{font-size:10px;font-weight:800;letter-spacing:1.4px;color:#8FA3B5;margin:14px 0 7px 3px}
+.dose{display:flex;align-items:center;gap:10px;background:#fff;border:2px solid #DCE4EC;
+  border-radius:11px;padding:11px;margin-bottom:7px}
+.dose.done{background:#F2F8F4;border-color:#A8CFB5}
+.dose.done .dn{text-decoration:line-through;opacity:.55}
+.tick{width:34px;height:34px;border-radius:9px;border:2.4px solid #CBD6E2;background:#fff;
+  flex-shrink:0;cursor:pointer;display:flex;align-items:center;justify-content:center;
+  font-size:17px;font-weight:800;color:#fff}
+.dose.done .tick{background:#1F7244;border-color:#1F7244}
+.di{flex:1;min-width:0}
+.dn{font-size:14.5px;font-weight:800;display:block}
+.dd{font-size:11.5px;color:#5B6B7C;font-weight:600;margin-top:2px;
+  font-family:"SF Mono",Consolas,monospace}
+.dnote{font-size:10.5px;color:#8FA3B5;margin-top:2px}
+.du{font-family:"SF Mono",Consolas,monospace;font-size:17px;font-weight:800;color:#2E4A66;
+  flex-shrink:0;text-align:right}
+.dayhead{background:#15202C;color:#fff;border-radius:11px;padding:13px;margin-bottom:12px}
+.dayhead b{display:block;font-size:16px}
+.dayhead span{font-size:12px;opacity:.85;display:block;margin-top:2px}
 .scanbox{background:#fff;border:2px solid #DCE4EC;border-radius:12px;padding:11px;margin-bottom:13px}
 .dirsw{display:flex;gap:6px;margin-bottom:9px}
 .dirsw button{flex:1;padding:11px 2px;border-radius:8px;border:2px solid #CBD6E2;background:#F4F7FA;
@@ -89,8 +158,14 @@ h1{font-size:21px;font-weight:800;letter-spacing:-.4px}
 </style></head><body>
 
 <div id="scanned" class="scanned"></div>
-<h1>MyPeps — Stock</h1>
-<div class="sub">Private · works offline · nothing leaves your phone</div>
+<h1 id="pageTitle">MyPeps</h1>
+<div class="sub">Private · works offline · <span id="ver"></span></div>
+<div class="tabs">
+  <button id="tabStock" class="on" onclick="showTab('stock')">STOCK</button>
+  <button id="tabSched" onclick="showTab('sched')">TODAY'S DOSES</button>
+</div>
+<div id="viewSched" style="display:none"></div>
+<div id="viewStock">
 
 <div class="scanbox">
   <div class="dirsw">
@@ -239,6 +314,7 @@ h1{font-size:21px;font-weight:800;letter-spacing:-.4px}
     <span class="qty" id="q-BB20">0</span>
     <button onclick="bump('BB20',1)">+</button></div>
 </div>
+</div>
 <div class="bar">
   <button class="bigbtn" id="saveBtn" onclick="backup()">✓ &nbsp;BACK UP &amp; FINISH</button>
   <div class="minis">
@@ -249,6 +325,7 @@ h1{font-size:21px;font-weight:800;letter-spacing:-.4px}
   <input type="file" id="restoreFile" accept=".json" style="display:none" onchange="restore(this)">
 </div>
 <div class="toast" id="toast"></div>
+<div id="sheet" class="sheet"><div class="sheetIn" id="sheetIn"></div></div>
 
 <div id="camWrap">
   <div id="camMsg">Point at the code on the vial</div>
@@ -10364,6 +10441,11 @@ function findAlignmentPattern(matrix, alignmentPatternQuads, topRight, topLeft, 
 });</script>
 <script>
 const INFO={"RT30": "https://peptidehub.bio/database/retatrutide-glp-1-gip-glucagon-24mg", "TSM20": "https://peptidehub.bio/database/tesamorelin-10mg", "IPA10": "https://peptidehub.bio/database/ipamorelin-10mg", "CP10": "https://peptidehub.bio/database/2x-blend-cjc-no-dac-5mg-ipamorelin-5mg", "TA10": "https://peptidehub.bio/database/ta-1-10mg", "MS40": "https://peptidehub.bio/database/mots-c-10mg", "KL80": "https://peptidehub.bio/database/klow-blend-ghk-cu-50mg-kpv-10mg-bpc-157-10mg-tb-500-10mg", "XA10": "https://peptidehub.bio/database/semax-30mg", "SK10": "https://peptidehub.bio/database/selank-10mg", "DS10": "https://peptidehub.bio/database/dsip-5mg", "ET50": "https://peptidehub.bio/database/epithalon-50mg", "KP10": "https://peptidehub.bio/database/kpv-5mg", "NJ1000": "https://peptidehub.bio/database/nad-1000mg", "CU100": "https://peptidehub.bio/database/ghk-cu-75mg", "AD10": "https://peptidehub.bio/database/aod-9604-5mg", "BC10": "https://peptidehub.bio/database/bpc-157-10mg", "BB20": "https://peptidehub.bio/database/wolverine-blend-bpc-157-10mg-tb500-10mg", "RA10": "https://peptidehub.bio/database"};
+const VIAL={"RT30": {"doses": 20, "days": 30}, "TSM20": {"doses": 20, "days": 30}, "IPA10": {"doses": 80, "days": 30}, "CP10": {"doses": 50, "days": 30}, "TA10": {"doses": 6, "days": 30}, "MS40": {"doses": 15, "days": 30}, "KL80": {"doses": 14, "days": 30}, "XA10": {"doses": 50, "days": 30}, "SK10": {"doses": 27, "days": 30}, "DS10": {"doses": 33, "days": 30}, "ET50": {"doses": 10, "days": 30}, "KP10": {"doses": 20, "days": 30}, "NJ1000": {"doses": 13, "days": 30}, "CU100": {"doses": 66, "days": 30}, "AD10": {"doses": 33, "days": 30}, "RA10": {"doses": 2, "days": 30}, "BC10": {"doses": 20, "days": 30}, "BB20": {"doses": 20, "days": 30}, "LC600": {"doses": 2, "days": 60}};
+const VKEY='mypeps-vials';
+const DETAIL={"RT30": {"n": "Retatrutide", "for": "Weight loss \u00b7 appetite \u00b7 metabolic", "what": "A triple agonist \u2014 it acts on GLP-1, GIP and glucagon receptors at once. Works mainly on the brain and gut to reduce appetite and slow stomach emptying, so you eat less without fighting it.", "vial": "30 mg", "water": "3 mL bacteriostatic water", "conc": "10 mg/mL", "unit": "0.1 mg per unit", "dose": "1500 mcg", "units": "15 units", "freq": "Weekly", "when": "Any time, same day each week", "warn": ["Titrate up slowly \u2014 nausea is the usual limiter", "Keep refrigerated once mixed"]}, "TSM20": {"n": "Tesamorelin", "for": "Visceral fat \u00b7 GH axis \u00b7 body composition", "what": "A growth hormone releasing hormone analogue. Prompts your pituitary to release its own GH in natural pulses, rather than injecting GH directly. Best evidence is for reducing visceral fat.", "vial": "20 mg", "water": "3 mL (the book specifies CAG water, not BAC)", "conc": "6.67 mg/mL", "unit": "0.067 mg per unit", "dose": "1 mg", "units": "15 units", "freq": "Nightly", "when": "Before bed, empty stomach", "warn": ["Can raise fasting glucose \u2014 worth watching", "Book specifies CAG water, not plain BAC"]}, "IPA10": {"n": "Ipamorelin", "for": "GH release \u00b7 deep sleep \u00b7 recovery", "what": "A selective GH secretagogue. Triggers a GH pulse without raising cortisol or hunger, which is what separates it from the older compounds in this class.", "vial": "10 mg", "water": "3 mL bacteriostatic water", "conc": "3.33 mg/mL", "unit": "33 mcg per unit", "dose": "100\u2013150 mcg", "units": "3\u20134.5 units", "freq": "Nightly", "when": "30 min before sleep, empty stomach", "warn": ["Food blunts the pulse \u2014 leave 2 hours after eating"]}, "CP10": {"n": "CJC-1295 + Ipamorelin", "for": "Growth hormone \u00b7 repair \u00b7 sleep", "what": "The two together produce a GH pulse two to three times bigger than either alone. CJC extends the signal, Ipamorelin triggers the release. The no-DAC version is preferred \u2014 its 30 minute half-life mimics a natural pulse.", "vial": "10 mg (5 mg each)", "water": "3 mL bacteriostatic water", "conc": "1.67 mg/mL each", "unit": "17 mcg each per unit", "dose": "100 mcg each", "units": "6 units", "freq": "Nightly", "when": "30 min before sleep, fasted", "warn": ["If you run this, drop standalone Ipamorelin", "8\u201312 weeks then a mandatory break"]}, "TA10": {"n": "Thymosin Alpha-1", "for": "Immune defence \u00b7 T-cell \u00b7 infection support", "what": "Modulates the immune system rather than stimulating it bluntly. Raises T-cell activity and helps the immune response discriminate properly.", "vial": "10 mg", "water": "3 mL bacteriostatic water", "conc": "3.33 mg/mL", "unit": "33 mcg per unit", "dose": "1.6 mg", "units": "48 units", "freq": "Twice weekly", "when": "Any time", "warn": ["Peptide Hub lists this as intramuscular at 3\u20138 mg \u2014 worth checking against your protocol"]}, "MS40": {"n": "MOTS-c", "for": "Metabolic \u00b7 energy \u00b7 insulin \u00b7 endurance", "what": "A peptide your mitochondria produce and send out as a signal \u2014 essentially a message saying the cell is under energy stress. Improves how muscle takes up glucose and shifts you toward burning fat.", "vial": "40 mg", "water": "3 mL bacteriostatic water", "conc": "13.3 mg/mL", "unit": "133 mcg per unit", "dose": "2650 mcg", "units": "20 units", "freq": "5 on, 2 off", "when": "Any time", "warn": ["Book says 2\u20133 doses a week is enough for the same weekly total", "Cap at 8 weeks, then break"]}, "KL80": {"n": "KLOW Blend", "for": "Tissue repair \u00b7 skin \u00b7 gut \u00b7 recovery", "what": "Four compounds in one vial \u2014 GHK-Cu 50 mg, KPV 10 mg, BPC-157 10 mg and TB-500 10 mg. Covers skin, inflammation, gut lining and soft tissue in a single injection.", "vial": "80 mg total", "water": "3 mL bacteriostatic water", "conc": "26.7 mg/mL", "unit": "267 mcg per unit", "dose": "5500 mcg", "units": "21 units", "freq": "Nightly", "when": "Night", "warn": ["Peptide Hub suggests 1\u20132 mg (4\u20138 units) daily, 30 on / 14 off \u2014 much lower than this"]}, "XA10": {"n": "Semax", "for": "Focus \u00b7 memory \u00b7 clarity \u00b7 neuroprotection", "what": "A fragment of ACTH with the hormonal activity stripped out. Raises BDNF and affects dopamine and serotonin signalling. Noticeable as mental clarity rather than stimulation.", "vial": "10 mg", "water": "3 mL bacteriostatic water", "conc": "3.33 mg/mL", "unit": "33 mcg per unit", "dose": "200 mcg", "units": "6 units", "freq": "Daily", "when": "Morning", "warn": ["Never at night \u2014 it will keep you awake"]}, "SK10": {"n": "Selank", "for": "Calm \u00b7 anxiety \u00b7 focus \u00b7 no sedation", "what": "An analogue of a natural immune peptide. Anxiolytic without sedation \u2014 it takes the edge off without dulling you, which is the usual trade-off with anxiety compounds.", "vial": "10 mg", "water": "3 mL bacteriostatic water", "conc": "3.33 mg/mL", "unit": "33 mcg per unit", "dose": "250\u2013500 mcg", "units": "7.5\u201315 units", "freq": "Daily", "when": "Afternoon or evening", "warn": ["Book puts the timing in the afternoon, not morning", "14\u201330 days then 2 weeks off"]}, "DS10": {"n": "DSIP", "for": "Deep sleep \u00b7 delta wave \u00b7 night recovery", "what": "Delta Sleep Inducing Peptide. Shifts sleep architecture toward deeper delta-wave sleep rather than simply making you drowsy.", "vial": "10 mg", "water": "3 mL bacteriostatic water", "conc": "3.33 mg/mL", "unit": "33 mcg per unit", "dose": "300 mcg", "units": "9 units", "freq": "Nightly", "when": "Before bed", "warn": ["Book: 10\u201320 nights then a 2\u20134 week break, not continuous"]}, "ET50": {"n": "Epitalon", "for": "Longevity \u00b7 sleep \u00b7 telomeres \u00b7 circadian", "what": "A four amino acid peptide that acts on the pineal gland, normalising melatonin rhythm. The telomerase claims come from Russian research and are not settled.", "vial": "50 mg", "water": "3 mL bacteriostatic water", "conc": "16.7 mg/mL", "unit": "167 mcg per unit", "dose": "5 mg", "units": "30 units", "freq": "20-day course", "when": "Night", "warn": ["Run 20 days straight then stop \u2014 1 to 2 courses a year", "Not a continuous compound"]}, "KP10": {"n": "KPV", "for": "Gut health \u00b7 skin \u00b7 inflammation \u00b7 repair", "what": "The active tail of alpha-MSH. Anti-inflammatory, particularly in the gut lining and skin, without the pigmentation effects of the full molecule.", "vial": "10 mg", "water": "3 mL bacteriostatic water", "conc": "3.33 mg/mL", "unit": "33 mcg per unit", "dose": "500 mcg", "units": "15 units", "freq": "Daily", "when": "Any time", "warn": []}, "NJ1000": {"n": "NAD+", "for": "Cellular energy \u00b7 mitochondria \u00b7 repair", "what": "A coenzyme every cell uses for energy production and DNA repair. Levels fall with age. Not a peptide \u2014 a nucleotide.", "vial": "1000 mg", "water": "10 mL bacteriostatic water", "conc": "100 mg/mL", "unit": "1 mg per unit", "dose": "75 mg", "units": "75 units", "freq": "Twice weekly", "when": "Morning", "warn": ["Push slowly \u2014 20 to 30 seconds. It stings if rushed", "Peptide Hub lists this as intramuscular", "30 days once mixed \u2014 about 8 doses per vial"]}, "CU100": {"n": "GHK-Cu", "for": "Skin \u00b7 hair \u00b7 collagen \u00b7 tissue repair", "what": "A copper peptide. Stimulates collagen and elastin, and signals tissue remodelling. The copper is part of the molecule, not an additive.", "vial": "100 mg", "water": "3 mL bacteriostatic water", "conc": "33.3 mg/mL", "unit": "333 mcg per unit", "dose": "1\u20132 mg", "units": "3\u20136 units", "freq": "Daily", "when": "Morning", "warn": ["Check it has not darkened before drawing \u2014 colour change means degradation"]}, "AD10": {"n": "AOD-9604", "for": "Fat burning \u00b7 lipolysis \u00b7 no GH effect", "what": "The fat-burning fragment of growth hormone with the growth-signalling part removed. Triggers lipolysis without touching IGF-1 or blood sugar, so it stacks cleanly with GH secretagogues.", "vial": "10 mg", "water": "3 mL \u2014 0.6% acetic acid or CAG water", "conc": "3.33 mg/mL", "unit": "33 mcg per unit", "dose": "250\u2013600 mcg", "units": "7.5\u201318 units", "freq": "Daily", "when": "Morning, fasted", "warn": ["Will NOT dissolve in plain BAC water \u2014 it forms threads", "Needs 0.6% acetic acid or CAG water", "Keep refrigerated"]}, "RA10": {"n": "ARA-290", "for": "Nerve repair \u00b7 neuropathy \u00b7 inflammation", "what": "An eleven amino acid peptide derived from erythropoietin, with the blood-cell effects removed. Targets the innate repair receptor on damaged nerve tissue.", "vial": "10 mg", "water": "3 mL bacteriostatic water", "conc": "3.33 mg/mL", "unit": "33 mcg per unit", "dose": "4 mg", "units": "120 units", "freq": "Daily", "when": "Any time", "warn": ["Published mostly under the name Cibinetide"]}, "BC10": {"n": "BPC-157", "for": "Healing \u00b7 gut \u00b7 tendon \u00b7 joint \u00b7 vessels", "what": "A fragment of a protein found in stomach acid. Promotes blood vessel growth into damaged tissue, which is why it works on tendon and gut alike.", "vial": "10 mg", "water": "3 mL bacteriostatic water", "conc": "3.33 mg/mL", "unit": "33 mcg per unit", "dose": "250\u2013500 mcg", "units": "7.5\u201315 units", "freq": "Daily", "when": "Any time", "warn": ["Inject near the injury site where practical"]}, "BB20": {"n": "BPC-157 + TB-500", "for": "Injury repair \u00b7 muscle \u00b7 tendon \u00b7 mobility", "what": "The two standard repair peptides together \u2014 often called the Wolverine stack. BPC drives blood vessel growth, TB-500 drives cell migration into the damaged area.", "vial": "20 mg (10 mg each)", "water": "3 mL bacteriostatic water", "conc": "3.33 mg/mL each", "unit": "33 mcg each per unit", "dose": "500 mcg each", "units": "15 units", "freq": "Daily", "when": "Any time", "warn": ["4\u20136 weeks for an acute injury, then reassess"]}, "LC600": {"n": "L-Carnitine", "for": "Fat transport \u00b7 recovery \u00b7 soreness", "what": "Not a peptide. Shuttles fatty acids into the mitochondria to be burned. Evidence is strongest for reduced soreness and faster recovery rather than fat loss.", "vial": "600 mg in 10 mL", "water": "Pre-mixed \u2014 no reconstitution", "conc": "60 mg/mL", "unit": "0.6 mg per unit", "dose": "300 mg", "units": "2.5 mL into each thigh", "freq": "3 \u00d7 week", "when": "30\u201345 min before training", "warn": ["INTRAMUSCULAR \u2014 25G \u00d7 1 inch, 5 mL syringe", "Too large a volume for subcutaneous", "2 g oral L-Carnitine L-Tartrate delivers more, for a fraction of the cost"]}};
+const SCHED=[["XA10", "Semax", "MORNING", "200 mcg", "6 u", [1, 1, 1, 1, 1, 1, 1], "Never at night"], ["CU100", "GHK-Cu", "MORNING", "1\u20132 mg", "3\u20136 u", [1, 1, 1, 1, 1, 1, 1], "Check it hasn't darkened"], ["NJ1000", "NAD+", "MORNING", "75 mg", "75 u", [1, 0, 0, 1, 0, 0, 0], "Push slowly, 20\u201330 sec"], ["SK10", "Selank", "AFTERNOON", "250\u2013500 mcg", "7.5\u201315 u", [1, 1, 1, 1, 1, 1, 1], "Calm without sedation"], ["LC600", "L-Carnitine", "PRE-GYM", "300 mg", "2.5 mL each leg", [1, 0, 1, 0, 1, 0, 0], "INTRAMUSCULAR \u2014 thigh"], ["MS40", "MOTS-c", "ANY TIME", "2650 mcg", "20 u", [1, 1, 1, 1, 1, 0, 0], "5 on, 2 off"], ["IPA10", "Ipamorelin", "NIGHT", "100\u2013150 mcg", "3\u20134.5 u", [1, 1, 1, 1, 1, 1, 1], "30 min before sleep, empty stomach"], ["ET50", "Epitalon", "NIGHT", "5 mg", "30 u", [1, 1, 1, 1, 1, 1, 1], "20-day course then stop"]];
+const DKEY='mypeps-doses';
 const KEY='mypeps-stock', HKEY='mypeps-file';
 let stock={}, fileHandle=null, poppy=false, moveDir=1;
 
@@ -10586,6 +10668,197 @@ function exportCsv(){
   document.body.appendChild(a);a.click();a.remove(); toast('CSV downloaded'); }
 
 window.addEventListener('beforeunload',e=>{ if(poppy){ e.preventDefault(); e.returnValue=''; } });
-if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('sw.js').then(reg=>{
+    reg.addEventListener('updatefound',()=>{
+      const w=reg.installing;
+      if(!w) return;
+      w.addEventListener('statechange',()=>{
+        if(w.state==='installed' && navigator.serviceWorker.controller){
+          const bar=document.createElement('div');
+          bar.style.cssText='position:fixed;left:12px;right:12px;bottom:92px;background:#2E86C8;'
+            +'color:#fff;border-radius:10px;padding:13px;font-size:13.5px;font-weight:800;'
+            +'display:flex;gap:10px;align-items:center;z-index:70';
+          bar.innerHTML='<span style="flex:1">A newer version is ready</span>';
+          const b2=document.createElement('button');
+          b2.textContent='Load it';
+          b2.style.cssText='background:#fff;color:#1A5E96;border:none;border-radius:7px;'
+            +'padding:9px 14px;font-size:12.5px;font-weight:800';
+          b2.onclick=()=>{ w.postMessage('skipWaiting'); location.reload(); };
+          bar.appendChild(b2); document.body.appendChild(bar);
+        }
+      });
+    });
+    setInterval(()=>reg.update().catch(()=>{}), 60000);
+  }).catch(()=>{});
+}
+const APP_VERSION='2026-10-05c';
+document.getElementById('ver').textContent='v '+APP_VERSION;
+buildSchedule();
+
+
+/* ---------- the vial you have open ---------- */
+function loadVials(){ try{ return JSON.parse(localStorage.getItem(VKEY))||{}; }catch(e){ return {}; } }
+function saveVials(v){ try{ localStorage.setItem(VKEY,JSON.stringify(v)); }catch(e){} }
+function daysBetween(a,b){ return Math.floor((b-a)/86400000); }
+function vialState(sku){
+  const v=loadVials()[sku];
+  if(!v || !v.mixed) return null;
+  const spec=VIAL[sku]||{doses:20,days:30};
+  const mixed=new Date(v.mixed);
+  const age=daysBetween(mixed,new Date());
+  return {mixed:v.mixed, used:v.used||0, total:spec.doses,
+          left:Math.max(0,spec.doses-(v.used||0)),
+          age:age, daysLeft:spec.days-age, shelf:spec.days};
+}
+function openVial(sku){
+  const v=loadVials();
+  const d=new Date(); const iso=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')
+    +'-'+String(d.getDate()).padStart(2,'0');
+  v[sku]={mixed:iso,used:0}; saveVials(v);
+  if(stock[sku]>0) bump(sku,-1);       // the vial came off the shelf
+  toast('Vial opened — mixed today');
+  refreshAll();
+}
+function finishVial(sku){
+  const v=loadVials(); delete v[sku]; saveVials(v);
+  toast('Vial closed off'); refreshAll();
+}
+function useDose(sku){
+  const v=loadVials();
+  if(!v[sku] || !v[sku].mixed) return false;
+  v[sku].used=(v[sku].used||0)+1; saveVials(v); return true;
+}
+function unuseDose(sku){
+  const v=loadVials();
+  if(!v[sku] || !v[sku].mixed) return;
+  v[sku].used=Math.max(0,(v[sku].used||0)-1); saveVials(v);
+}
+function refreshAll(){ paint(); buildSchedule(); }
+function vialLine(sku){
+  const s=vialState(sku);
+  if(!s) return '<div class="vl none">No vial open — tap to start one</div>';
+  const pct=Math.round(s.left/s.total*100);
+  let cls=''; if(s.left<=2 || s.daysLeft<=5) cls=' warn';
+  return '<div class="vl'+cls+'">'
+    +'<div class="vlbar"><i style="width:'+pct+'%"></i></div>'
+    +'<span><b>'+s.left+'</b> of '+s.total+' doses left</span>'
+    +'<span>'+(s.daysLeft>0 ? s.daysLeft+' days before it expires' : 'EXPIRED — mix a fresh one')+'</span>'
+    +'</div>';
+}
+
+/* ---------- today's doses ---------- */
+function todayKey(){ const d=new Date();
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+function loadDoses(){ try{ const d=JSON.parse(localStorage.getItem(DKEY))||{};
+  return d.day===todayKey() ? d : {day:todayKey(),done:{}}; }catch(e){ return {day:todayKey(),done:{}}; } }
+function saveDoses(d){ try{ localStorage.setItem(DKEY,JSON.stringify(d)); }catch(e){} }
+
+function buildSchedule(){
+  const DOW=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const now=new Date(); const jsDay=now.getDay();
+  const idx=(jsDay+6)%7;                       // 0 = Monday
+  const due=SCHED.filter(r=>r[5][idx]===1);
+  const doses=loadDoses();
+  const order=['MORNING','PRE-GYM','AFTERNOON','ANY TIME','NIGHT'];
+  let html='<div class="dayhead"><b>'+DOW[jsDay]+'</b><span>'
+    +due.length+' doses due today</span></div>';
+  order.forEach(slot=>{
+    const rows=due.filter(r=>r[2]===slot);
+    if(!rows.length) return;
+    html+='<div class="tgrp">'+slot+'</div>';
+    rows.forEach(r=>{
+      const [sku,name,when,dose,units,days,note]=r;
+      const on=!!doses.done[sku];
+      html+='<div class="dose'+(on?' done':'')+'" id="d-'+sku+'">'
+        +'<div class="tick" onclick="tickDose(\''+sku+'\')">'+(on?'\u2713':'')+'</div>'
+        +'<div class="di"><span class="dn">'+name+'</span>'
+        +'<span class="dd">'+dose+'</span>'
+        +'<div class="dnote">'+note+'</div></div>'
+        +'<div class="du">'+units+'</div></div>'
+        +'<div class="vwrap" onclick="vialTap(\''+sku+'\')">'+vialLine(sku)+'</div>';
+    });
+  });
+  html+='<div style="font-size:11.5px;color:#8FA3B5;margin-top:14px;line-height:1.5">'
+     +'Tap a name for how to mix it. Tap the bar underneath to open or replace a vial. Ticking a dose draws one from the open vial. Ticking a dose does not change your stock count — '
+     +'scan or tap the vial out when you open a new one.</div>';
+  document.getElementById('viewSched').innerHTML=html;
+}
+function tickDose(sku){
+  const d=loadDoses();
+  const now=!d.done[sku];
+  d.done[sku]=now;
+  saveDoses(d);
+  if(now){
+    if(!useDose(sku)){
+      const s=document.querySelector('#d-'+sku);
+      toast('No vial open for '+(s?s.querySelector('.dn').textContent:sku));
+    } else {
+      const st=vialState(sku);
+      if(st && st.left<=2) toast('Only '+st.left+' doses left in that vial');
+    }
+  } else unuseDose(sku);
+  refreshAll();
+  if(navigator.vibrate) navigator.vibrate(40);
+}
+function openDetail(sku){
+  const d=DETAIL[sku]; if(!d) return;
+  const info=INFO[sku];
+  let h='<div class="sh"><h2>'+d.n+'</h2>'
+    +'<button class="shx" onclick="closeDetail()">&times;</button></div>'
+    +'<div class="shfor">'+d["for"].toUpperCase()+'</div>'
+    +'<div class="shwhat">'+d.what+'</div>'
+    +'<div class="shgrp">HOW TO MIX IT</div>'
+    +'<div class="mixbox">'
+      +'<div class="mixrow"><span>Vial</span><b>'+d.vial+'</b></div>'
+      +'<div class="mixrow"><span>Add</span><b>'+d.water+'</b></div>'
+      +'<div class="mixrow"><span>Gives</span><b>'+d.conc+'</b></div>'
+      +'<div class="mixrow"><span>So one unit is</span><b>'+d.unit+'</b></div>'
+    +'</div>'
+    +'<div class="bigdose"><div class="bd1"><span>YOUR DOSE</span><b>'+d.dose+'</b></div>'
+      +'<div class="bd2"><b>'+d.units+'</b><span>DRAW TO</span></div></div>'
+    +'<div class="shgrp">WHEN</div>'
+    +'<div class="mixbox">'
+      +'<div class="mixrow"><span>How often</span><b>'+d.freq+'</b></div>'
+      +'<div class="mixrow"><span>Time of day</span><b>'+d.when+'</b></div>'
+    +'</div>';
+  if(d.warn && d.warn.length){
+    h+='<div class="shgrp">WATCH FOR</div><div class="warnbox"><ul>'
+      +d.warn.map(w=>'<li>'+w+'</li>').join('')+'</ul></div>';
+  }
+  if(info) h+='<a class="shlink" href="'+info+'" target="_blank" rel="noopener">Read more about '+d.n+' &nbsp;&rarr;</a>';
+  document.getElementById('sheetIn').innerHTML=h;
+  document.getElementById('sheet').classList.add('on');
+  document.getElementById('sheetIn').scrollTop=0;
+}
+function closeDetail(){ document.getElementById('sheet').classList.remove('on'); }
+
+function vialTap(sku){
+  const s=vialState(sku);
+  const nm=(DETAIL[sku]||{}).n||sku;
+  if(!s){ if(confirm('Start a new vial of '+nm+'?\n\nIt will be marked as mixed today and one taken off your stock count.')) openVial(sku); return; }
+  const msg=nm+'\n\nMixed '+s.mixed+'  ('+s.age+' days ago)\n'
+    +s.used+' doses used, '+s.left+' left\n'
+    +(s.daysLeft>0?s.daysLeft+' days before it expires':'PAST ITS 30 DAYS')
+    +'\n\nFinished with it and starting a fresh one?';
+  if(confirm(msg)) openVial(sku);
+}
+function showTab(which){
+  const st=which==='stock';
+  document.getElementById('viewStock').style.display=st?'':'none';
+  document.getElementById('viewSched').style.display=st?'none':'';
+  document.getElementById('tabStock').classList.toggle('on',st);
+  document.getElementById('tabSched').classList.toggle('on',!st);
+  document.querySelector('.bar').style.display=st?'':'none';
+  document.body.style.paddingBottom=st?'118px':'24px';
+  if(!st) buildSchedule();
+}
+document.getElementById('sheet').addEventListener('click',function(e){
+  if(e.target.id==='sheet') closeDetail(); });
+document.addEventListener('click',function(e){
+  if(e.target.closest('.ct') || e.target.closest('.tick')) return;
+  var r=e.target.closest('.row'); if(r){ openDetail(r.dataset.sku); return; }
+  var dd=e.target.closest('.dose'); if(dd){ openDetail(dd.id.replace('d-','')); }
+});
 load();
 </script></body></html>
