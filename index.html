@@ -203,6 +203,15 @@ h1{font-size:27px;font-weight:800;letter-spacing:-.9px;line-height:1}
   border-radius:16px;padding:17px;margin-bottom:15px;box-shadow:var(--shadow)}
 .dayhead b{display:block;font-size:21px;font-weight:800;letter-spacing:-.6px}
 .dayhead span{font-size:12px;opacity:.82;display:block;margin-top:3px;font-weight:600}
+.allbar{display:flex;gap:8px;margin-bottom:4px}
+.allbtn{flex:1;background:var(--good);color:#fff;border:none;border-radius:13px;padding:15px;
+  font-size:14.5px;font-weight:800;cursor:pointer;letter-spacing:.2px;box-shadow:var(--shadow);
+  transition:transform .1s}
+.allbtn:active{transform:scale(.99)}
+.allbtn.off{background:var(--card);color:var(--good);border:1.5px solid var(--good);box-shadow:none}
+.clrbtn{background:var(--card);color:var(--ink2);border:1.5px solid var(--line2);border-radius:13px;
+  padding:15px 18px;font-size:13px;font-weight:800;cursor:pointer}
+.clrbtn:active{background:var(--bg2)}
 .tgrp{font-size:9.5px;font-weight:800;letter-spacing:1.5px;color:var(--ink3);margin:18px 0 8px 3px}
 .dose{display:flex;align-items:center;gap:11px;border:1px solid var(--line);
   border-radius:14px 14px 0 0;border-bottom:none;padding:12px;margin-bottom:0;
@@ -10933,7 +10942,7 @@ if('serviceWorker' in navigator){
     setInterval(()=>reg.update().catch(()=>{}), 60000);
   }).catch(()=>{});
 }
-const APP_VERSION='2026-10-06f';
+const APP_VERSION='2026-10-06g';
 document.getElementById('ver').innerHTML='<b>'+APP_VERSION+'</b><i>TAP TO UPDATE</i>';
 buildSchedule();
 
@@ -11031,8 +11040,15 @@ function buildSchedule(){
   const due=SCHED.filter(r=>r[5][idx]===1);
   const doses=loadDoses();
   const order=['MORNING','PRE-GYM','AFTERNOON','ANY TIME','NIGHT'];
+  const doneNow=due.filter(r=>doses.done[r[0]]).length;
+  const allDone=doneNow===due.length && due.length>0;
   let html='<div class="dayhead"><b>'+DOW[jsDay]+'</b><span>'
-    +due.length+' doses due today</span></div>';
+    +doneNow+' of '+due.length+' done</span></div>'
+    + (due.length ? '<div class="allbar">'
+        +'<button class="allbtn'+(allDone?' off':'')+'" onclick="takeAllToday()">'
+        +(allDone?'\u2713  All done today':'\u2713  Take all '+(due.length-doneNow)+' remaining')+'</button>'
+        +(doneNow?'<button class="clrbtn" onclick="clearAllToday()">Clear</button>':'')
+      +'</div>' : '');
   order.forEach(slot=>{
     const rows=due.filter(r=>r[2]===slot);
     if(!rows.length) return;
@@ -11388,6 +11404,40 @@ function importOld_unused(inp){
 /* ---------- history ---------- */
 function dayKeyOf(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
 function dueOn(date){ const i=(date.getDay()+6)%7; return SCHED.filter(r=>r[5][i]===1); }
+
+
+function takeAllToday(){
+  const idx=(new Date().getDay()+6)%7;
+  const due=SCHED.filter(r=>r[5][idx]===1);
+  const d=loadDoses();
+  let n=0, noVial=[];
+  due.forEach(r=>{
+    const sku=r[0];
+    if(d.done[sku]) return;
+    d.done[sku]=true; n++;
+    logDose(sku);
+    if(!useDose(sku)) noVial.push((DETAIL[sku]||{}).n||sku);
+  });
+  if(!n){ toast('Already all ticked off'); return; }
+  saveDoses(d); refreshAll();
+  if(navigator.vibrate) navigator.vibrate([40,60,40]);
+  toast(n+' dose'+(n===1?'':'s')+' ticked off'
+        + (noVial.length? ' — no vial open for '+noVial.length : ''));
+}
+function clearAllToday(){
+  const idx=(new Date().getDay()+6)%7;
+  const due=SCHED.filter(r=>r[5][idx]===1);
+  const d=loadDoses();
+  let n=0;
+  due.forEach(r=>{
+    const sku=r[0];
+    if(!d.done[sku]) return;
+    d.done[sku]=false; n++;
+    unuseDose(sku); unlogDose(sku);
+  });
+  saveDoses(d); refreshAll();
+  toast(n? n+' cleared' : 'Nothing to clear');
+}
 
 function buildHistory(){
   const log=loadLog();
