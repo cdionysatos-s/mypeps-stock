@@ -255,7 +255,7 @@ h1{font-size:27px;font-weight:800;letter-spacing:-.9px;line-height:1}
 .bigbtn:active{transform:scale(.99)}
 .bigbtn.dirty{background:var(--warn)}
 .minis{display:flex;gap:6px;margin-top:7px}
-.minis button,.minis .minilbl{flex:1;padding:9px 2px;border-radius:10px;border:1px solid var(--line2);
+.minis button,.minis .minilbl{flex:1;padding:9px 1px;font-size:10px;border-radius:10px;border:1px solid var(--line2);
   background:transparent;color:var(--ink2);font-size:10.5px;font-weight:800;cursor:pointer;
   text-align:center;line-height:1.6;-webkit-user-select:none;user-select:none}
 
@@ -547,6 +547,7 @@ h1{font-size:27px;font-weight:800;letter-spacing:-.9px;line-height:1}
 <div class="bar">
   <button class="bigbtn" id="saveBtn" onclick="backup()">✓ &nbsp;BACK UP &amp; FINISH</button>
   <div class="minis">
+    <button onclick="backupAs()">Save as…</button>
     <label class="minilbl" for="restoreFile">Restore</label>
     <button onclick="reportMenu()">Reports</button>
     <button onclick="exportCsv()">CSV</button>
@@ -10948,12 +10949,34 @@ function showWhere(){
     if(btn) btn.style.display='none';
   }
 }
+async function backupAs(){
+  save();
+  const name=backupName(), text=payload();
+  if(window.showSaveFilePicker){
+    try{
+      const fh=await window.showSaveFilePicker({suggestedName:name,
+        types:[{description:'MyPeps backup',accept:{'application/json':['.json']}}]});
+      const w=await fh.createWritable(); await w.write(text); await w.close();
+      clean(); toast('Saved '+fh.name); return;
+    }catch(e){ if(e&&e.name==='AbortError'){ toast('Cancelled'); return; } }
+  }
+  try{
+    const file=new File([text],name,{type:'application/json'});
+    if(navigator.canShare && navigator.canShare({files:[file]})){
+      await navigator.share({files:[file],title:name}); clean(); toast('Sent'); return; }
+  }catch(e){ if(e&&e.name==='AbortError'){ toast('Cancelled'); return; } }
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([text],{type:'application/json'}));
+  a.download=name; document.body.appendChild(a);a.click();a.remove(); clean();
+  toast('Downloaded '+name);
+}
+
 async function backup(){
   save();
   const name=backupName();
   const text=payload();
 
-  /* a folder was chosen on a computer — write a fresh dated file into it */
+  /* 1. a folder is already set — drop a dated file in, no questions */
   if(dirHandle){
     try{
       let perm=await dirHandle.queryPermission({mode:'readwrite'});
@@ -10961,40 +10984,45 @@ async function backup(){
       if(perm==='granted'){
         const fh=await dirHandle.getFileHandle(name,{create:true});
         const w=await fh.createWritable(); await w.write(text); await w.close();
-        clean(); toast('Saved '+name); return;
+        clean(); toast('Saved '+name+' to '+dirHandle.name); return;
       }
     }catch(e){}
   }
 
-  /* an older single-file setup */
-  if(fileHandle && await writeFile()){ clean(); toast('Saved into '+fileHandle.name); return; }
+  /* 2. on a computer, ASK WHERE — this must come before anything that
+        swallows the tap, or the picker is refused for lack of a gesture */
+  if(window.showSaveFilePicker){
+    try{
+      const fh=await window.showSaveFilePicker({
+        suggestedName:name,
+        types:[{description:'MyPeps backup',accept:{'application/json':['.json']}}]
+      });
+      const w=await fh.createWritable(); await w.write(text); await w.close();
+      clean(); toast('Saved '+fh.name);
+      if(!dirHandle) toast('Tip — set a folder above and it saves there every time');
+      return;
+    }catch(e){
+      if(e && e.name==='AbortError'){ toast('Backup cancelled'); return; }
+    }
+  }
 
-  /* a phone — hand it to the share sheet so OneDrive can take it */
+  /* 3. a phone — the share sheet, so OneDrive can take it */
   try{
     const file=new File([text],name,{type:'application/json'});
     if(navigator.canShare && navigator.canShare({files:[file]})){
       await navigator.share({files:[file],title:name});
       clean(); toast('Sent — choose OneDrive'); return;
     }
-  }catch(err){ if(err && err.name==='AbortError'){ toast('Backup cancelled'); return; } }
-
-  /* a computer with no folder set yet — ask for one, then keep using it */
-  if(window.showDirectoryPicker){
-    try{
-      dirHandle=await window.showDirectoryPicker({mode:'readwrite'});
-      await idb('putDir',dirHandle);
-      const fh=await dirHandle.getFileHandle(name,{create:true});
-      const w=await fh.createWritable(); await w.write(text); await w.close();
-      showWhere(); clean(); toast('Saved '+name);
-      return;
-    }catch(e){ if(e.name==='AbortError'){ toast('Backup cancelled'); return; } }
+  }catch(err){
+    if(err && err.name==='AbortError'){ toast('Backup cancelled'); return; }
   }
 
+  /* 4. nothing else available */
   const a=document.createElement('a');
   a.href=URL.createObjectURL(new Blob([text],{type:'application/json'}));
   a.download=name;
   document.body.appendChild(a);a.click();a.remove(); clean();
-  toast('Downloaded '+name);
+  toast('Downloaded '+name+' — move it into OneDrive');
 }
 function restore(inp){ const f=inp.files[0]; if(!f) return;
   const r=new FileReader();
@@ -11038,7 +11066,7 @@ if('serviceWorker' in navigator){
     setInterval(()=>reg.update().catch(()=>{}), 60000);
   }).catch(()=>{});
 }
-const APP_VERSION='2026-10-07';
+const APP_VERSION='2026-10-07b';
 document.getElementById('ver').innerHTML='<b>'+APP_VERSION+'</b><i>TAP TO UPDATE</i>';
 buildSchedule();
 
