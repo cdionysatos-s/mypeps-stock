@@ -62,9 +62,55 @@ h1{font-size:27px;font-weight:800;letter-spacing:-.9px;line-height:1}
 .ring .rt{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
   font-size:11px;font-weight:800;font-family:ui-monospace,"SF Mono",Consolas,monospace;color:var(--ink2)}
 
+
+.hstat{display:flex;gap:9px;margin-bottom:4px}
+.hs2{flex:1;background:var(--card);border:1px solid var(--line);border-radius:14px;
+  padding:14px 8px;text-align:center;box-shadow:var(--shadow)}
+.hs2 b{display:block;font-size:26px;font-weight:800;letter-spacing:-1px;line-height:1;color:var(--brand)}
+.hs2 span{display:block;font-size:8px;font-weight:800;letter-spacing:1px;color:var(--ink3);margin-top:6px}
+.hgridWrap{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:13px;
+  box-shadow:var(--shadow)}
+.hgrid{display:grid;grid-template-rows:repeat(7,1fr);grid-auto-flow:column;gap:3px}
+.hc{width:100%;aspect-ratio:1;border-radius:3px;background:var(--bg2);display:block}
+.h0{background:var(--bg2)} .h1{background:#9FD0EC} .h2{background:#5FB3E4}
+.h3{background:#2A8FD0} .h4{background:#0E7FC4}
+.hf{background:transparent;border:1px dashed var(--line)}
+@media (prefers-color-scheme: dark){
+  .h1{background:#1C4663} .h2{background:#1F6A98} .h3{background:#2487C2} .h4{background:#35A6E8}
+}
+.hkey{display:flex;align-items:center;gap:4px;margin-top:11px;justify-content:flex-end}
+.hkey span{font-size:9px;font-weight:700;color:var(--ink3)}
+.hkey i{width:11px;height:11px;border-radius:3px}
+.hbWrap{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;
+  box-shadow:var(--shadow)}
+.hbRow{margin-bottom:13px} .hbRow:last-child{margin-bottom:0}
+.hbTop{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px}
+.hbTop span{font-size:13px;font-weight:700}
+.hbTop b{font-size:13px;font-weight:800;font-family:ui-monospace,"SF Mono",Consolas,monospace}
+.hbTop small{font-weight:600;color:var(--ink3)}
+.hbTrack{height:7px;background:var(--bg2);border-radius:4px;overflow:hidden}
+.hbTrack i{display:block;height:100%;border-radius:4px;transition:width .4s}
+.hd{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px;
+  margin-bottom:8px;box-shadow:var(--shadow)}
+.hdTop{display:flex;justify-content:space-between;align-items:baseline}
+.hdTop b{font-size:14.5px;font-weight:800}
+.hdTop span{font-size:11.5px;font-weight:800;font-family:ui-monospace,"SF Mono",Consolas,monospace}
+.hdTop .ok{color:var(--good)} .hdTop .miss{color:var(--warn)}
+.hdPills{display:flex;flex-wrap:wrap;gap:5px;margin-top:9px}
+.pill{font-size:11px;font-weight:700;color:#fff;padding:4px 9px;border-radius:7px}
+.hdNone{font-size:11.5px;color:var(--ink3);margin-top:7px;font-weight:600}
+.hempty{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:22px;
+  text-align:center;font-size:13px;color:var(--ink3);line-height:1.6;box-shadow:var(--shadow)}
+.impbtn{display:block;width:100%;text-align:center;background:var(--card);
+  border:1.5px solid var(--line2);color:var(--ink2);border-radius:12px;padding:14px;
+  font-size:13px;font-weight:800;margin-top:18px;cursor:pointer;
+  -webkit-user-select:none;user-select:none;box-shadow:var(--shadow)}
+.impbtn:active{background:var(--brandSoft)}
+.hfoot{font-size:11px;color:var(--ink3);margin-top:16px;line-height:1.6;text-align:center}
+
 /* tabs */
 .tabs{display:flex;gap:4px;margin-bottom:16px;background:var(--bg2);padding:4px;border-radius:13px}
-.tabs button{flex:1;padding:12px 4px;border-radius:10px;border:none;background:transparent;
+.tabs button{flex:1;padding:12px 2px;font-size:11px;border-radius:10px;border:none;background:transparent;
   color:var(--ink3);font-size:12px;font-weight:800;cursor:pointer;letter-spacing:.6px;
   transition:all .18s}
 .tabs button.on{background:var(--card);color:var(--ink);box-shadow:var(--shadow)}
@@ -278,9 +324,11 @@ h1{font-size:27px;font-weight:800;letter-spacing:-.9px;line-height:1}
 </div>
 <div class="tabs">
   <button id="tabStock" class="on" onclick="showTab('stock')">STOCK</button>
-  <button id="tabSched" onclick="showTab('sched')">TODAY'S DOSES</button>
+  <button id="tabSched" onclick="showTab('sched')">TODAY</button>
+  <button id="tabHist" onclick="showTab('hist')">HISTORY</button>
 </div>
 <div id="viewSched" style="display:none"></div>
+<div id="viewHist" style="display:none"></div>
 <div id="viewStock">
 
 <div class="scanbox">
@@ -438,6 +486,7 @@ h1{font-size:27px;font-weight:800;letter-spacing:-.9px;line-height:1}
   </div>
   <input type="file" id="restoreFile" accept=".json" style="display:none" onchange="restore(this)">
 </div>
+<input type="file" id="oldFile" accept=".json,application/json" class="hidefile" onchange="importOld(this)">
 <div class="toast" id="toast"></div>
 <div id="sheet" class="sheet"><div class="sheetIn" id="sheetIn"></div></div>
 
@@ -10840,7 +10889,7 @@ if('serviceWorker' in navigator){
     setInterval(()=>reg.update().catch(()=>{}), 60000);
   }).catch(()=>{});
 }
-const APP_VERSION='2026-10-05n';
+const APP_VERSION='2026-10-06b';
 document.getElementById('ver').textContent='v '+APP_VERSION;
 buildSchedule();
 
@@ -11141,15 +11190,176 @@ function reportMenu(){
   else if(pick==='4') doseReport(90);
 }
 
+
+
+/* ---------- bring in a backup from the old reminder app ---------- */
+const OLDMAP=[
+ [/retatrutide/,'RT30'],[/tesamorelin/,'TSM20'],[/thymosin alpha/,'TA10'],
+ [/cjc/,'CP10'],[/ipamorelin/,'IPA10'],[/^mots|^ms40/,'MS40'],[/klow/,'KL80'],
+ [/^kpv|^kp10/,'KP10'],[/ghk|^cu100/,'CU100'],[/semax|^xa10/,'XA10'],
+ [/selank|^sk\d/,'SK10'],[/dsip|^ds10/,'DS10'],[/epithalon|epitalon|^et50/,'ET50'],
+ [/^nad|^nj1000/,'NJ1000'],[/aod|^10ad|^ad10/,'AD10'],[/ara-?290|^ra10/,'RA10'],
+ [/tb-?500|^bb20/,'BB20'],[/bpc|^bc\d/,'BC10'],[/carnitine|^lc600/,'LC600'],
+];
+function skuFromOldName(nm){
+  const n=String(nm||'').toLowerCase().trim();
+  for(const [re,s] of OLDMAP){ if(re.test(n)) return s; }
+  return null;
+}
+function importOld(inp){
+  const f=inp.files[0]; inp.value=''; if(!f) return;
+  const r=new FileReader();
+  r.onload=ev=>{
+    try{
+      const raw=JSON.parse(ev.target.result);
+
+      /* our own backup? just restore it */
+      if(raw && raw.stock && !raw.data){
+        stock=raw.stock; paint(); save(); clean();
+        toast('Restored your stock counts'); return;
+      }
+
+      const data=raw.data||raw;
+      /* find the item list and the dose log, whichever profile they are under */
+      let itemsRaw=null, logsRaw=null;
+      Object.keys(data).forEach(k=>{
+        if(/dose-items/.test(k) && !itemsRaw) itemsRaw=data[k];
+        if(/dose-logs/.test(k)  && !logsRaw)  logsRaw=data[k];
+      });
+      if(!itemsRaw || !logsRaw) throw new Error('no dose history in that file');
+      const items = typeof itemsRaw==='string' ? JSON.parse(itemsRaw) : itemsRaw;
+      const logs  = typeof logsRaw==='string'  ? JSON.parse(logsRaw)  : logsRaw;
+
+      const idToSku={}; let unknown=0;
+      items.forEach(it=>{ const s=skuFromOldName(it.name); if(s) idToSku[it.id]=s; else unknown++; });
+
+      const existing=loadLog();
+      const seen=new Set(existing.map(e=>e.d+'|'+e.s));
+      let added=0, days=new Set();
+      Object.keys(logs).sort().forEach(day=>{
+        const rec=logs[day]||{};
+        Object.keys(rec).forEach(id=>{
+          if(!rec[id]) return;
+          const s=idToSku[id]; if(!s) return;
+          const key=day+'|'+s;
+          if(seen.has(key)) return;
+          seen.add(key); days.add(day);
+          existing.push({d:day,t:'',s:s});
+          added++;
+        });
+      });
+      existing.sort((a,b)=> a.d<b.d?-1:a.d>b.d?1:0);
+      saveLog(existing);
+      refreshAll(); buildHistory();
+      showTab('hist');
+      alert('Brought in '+added+' doses across '+days.size+' days.\n\n'
+        +(unknown?unknown+' compounds in that file had no match here and were skipped.\n\n':'')
+        +'Your history now goes back to '+(existing[0]||{}).d+'.');
+    }catch(err){ alert('Could not read that file.\n\n'+err.message); }
+  };
+  r.readAsText(f);
+}
+
+/* ---------- history ---------- */
+function dayKeyOf(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+function dueOn(date){ const i=(date.getDay()+6)%7; return SCHED.filter(r=>r[5][i]===1); }
+
+function buildHistory(){
+  const log=loadLog();
+  const byDay={}; log.forEach(e=>{ (byDay[e.d]=byDay[e.d]||[]).push(e.s); });
+
+  /* 12 weeks of squares */
+  const WEEKS=12, today=new Date();
+  const cells=[]; let doneTot=0, dueTot=0, streak=0, streakLive=true;
+  for(let back=WEEKS*7-1; back>=0; back--){
+    const d=new Date(today.getTime()-back*86400000);
+    const k=dayKeyOf(d);
+    const due=dueOn(d).length;
+    const got=(byDay[k]||[]).length;
+    if(d<=today){ doneTot+=Math.min(got,due); dueTot+=due; }
+    const pct = due? Math.min(1,got/due) : 0;
+    cells.push({k,d,due,got,pct,future:d>today});
+    if(back>0 && d<=today){ if(due>0){ if(got>=due && streakLive) streak++; else streakLive=false; } }
+  }
+  const adherence = dueTot? Math.round(doneTot/dueTot*100) : 0;
+
+  let grid='';
+  cells.forEach(c2=>{
+    let cls='hc';
+    if(c2.future) cls+=' hf';
+    else if(!c2.due) cls+=' h0';
+    else if(c2.pct>=1) cls+=' h4';
+    else if(c2.pct>=.66) cls+=' h3';
+    else if(c2.pct>=.33) cls+=' h2';
+    else if(c2.pct>0) cls+=' h1';
+    grid+='<i class="'+cls+'" title="'+c2.k+' — '+c2.got+' of '+c2.due+'"></i>';
+  });
+
+  /* per compound, last 30 days */
+  const cut=dayKeyOf(new Date(Date.now()-29*86400000));
+  const recent=log.filter(e=>e.d>=cut);
+  const cnt={}; recent.forEach(e=>cnt[e.s]=(cnt[e.s]||0)+1);
+  let expect={};
+  for(let i=0;i<30;i++){ dueOn(new Date(Date.now()-i*86400000)).forEach(r=>expect[r[0]]=(expect[r[0]]||0)+1); }
+  const skus=Object.keys(expect).sort((a,b)=>((cnt[b]||0)/expect[b])-((cnt[a]||0)/expect[a]));
+  let bars='';
+  skus.forEach(s=>{
+    const got=cnt[s]||0, exp=expect[s]||1;
+    const pct=Math.min(100,Math.round(got/exp*100));
+    const col=CATCOL[CATOF[s]]||'#0E7FC4';
+    const nm=(DETAIL[s]||{}).n||s;
+    bars+='<div class="hbRow"><div class="hbTop"><span>'+nm+'</span>'
+      +'<b>'+got+'<small> / '+exp+'</small></b></div>'
+      +'<div class="hbTrack"><i style="width:'+pct+'%;background:'+col+'"></i></div></div>';
+  });
+
+  /* the last fortnight, day by day */
+  let days='';
+  for(let i=0;i<14;i++){
+    const d=new Date(Date.now()-i*86400000), k=dayKeyOf(d);
+    const due=dueOn(d), got=byDay[k]||[];
+    if(!due.length && !got.length) continue;
+    const DOW=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+    const names=got.map(s=>{
+      const col=CATCOL[CATOF[s]]||'#0E7FC4';
+      return '<span class="pill" style="background:'+col+'">'+((DETAIL[s]||{}).n||s)+'</span>';
+    }).join('');
+    const miss=due.length-got.length;
+    days+='<div class="hd"><div class="hdTop">'
+      +'<b>'+(i===0?'Today':i===1?'Yesterday':DOW[d.getDay()]+' '+d.getDate()+'/'+(d.getMonth()+1))+'</b>'
+      +'<span class="'+(miss<=0?'ok':'miss')+'">'+got.length+' of '+due.length+'</span></div>'
+      +(names?'<div class="hdPills">'+names+'</div>'
+             :'<div class="hdNone">nothing logged</div>')+'</div>';
+  }
+
+  document.getElementById('viewHist').innerHTML=
+     '<div class="hstat">'
+      +'<div class="hs2"><b>'+adherence+'%</b><span>ADHERENCE</span></div>'
+      +'<div class="hs2"><b>'+streak+'</b><span>DAY STREAK</span></div>'
+      +'<div class="hs2"><b>'+log.length+'</b><span>DOSES LOGGED</span></div>'
+     +'</div>'
+    +'<div class="tgrp">LAST 12 WEEKS</div>'
+    +'<div class="hgridWrap"><div class="hgrid">'+grid+'</div>'
+      +'<div class="hkey"><span>less</span><i class="hc h0"></i><i class="hc h1"></i>'
+      +'<i class="hc h2"></i><i class="hc h3"></i><i class="hc h4"></i><span>all done</span></div></div>'
+    +(bars?'<div class="tgrp">LAST 30 DAYS, BY COMPOUND</div><div class="hbWrap">'+bars+'</div>':'')
+    +(days?'<div class="tgrp">RECENT DAYS</div>'+days
+          :'<div class="hempty">Nothing logged yet. Tick doses off on the TODAY tab and they will build up here.</div>')
+    +'<label class="impbtn" for="oldFile">&#8593;&nbsp; Bring in history from a backup file</label>'
+    +'<div class="hfoot">Everything here is kept on this phone. Use <b>Reports</b> on the stock tab to print it.</div>';
+}
+
 function showTab(which){
-  const st=which==='stock';
-  document.getElementById('viewStock').style.display=st?'':'none';
-  document.getElementById('viewSched').style.display=st?'none':'';
-  document.getElementById('tabStock').classList.toggle('on',st);
-  document.getElementById('tabSched').classList.toggle('on',!st);
-  document.querySelector('.bar').style.display=st?'':'none';
-  document.body.style.paddingBottom=st?'118px':'24px';
-  if(!st) buildSchedule();
+  const map={stock:'viewStock',sched:'viewSched',hist:'viewHist'};
+  const tabs={stock:'tabStock',sched:'tabSched',hist:'tabHist'};
+  Object.keys(map).forEach(k=>{
+    document.getElementById(map[k]).style.display = (k===which)?'':'none';
+    document.getElementById(tabs[k]).classList.toggle('on',k===which);
+  });
+  document.querySelector('.bar').style.display = (which==='stock')?'':'none';
+  document.body.style.paddingBottom = (which==='stock')?'124px':'26px';
+  if(which==='sched') buildSchedule();
+  if(which==='hist') buildHistory();
   paint();
 }
 document.getElementById('sheet').addEventListener('click',function(e){
