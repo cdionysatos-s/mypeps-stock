@@ -1,0 +1,34 @@
+MYPEPS BACKUPS
+==============
+
+This is where your backups live.
+
+Each one is named with the date and time it was made:
+
+    MyPeps-Backup-2026-10-05_0849.json
+    MyPeps-Backup-2026-10-12_1930.json
+
+Nothing is ever overwritten, so you can go back to any point.
+
+
+HOW THEY GET HERE
+
+  On a computer (Chrome or Edge)
+      Press CHOOSE YOUR ONEDRIVE FOLDER once, pick this folder.
+      From then on, BACK UP & FINISH drops a new dated file
+      straight in. Nothing to move.
+
+  On a phone
+      BACK UP & FINISH opens your share sheet. Choose OneDrive,
+      then this folder.
+
+
+WHAT IS IN A BACKUP
+  Stock counts, the full dose history, which vials are open and
+  how far through them you are, and any cycles you are tracking.
+  One file restores all of it.
+
+
+TO RESTORE
+  Any RESTORE button in the app takes any of these files.
+  It also takes an export from the old peptide reminder.

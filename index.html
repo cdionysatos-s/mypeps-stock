@@ -312,6 +312,17 @@ h1{font-size:27px;font-weight:800;letter-spacing:-.9px;line-height:1}
 .warnbox li:before{content:"";position:absolute;left:0;top:7px;width:5px;height:5px;
   border-radius:50%;background:var(--warn)}
 
+.repList{display:flex;flex-direction:column;gap:7px;margin-top:4px}
+.repItem{display:flex;align-items:center;gap:13px;border:1px solid var(--line);
+  border-radius:13px;padding:14px;cursor:pointer;background:var(--card)}
+.repItem:active{background:var(--brandSoft);border-color:var(--brand)}
+.repIc{font-size:21px;flex-shrink:0;width:28px;text-align:center}
+.repItem div{flex:1;min-width:0}
+.repItem b{display:block;font-size:15.5px;font-weight:800;letter-spacing:-.2px}
+.repItem i{display:block;font-style:normal;font-size:12px;color:var(--ink3);
+  font-weight:600;margin-top:2px;line-height:1.35}
+.repGo{font-size:24px;color:var(--ink3);flex-shrink:0;line-height:1}
+.repNote{font-size:11.5px;color:var(--ink3);line-height:1.55;margin-top:16px;text-align:center}
 .cycbox{border:1px solid var(--line);border-radius:14px;padding:14px}
 .cycTop b{font-size:17px;font-weight:800}
 .grade{display:inline-block;font-size:10px;font-weight:800;letter-spacing:.9px;
@@ -546,6 +557,7 @@ h1{font-size:27px;font-weight:800;letter-spacing:-.9px;line-height:1}
 <input type="file" id="oldFile" accept=".json,application/json" class="hidefile" onchange="loadAnyFile(this)">
 <div class="toast" id="toast"></div>
 <div id="sheet" class="sheet"><div class="sheetIn" id="sheetIn"></div></div>
+<div id="reports" class="sheet"><div class="sheetIn" id="repIn"></div></div>
 
 <div id="camWrap">
   <div id="camMsg">Point at the code on the vial</div>
@@ -10673,12 +10685,17 @@ const DETAIL={"RT30": {"n": "Retatrutide", "for": "Weight loss \u00b7 appetite \
 const SCHED=[["XA10", "Semax", "MORNING", "200 mcg", "6 u", [1, 1, 1, 1, 1, 1, 1], "Never at night"], ["CU100", "GHK-Cu", "MORNING", "1\u20132 mg", "3\u20136 u", [1, 1, 1, 1, 1, 1, 1], "Check it hasn't darkened"], ["NJ1000", "NAD+", "MORNING", "75 mg", "75 u", [1, 0, 0, 1, 0, 0, 0], "Push slowly, 20\u201330 sec"], ["SK10", "Selank", "AFTERNOON", "250\u2013500 mcg", "7.5\u201315 u", [1, 1, 1, 1, 1, 1, 1], "Calm without sedation"], ["LC600", "L-Carnitine", "PRE-GYM", "300 mg", "2.5 mL each leg", [1, 0, 1, 0, 1, 0, 0], "INTRAMUSCULAR \u2014 thigh"], ["MS40", "MOTS-c", "ANY TIME", "2650 mcg", "20 u", [1, 1, 1, 1, 1, 0, 0], "5 on, 2 off"], ["IPA10", "Ipamorelin", "NIGHT", "100\u2013150 mcg", "3\u20134.5 u", [1, 1, 1, 1, 1, 1, 1], "30 min before sleep, empty stomach"], ["ET50", "Epitalon", "NIGHT", "5 mg", "30 u", [1, 1, 1, 1, 1, 1, 1], "20-day course then stop"]];
 const DKEY='mypeps-doses';
 const KEY='mypeps-stock', HKEY='mypeps-file';
-let stock={}, fileHandle=null, poppy=false, moveDir=1;
+let stock={}, fileHandle=null, dirHandle=null, poppy=false, moveDir=1;
 
 function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('on');
   clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove('on'),2200);}
 function payload(){return JSON.stringify({saved:new Date().toISOString(),app:'MyPeps',
-  stock:stock, log:loadLog(), vials:loadVials()},null,1);}
+  version:APP_VERSION, stock:stock, log:loadLog(), vials:loadVials(), cycles:loadCycles()},null,1);}
+function backupName(){
+  const d=new Date(), p2=n=>String(n).padStart(2,'0');
+  return 'MyPeps-Backup-'+d.getFullYear()+'-'+p2(d.getMonth()+1)+'-'+p2(d.getDate())
+       +'_'+p2(d.getHours())+p2(d.getMinutes())+'.json';
+}
 
 function setDir(d){ moveDir=d;
   document.getElementById('dIn').classList.toggle('on',d>0);
@@ -10820,7 +10837,8 @@ function take(d){
 
 /* ---------- counts ---------- */
 function load(){ try{stock=JSON.parse(localStorage.getItem(KEY))||{};}catch(e){stock={};}
-  idb('get').then(h=>{if(h)fileHandle=h; showWhere();}); paint(); }
+  idb('get').then(h=>{if(h)fileHandle=h; showWhere();});
+  idb('getDir').then(h=>{if(h)dirHandle=h; showWhere();}); paint(); }
 function save(){ try{localStorage.setItem(KEY,JSON.stringify(stock));}catch(e){} }
 function mark(){ poppy=true; const b=document.getElementById('saveBtn');
   b.classList.add('dirty'); b.textContent='⚠  BACK UP & FINISH'; }
@@ -10910,27 +10928,73 @@ async function writeFile(){ if(!fileHandle) return false;
       if(p!=='granted') return false; }
     const w=await fileHandle.createWritable(); await w.write(payload()); await w.close(); return true;
   }catch(e){ return false; } }
-function showWhere(){}
+function showWhere(){
+  const el=document.getElementById('where'); if(!el) return;
+  const btn=document.getElementById('pickBtn');
+  if(dirHandle){
+    el.innerHTML='Backing up into <b>'+dirHandle.name+'</b><br>'
+      +'Each backup is a new dated file, so nothing gets overwritten.';
+    if(btn){ btn.textContent='\uD83D\uDCC1  Change the folder'; btn.style.display=''; }
+    return;
+  }
+  if(window.showDirectoryPicker){
+    el.innerHTML='Pick your OneDrive folder once and every backup lands there, dated.';
+    if(btn) btn.style.display='';
+  }else if(navigator.canShare){
+    el.innerHTML='<b>Backing up opens your share sheet</b> \u2014 choose OneDrive and it files itself.';
+    if(btn) btn.style.display='none';
+  }else{
+    el.innerHTML='Backing up downloads a dated file \u2014 move it into OneDrive.';
+    if(btn) btn.style.display='none';
+  }
+}
 async function backup(){
   save();
-  if(fileHandle && await writeFile()){ clean(); toast('Saved into '+fileHandle.name); return; }
-  const file=new File([payload()],'MyPeps-Stock-Backup.json',{type:'application/json'});
-  try{ if(navigator.canShare && navigator.canShare({files:[file]})){
-      await navigator.share({files:[file],title:'MyPeps Stock Backup'});
-      clean(); toast('Sent — choose OneDrive'); return; } }
-  catch(err){ if(err&&err.name==='AbortError'){ toast('Cancelled'); return; } }
-  if(window.showSaveFilePicker){
-    try{ fileHandle=await window.showSaveFilePicker({suggestedName:'MyPeps-Stock-Backup.json',
-          types:[{description:'Stock backup',accept:{'application/json':['.json']}}]});
-      await idb('put',fileHandle);
-      if(await writeFile()){ clean(); toast('Saved into '+fileHandle.name); return; } }
-    catch(e){ if(e.name==='AbortError'){ toast('Cancelled'); return; } }
+  const name=backupName();
+  const text=payload();
+
+  /* a folder was chosen on a computer — write a fresh dated file into it */
+  if(dirHandle){
+    try{
+      let perm=await dirHandle.queryPermission({mode:'readwrite'});
+      if(perm!=='granted') perm=await dirHandle.requestPermission({mode:'readwrite'});
+      if(perm==='granted'){
+        const fh=await dirHandle.getFileHandle(name,{create:true});
+        const w=await fh.createWritable(); await w.write(text); await w.close();
+        clean(); toast('Saved '+name); return;
+      }
+    }catch(e){}
   }
+
+  /* an older single-file setup */
+  if(fileHandle && await writeFile()){ clean(); toast('Saved into '+fileHandle.name); return; }
+
+  /* a phone — hand it to the share sheet so OneDrive can take it */
+  try{
+    const file=new File([text],name,{type:'application/json'});
+    if(navigator.canShare && navigator.canShare({files:[file]})){
+      await navigator.share({files:[file],title:name});
+      clean(); toast('Sent — choose OneDrive'); return;
+    }
+  }catch(err){ if(err && err.name==='AbortError'){ toast('Backup cancelled'); return; } }
+
+  /* a computer with no folder set yet — ask for one, then keep using it */
+  if(window.showDirectoryPicker){
+    try{
+      dirHandle=await window.showDirectoryPicker({mode:'readwrite'});
+      await idb('putDir',dirHandle);
+      const fh=await dirHandle.getFileHandle(name,{create:true});
+      const w=await fh.createWritable(); await w.write(text); await w.close();
+      showWhere(); clean(); toast('Saved '+name);
+      return;
+    }catch(e){ if(e.name==='AbortError'){ toast('Backup cancelled'); return; } }
+  }
+
   const a=document.createElement('a');
-  a.href=URL.createObjectURL(new Blob([payload()],{type:'application/json'}));
-  a.download='MyPeps-Stock-Backup-'+new Date().toISOString().slice(0,10)+'.json';
+  a.href=URL.createObjectURL(new Blob([text],{type:'application/json'}));
+  a.download=name;
   document.body.appendChild(a);a.click();a.remove(); clean();
-  toast('Downloaded — move it into OneDrive');
+  toast('Downloaded '+name);
 }
 function restore(inp){ const f=inp.files[0]; if(!f) return;
   const r=new FileReader();
@@ -10974,7 +11038,7 @@ if('serviceWorker' in navigator){
     setInterval(()=>reg.update().catch(()=>{}), 60000);
   }).catch(()=>{});
 }
-const APP_VERSION='2026-10-06k';
+const APP_VERSION='2026-10-07';
 document.getElementById('ver').innerHTML='<b>'+APP_VERSION+'</b><i>TAP TO UPDATE</i>';
 buildSchedule();
 
@@ -11173,126 +11237,253 @@ function vialTap(sku){
   if(confirm(msg)) openVial(sku);
 }
 
-/* ---------- printable reports ---------- */
-function esc(s){ return String(s).replace(/[&<>]/g,x=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[x])); }
-function niceDate(k){
-  const [y,m,d]=k.split('-');
-  const MN=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  return d.replace(/^0/,'')+' '+MN[+m-1]+' '+y;
-}
+
+/* ---------- reports ---------- */
+function esc(s){ return String(s).replace(/[&<>]/g,function(x){return {'&':'&amp;','<':'&lt;','>':'&gt;'}[x];}); }
+function niceDate(k){ var a=k.split('-');
+  var MN=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  return a[2].replace(/^0/,'')+' '+MN[+a[1]-1]+' '+a[0]; }
+function stamp(){ return new Date().toLocaleString('en-AU',{dateStyle:'full',timeStyle:'short'}); }
+
 function reportCss(){
   return '<style>'
    +'@page{size:A4;margin:14mm}'
    +'*{box-sizing:border-box;margin:0;padding:0}'
-   +'body{font-family:-apple-system,"Helvetica Neue",Arial,sans-serif;color:#0E1A26;padding:6px}'
-   +'h1{font-size:23px;font-weight:800;letter-spacing:-.6px}'
-   +'.meta{font-size:11px;color:#5A6B7C;margin:4px 0 16px;font-weight:600}'
-   +'h2{font-size:13px;font-weight:800;letter-spacing:1.2px;color:#5A6B7C;margin:20px 0 8px;'
-     +'border-bottom:2px solid #0E1A26;padding-bottom:5px}'
+   +'body{font-family:-apple-system,"Helvetica Neue",Arial,sans-serif;color:#0E1A26;padding:8px;font-size:12px}'
+   +'h1{font-size:25px;font-weight:800;letter-spacing:-.7px}'
+   +'.meta{font-size:11px;color:#5A6B7C;margin:5px 0 18px;font-weight:600}'
+   +'h2{font-size:12px;font-weight:800;letter-spacing:1.3px;color:#5A6B7C;margin:24px 0 9px;'
+     +'border-bottom:2px solid #0E1A26;padding-bottom:6px}'
    +'table{width:100%;border-collapse:collapse;font-size:12px}'
    +'th{text-align:left;font-size:9px;font-weight:800;letter-spacing:.9px;color:#5A6B7C;'
-     +'padding:7px 8px;border-bottom:1.5px solid #C6D4E2}'
-   +'td{padding:8px;border-bottom:1px solid #E7EEF5;vertical-align:top}'
+     +'padding:8px;border-bottom:1.5px solid #C6D4E2}'
+   +'td{padding:9px 8px;border-bottom:1px solid #E7EEF5;vertical-align:top}'
    +'tr:nth-child(even) td{background:#F6F9FC}'
    +'.sku{font-family:"SF Mono",Consolas,monospace;font-weight:800;font-size:11px}'
    +'.num{text-align:right;font-family:"SF Mono",Consolas,monospace;font-weight:800}'
-   +'.warn{color:#A86418;font-weight:800}'
+   +'.warn{color:#A86418;font-weight:800}.ok{color:#157A4A;font-weight:800}.muted{color:#93A4B5}'
    +'.sum{display:flex;gap:10px;margin-bottom:6px}'
-   +'.sum div{flex:1;border:1.5px solid #C6D4E2;border-radius:8px;padding:10px;text-align:center}'
-   +'.sum b{display:block;font-size:22px;font-weight:800}'
+   +'.sum div{flex:1;border:1.5px solid #C6D4E2;border-radius:9px;padding:12px;text-align:center}'
+   +'.sum b{display:block;font-size:24px;font-weight:800;letter-spacing:-.6px}'
    +'.sum span{font-size:8.5px;font-weight:800;letter-spacing:.9px;color:#5A6B7C}'
-   +'.foot{margin-top:22px;font-size:10px;color:#93A4B5;border-top:1px solid #E7EEF5;padding-top:9px}'
+   +'.note{background:#FFF4E6;border:1.5px solid #E8CDA8;border-radius:8px;padding:11px;'
+     +'font-size:11.5px;color:#8A4B12;line-height:1.55;margin-top:10px}'
+   +'.pill{display:inline-block;font-size:10px;font-weight:800;color:#fff;padding:3px 8px;'
+     +'border-radius:6px;margin:2px 3px 2px 0}'
+   +'.foot{margin-top:26px;font-size:10px;color:#93A4B5;border-top:1px solid #E7EEF5;padding-top:10px}'
+   +'.pb{page-break-before:always}'
    +'@media print{.noprint{display:none}}'
-   +'.noprint{margin:18px 0;display:flex;gap:8px}'
-   +'.noprint button{flex:1;padding:13px;border-radius:9px;border:none;background:#0E7FC4;'
+   +'.noprint{margin:22px 0;display:flex;gap:8px}'
+   +'.noprint button{flex:1;padding:14px;border-radius:9px;border:none;background:#0E7FC4;'
      +'color:#fff;font-size:14px;font-weight:800;cursor:pointer}'
-   +'</style>';
-}
-function openReport(html){
-  const w=window.open('','_blank');
-  if(!w){ toast('Allow pop-ups to see the report'); return; }
+   +'</style>'; }
+
+function openReport(title, html){
+  var w=window.open('','_blank');
+  if(!w){ toast('Allow pop-ups to see reports'); return; }
   w.document.write('<!DOCTYPE html><html><head><meta charset="utf-8">'
     +'<meta name="viewport" content="width=device-width,initial-scale=1">'
-    +'<title>MyPeps report</title>'+reportCss()+'</head><body>'+html
+    +'<title>MyPeps \u2014 '+title+'</title>'+reportCss()+'</head><body>'
+    +'<h1>'+title+'</h1><div class="meta">MyPeps &middot; '+stamp()+'</div>'
+    +html
+    +'<div class="foot">Kept on this device only. Printed '+stamp()+'.</div>'
     +'<div class="noprint"><button onclick="window.print()">Print or save as PDF</button></div>'
     +'</body></html>');
   w.document.close();
 }
-function stockReport(){
-  const now=new Date();
-  let vials=0,kinds=0,low=[];
-  let rows='';
-  document.querySelectorAll('.row').forEach(r=>{
-    const s=r.dataset.sku, q=stock[s]||0;
-    const d=DETAIL[s]||{}; const v=vialState(s);
-    vials+=q; if(q>0)kinds++;
-    if(q<=1) low.push(d.n||s);
-    rows+='<tr><td class="sku">'+s+'</td><td><b>'+esc(d.n||r.dataset.name)+'</b><br>'
-      +'<span style="font-size:10px;color:#5A6B7C">'+esc(d["for"]||'')+'</span></td>'
-      +'<td>'+esc(d.vial||'')+'</td>'
-      +'<td class="num'+(q<=1?' warn':'')+'">'+q+'</td>'
-      +'<td>'+(v? v.left+' of '+v.total+' doses · mixed '+niceDate(v.mixed)
-                 +(v.daysLeft<=5?' <span class="warn">('+(v.daysLeft>0?v.daysLeft+' days left':'EXPIRED')+')</span>':'')
-               : '<span style="color:#93A4B5">none open</span>')+'</td></tr>';
+
+function repStock(){
+  var vials=0,kinds=0,low=[],rows='';
+  document.querySelectorAll('.row').forEach(function(r){
+    var s=r.dataset.sku,q=stock[s]||0,d=DETAIL[s]||{},v=vialState(s);
+    vials+=q; if(q>0)kinds++; if(q<=1) low.push(d.n||s);
+    rows+='<tr><td class="sku">'+s+'</td><td><b>'+esc(d.n||s)+'</b><br>'
+      +'<span class="muted" style="font-size:10px">'+esc(TAG[s]||'')+'</span></td>'
+      +'<td>'+esc(d.vial||'')+'</td><td class="num'+(q<=1?' warn':'')+'">'+q+'</td>'
+      +'<td>'+(v? v.left+' of '+v.total+' doses'
+        +(v.daysLeft<=5?' <span class="warn">('+(v.daysLeft>0?v.daysLeft+'d left':'EXPIRED')+')</span>':'')
+        : '<span class="muted">none open</span>')+'</td></tr>';
   });
-  const h='<h1>Stock report</h1><div class="meta">MyPeps · '+now.toLocaleString()+'</div>'
-   +'<div class="sum"><div><b>'+vials+'</b><span>VIALS HELD</span></div>'
-   +'<div><b>'+kinds+'</b><span>COMPOUNDS</span></div>'
-   +'<div><b>'+low.length+'</b><span>LOW OR OUT</span></div></div>'
-   +(low.length?'<h2>NEEDS REORDERING</h2><p style="font-size:12px;line-height:1.7">'
-      +low.map(esc).join(' &nbsp;·&nbsp; ')+'</p>':'')
-   +'<h2>FULL STOCK</h2><table><tr><th>Code</th><th>Compound</th><th>Vial</th>'
-   +'<th style="text-align:right">Held</th><th>Vial in use</th></tr>'+rows+'</table>'
-   +'<div class="foot">Counts are kept on this device only. Printed '+now.toLocaleString()+'.</div>';
-  openReport(h);
+  return '<div class="sum"><div><b>'+vials+'</b><span>VIALS HELD</span></div>'
+    +'<div><b>'+kinds+'</b><span>COMPOUNDS</span></div>'
+    +'<div><b>'+low.length+'</b><span>LOW OR OUT</span></div></div>'
+    +(low.length?'<h2>NEEDS REORDERING</h2><p style="line-height:1.8">'+low.map(esc).join(' &middot; ')+'</p>':'')
+    +'<h2>FULL STOCK</h2><table><tr><th>Code</th><th>Compound</th><th>Vial</th>'
+    +'<th style="text-align:right">Held</th><th>Vial in use</th></tr>'+rows+'</table>';
 }
-function doseReport(days){
-  const log=logSince(days);
-  const now=new Date();
-  const byDay={}; const bySku={};
-  log.forEach(e=>{ (byDay[e.d]=byDay[e.d]||[]).push(e); bySku[e.s]=(bySku[e.s]||0)+1; });
-  const dayKeys=Object.keys(byDay).sort().reverse();
-  let tally='';
-  Object.keys(bySku).sort((a,b)=>bySku[b]-bySku[a]).forEach(s=>{
-    const d=DETAIL[s]||{};
-    tally+='<tr><td class="sku">'+s+'</td><td><b>'+esc(d.n||s)+'</b></td>'
-      +'<td>'+esc(d.dose||'')+'</td><td>'+esc(d.units||'')+'</td>'
-      +'<td class="num">'+bySku[s]+'</td></tr>';
+function repToday(){
+  var DOW=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  var now=new Date(), idx=(now.getDay()+6)%7;
+  var due=SCHED.filter(function(r){return r[5][idx]===1;}), doses=loadDoses();
+  var done=due.filter(function(r){return doses.done[r[0]];}).length;
+  var rows='';
+  ['MORNING','PRE-GYM','AFTERNOON','ANY TIME','NIGHT'].forEach(function(slot){
+    due.filter(function(r){return r[2]===slot;}).forEach(function(r){
+      var sku=r[0],nm=r[1],when=r[2],dose=r[3],units=r[4],note=r[6];
+      var got=!!doses.done[sku], v=vialState(sku), cs=cycleState(sku);
+      rows+='<tr><td>'+(got?'<span class="ok">&#10003; taken</span>':'<span class="muted">not yet</span>')+'</td>'
+        +'<td class="sku">'+sku+'</td><td><b>'+esc(nm)+'</b><br>'
+        +'<span class="muted" style="font-size:10px">'+esc(note)+'</span></td>'
+        +'<td>'+esc(when)+'</td><td>'+esc(dose)+'</td><td class="num">'+esc(units)+'</td>'
+        +'<td>'+(v? v.left+' left':'<span class="muted">no vial</span>')
+        +(cs&&cs.tracking? '<br><span style="font-size:10px" class="'+(cs.onPhase?'':'warn')+'">'
+          +(cs.onPhase?'on, day '+cs.dayIn:'BREAK, day '+cs.dayIn)+'</span>':'')+'</td></tr>';
+    });
   });
-  let diary='';
-  dayKeys.forEach(k=>{
-    const names=byDay[k].map(e=>{
-      const d=DETAIL[e.s]||{};
-      return '<span style="white-space:nowrap">'+esc(d.n||e.s)+' <span style="color:#93A4B5">'+e.t+'</span></span>';
-    }).join(' &nbsp;·&nbsp; ');
+  return '<div class="sum"><div><b>'+done+'/'+due.length+'</b><span>DONE TODAY</span></div>'
+    +'<div><b>'+DOW[now.getDay()].slice(0,3).toUpperCase()+'</b><span>'+niceDate(todayKey()).toUpperCase()+'</span></div>'
+    +'<div><b>'+(due.length-done)+'</b><span>STILL DUE</span></div></div>'
+    +'<h2>TODAY</h2><table><tr><th></th><th>Code</th><th>Compound</th><th>When</th>'
+    +'<th>Dose</th><th style="text-align:right">Draw to</th><th>Vial</th></tr>'+rows+'</table>';
+}
+function repHistory(days){
+  var log=logSince(days), byDay={}, bySku={};
+  log.forEach(function(e){ (byDay[e.d]=byDay[e.d]||[]).push(e); bySku[e.s]=(bySku[e.s]||0)+1; });
+  var dayKeys=Object.keys(byDay).sort().reverse();
+  var expect={};
+  for(var i=0;i<days;i++){
+    var dd=new Date(Date.now()-i*86400000), ix=(dd.getDay()+6)%7;
+    SCHED.filter(function(r){return r[5][ix]===1;}).forEach(function(r){expect[r[0]]=(expect[r[0]]||0)+1;});
+  }
+  var tot=0,exp=0;
+  Object.keys(expect).forEach(function(s){ exp+=expect[s]; tot+=Math.min(bySku[s]||0,expect[s]); });
+  var adh = exp? Math.round(tot/exp*100):0;
+  var tally='';
+  Object.keys(expect).sort(function(a,b){return ((bySku[b]||0)/expect[b])-((bySku[a]||0)/expect[a]);})
+   .forEach(function(s){
+    var got=bySku[s]||0, e2=expect[s], pct=Math.round(got/e2*100);
+    tally+='<tr><td class="sku">'+s+'</td><td><b>'+esc((DETAIL[s]||{}).n||s)+'</b></td>'
+      +'<td>'+esc((DETAIL[s]||{}).dose||'')+'</td><td class="num">'+got+'</td>'
+      +'<td class="num muted">'+e2+'</td><td class="num '+(pct>=90?'ok':pct<70?'warn':'')+'">'+pct+'%</td></tr>';
+  });
+  var diary='';
+  dayKeys.forEach(function(k){
+    var names=byDay[k].map(function(e){
+      return '<span class="pill" style="background:'+(CATCOL[CATOF[e.s]]||'#0E7FC4')+'">'
+        +esc((DETAIL[e.s]||{}).n||e.s)+(e.t?' '+e.t:'')+'</span>'; }).join('');
     diary+='<tr><td style="white-space:nowrap"><b>'+niceDate(k)+'</b></td>'
-      +'<td class="num">'+byDay[k].length+'</td><td style="line-height:1.8">'+names+'</td></tr>';
+      +'<td class="num">'+byDay[k].length+'</td><td>'+names+'</td></tr>';
   });
-  const h='<h1>Doses taken</h1><div class="meta">MyPeps · last '+days+' days · '+now.toLocaleString()+'</div>'
-   +'<div class="sum"><div><b>'+log.length+'</b><span>DOSES</span></div>'
-   +'<div><b>'+dayKeys.length+'</b><span>DAYS LOGGED</span></div>'
-   +'<div><b>'+Object.keys(bySku).length+'</b><span>COMPOUNDS</span></div></div>'
-   +(tally?'<h2>BY COMPOUND</h2><table><tr><th>Code</th><th>Compound</th><th>Dose</th><th>Units</th>'
-     +'<th style="text-align:right">Taken</th></tr>'+tally+'</table>':'')
-   +(diary?'<h2>DAY BY DAY</h2><table><tr><th>Date</th><th style="text-align:right">Doses</th>'
-     +'<th>What was taken</th></tr>'+diary+'</table>'
-     :'<p style="font-size:13px;color:#5A6B7C;margin-top:14px">Nothing logged yet. '
-      +'Tick doses off on the TODAY\'S DOSES tab and they will appear here.</p>')
-   +'<div class="foot">Printed '+now.toLocaleString()+'. Kept on this device only.</div>';
-  openReport(h);
+  return '<div class="sum"><div><b>'+log.length+'</b><span>DOSES</span></div>'
+    +'<div><b>'+dayKeys.length+'</b><span>DAYS LOGGED</span></div>'
+    +'<div><b>'+adh+'%</b><span>ADHERENCE</span></div></div>'
+    +(tally?'<h2>BY COMPOUND &middot; LAST '+days+' DAYS</h2><table><tr><th>Code</th><th>Compound</th>'
+      +'<th>Dose</th><th style="text-align:right">Taken</th><th style="text-align:right">Due</th>'
+      +'<th style="text-align:right">%</th></tr>'+tally+'</table>':'')
+    +(diary?'<h2>DAY BY DAY</h2><table><tr><th>Date</th><th style="text-align:right">Doses</th>'
+      +'<th>What was taken</th></tr>'+diary+'</table>'
+      :'<p class="muted" style="margin-top:14px">Nothing logged in this period.</p>');
 }
+function repVials(){
+  var rows='', open=0, expiring=0;
+  document.querySelectorAll('.row').forEach(function(r){
+    var s=r.dataset.sku, v=vialState(s); if(!v) return;
+    open++; if(v.daysLeft<=7||v.left<=2) expiring++;
+    var pct=Math.round(v.left/v.total*100);
+    rows+='<tr><td class="sku">'+s+'</td><td><b>'+esc((DETAIL[s]||{}).n||s)+'</b></td>'
+      +'<td>'+niceDate(v.mixed)+'</td><td class="num">'+v.age+'d</td>'
+      +'<td class="num">'+v.used+'</td><td class="num">'+v.left+'</td>'
+      +'<td class="num '+(pct<=20?'warn':'')+'">'+pct+'%</td>'
+      +'<td class="'+(v.daysLeft<=7?'warn':'')+'">'+(v.daysLeft>0? v.daysLeft+' days':'EXPIRED')+'</td></tr>';
+  });
+  return '<div class="sum"><div><b>'+open+'</b><span>VIALS OPEN</span></div>'
+    +'<div><b>'+expiring+'</b><span>NEED REPLACING</span></div></div>'
+    +(rows?'<h2>VIALS IN USE</h2><table><tr><th>Code</th><th>Compound</th><th>Mixed</th>'
+      +'<th style="text-align:right">Age</th><th style="text-align:right">Used</th>'
+      +'<th style="text-align:right">Left</th><th style="text-align:right">Remaining</th>'
+      +'<th>Expires in</th></tr>'+rows+'</table>'
+      :'<p class="muted" style="margin-top:14px">No vials open.</p>')
+    +'<div class="note">A mixed vial keeps about 30 days refrigerated, whatever the dose count says. '
+    +'Whichever runs out first decides when you mix a fresh one.</div>';
+}
+function repCycles(){
+  var rows='';
+  Object.keys(CYCLE).forEach(function(s){
+    var spec=CYCLE[s], st=cycleState(s), d=DETAIL[s]||{};
+    var where='<span class="muted">not tracking</span>';
+    if(!spec.on) where='<span class="muted">continuous</span>';
+    else if(st&&st.tracking) where=(st.onPhase
+        ?'<b>ON</b> day '+st.dayIn+' of '+st.phaseLen+'<br><span style="font-size:10px">'+st.left+' days to break</span>'
+        :'<b class="warn">BREAK</b> day '+st.dayIn+' of '+st.phaseLen+'<br><span style="font-size:10px">'+st.left+' days to restart</span>');
+    rows+='<tr><td class="sku">'+s+'</td><td><b>'+esc(d.n||s)+'</b></td>'
+      +'<td>'+esc(spec.label)+'</td><td>'+spec.grade+'</td><td>'+where+'</td></tr>';
+  });
+  return '<h2>CYCLES</h2><table><tr><th>Code</th><th>Compound</th><th>Recommended</th>'
+    +'<th>Evidence</th><th>Where you are</th></tr>'+rows+'</table>'
+    +'<div class="note"><b>Evidence column.</b> STUDIED means on/off patterns appear in published work. '
+    +'SETTLED means broad agreement. CONVENTION means common practice without strong evidence. '
+    +'DISPUTED means sources genuinely disagree. GOAL-BASED means run it until the job is done, then stop.</div>';
+}
+function repProtocol(){
+  var rows='', warns='';
+  document.querySelectorAll('.row').forEach(function(r){
+    var s=r.dataset.sku, d=DETAIL[s]||{}, spec=CYCLE[s]||{};
+    rows+='<tr><td class="sku">'+s+'</td><td><b>'+esc(d.n||s)+'</b><br>'
+      +'<span class="muted" style="font-size:10px">'+esc(TAG[s]||'')+'</span></td>'
+      +'<td>'+esc(d.vial||'')+'<br><span class="muted" style="font-size:10px">'+esc(d.water||'')+'</span></td>'
+      +'<td>'+esc(d.conc||'')+'<br><span class="muted" style="font-size:10px">'+esc(d.unit||'')+'</span></td>'
+      +'<td><b>'+esc(d.dose||'')+'</b><br><span style="font-size:10px">'+esc(d.units||'')+'</span></td>'
+      +'<td>'+esc(d.freq||'')+'<br><span class="muted" style="font-size:10px">'+esc(d.when||'')+'</span></td>'
+      +'<td style="font-size:10px">'+esc(spec.label||'')+'</td></tr>';
+    if(d.warn&&d.warn.length){
+      warns+='<tr><td class="sku">'+s+'</td><td><b>'+esc(d.n||s)+'</b></td><td>'
+        +d.warn.map(function(w){return '&bull; '+esc(w);}).join('<br>')+'</td></tr>';
+    }
+  });
+  return '<h2>MIXING AND DOSING</h2><table><tr><th>Code</th><th>Compound</th><th>Vial / water</th>'
+    +'<th>Gives</th><th>Dose</th><th>When</th><th>Cycle</th></tr>'+rows+'</table>'
+    +'<h2 class="pb">THINGS TO WATCH</h2><table><tr><th>Code</th><th>Compound</th><th>Notes</th></tr>'
+    +warns+'</table>';
+}
+
+function runReport(which){
+  closeReports();
+  if(which==='stock')    openReport('Stock report', repStock());
+  if(which==='today')    openReport('Today', repToday());
+  if(which==='h7')       openReport('Doses \u2014 last 7 days', repHistory(7));
+  if(which==='h30')      openReport('Doses \u2014 last 30 days', repHistory(30));
+  if(which==='h90')      openReport('Doses \u2014 last 90 days', repHistory(90));
+  if(which==='h365')     openReport('Doses \u2014 last 12 months', repHistory(365));
+  if(which==='vials')    openReport('Vials in use', repVials());
+  if(which==='cycles')   openReport('Cycles', repCycles());
+  if(which==='protocol') openReport('Full protocol', repProtocol());
+  if(which==='all')      openReport('Everything',
+      repStock()+'<div class="pb"></div>'+repToday()+'<div class="pb"></div>'+repVials()
+      +'<div class="pb"></div>'+repCycles()+'<div class="pb"></div>'+repHistory(90)
+      +'<div class="pb"></div>'+repProtocol());
+}
+
 function reportMenu(){
-  const n=loadLog().length;
-  const pick=prompt('Which report?\n\n  1  Stock report\n  2  Doses — last 7 days\n  3  Doses — last 30 days\n  4  Doses — last 90 days\n\n('+n+' doses logged so far)','1');
-  if(pick==='1') stockReport();
-  else if(pick==='2') doseReport(7);
-  else if(pick==='3') doseReport(30);
-  else if(pick==='4') doseReport(90);
+  var n=loadLog().length, v=Object.keys(loadVials()).length;
+  var items=[
+    ['stock','\uD83D\uDCE6','Stock report','What you hold, vials open, what to reorder'],
+    ['today','\u2705','Today','Everything due today and whether it is done'],
+    ['vials','\uD83E\uDDEA','Vials in use',(v?v+' open':'none open')+' \u2014 doses left and expiry'],
+    ['cycles','\uD83D\uDD04','Cycles','Where each compound sits in its cycle'],
+    ['h7','\uD83D\uDCC5','Last 7 days','A week of history'],
+    ['h30','\uD83D\uDCC5','Last 30 days','A month, with adherence per compound'],
+    ['h90','\uD83D\uDCC5','Last 90 days','Three months'],
+    ['h365','\uD83D\uDCC5','Last 12 months','The full year'],
+    ['protocol','\uD83D\uDCCB','Full protocol','Mixing, doses, timing and warnings for all 18'],
+    ['all','\uD83D\uDCC4','Everything','All of the above as one document'],
+  ];
+  var h='<div class="sh"><h2>Reports</h2>'
+    +'<button class="shx" onclick="closeReports()">&times;</button></div>'
+    +'<div class="shfor">'+n+' DOSES LOGGED</div><div class="repList">';
+  items.forEach(function(it){
+    h+='<div class="repItem" onclick="runReport(\''+it[0]+'\')">'
+      +'<span class="repIc">'+it[1]+'</span>'
+      +'<div><b>'+it[2]+'</b><i>'+it[3]+'</i></div>'
+      +'<span class="repGo">&rsaquo;</span></div>';
+  });
+  h+='</div><p class="repNote">Each opens in a new tab with a print button. '
+    +'On a phone that is Share \u2192 Print \u2192 Save as PDF.</p>';
+  document.getElementById('repIn').innerHTML=h;
+  document.getElementById('reports').classList.add('on');
 }
+function closeReports(){ document.getElementById('reports').classList.remove('on'); }
 
 
-
-/* ---------- bring in a backup from the old reminder app ---------- */
 const OLDMAP=[
  [/retatrutide/,'RT30'],[/tesamorelin/,'TSM20'],[/thymosin alpha/,'TA10'],
  [/cjc/,'CP10'],[/ipamorelin/,'IPA10'],[/^mots|^ms40/,'MS40'],[/klow/,'KL80'],
@@ -11301,6 +11492,7 @@ const OLDMAP=[
  [/^nad|^nj1000/,'NJ1000'],[/aod|^10ad|^ad10/,'AD10'],[/ara-?290|^ra10/,'RA10'],
  [/tb-?500|^bb20/,'BB20'],[/bpc|^bc\d/,'BC10'],[/carnitine|^lc600/,'LC600'],
 ];
+
 function skuFromOldName(nm){
   const n=String(nm||'').toLowerCase().trim();
   for(const [re,s] of OLDMAP){ if(re.test(n)) return s; }
@@ -11309,13 +11501,14 @@ function skuFromOldName(nm){
 
 function readAnyBackup(text){
   const raw=JSON.parse(text);
-  const out={stock:null, log:null, vials:null, kind:[]};
+  const out={stock:null, log:null, vials:null, cycles:null, kind:[]};
 
   /* our own backup */
   if(raw && raw.stock && typeof raw.stock==='object' && !raw.data){
     out.stock=raw.stock; out.kind.push('stock counts');
     if(raw.log) { out.log=raw.log; out.kind.push('dose history'); }
     if(raw.vials){ out.vials=raw.vials; out.kind.push('open vials'); }
+    if(raw.cycles){ out.cycles=raw.cycles; }
     return out;
   }
 
@@ -11358,6 +11551,7 @@ function loadAnyFile(inp){
 
       if(got.stock){ stock=got.stock; save(); msg.push('stock counts restored'); }
       if(got.vials){ saveVials(got.vials); msg.push('open vials restored'); }
+      if(got.cycles){ saveCycles(got.cycles); msg.push('cycles restored'); }
 
       if(got.log && got.log.length){
         const existing=loadLog();
@@ -11654,6 +11848,8 @@ function showTab(which){
 }
 document.getElementById('sheet').addEventListener('click',function(e){
   if(e.target.id==='sheet') closeDetail(); });
+document.getElementById('reports').addEventListener('click',function(e){
+  if(e.target.id==='reports') closeReports(); });
 document.addEventListener('click',function(e){
   if(e.target.closest('.ct') || e.target.closest('.tick')) return;
   var r=e.target.closest('.row'); if(r){ openDetail(r.dataset.sku); return; }
