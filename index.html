@@ -109,6 +109,15 @@ h1{font-size:27px;font-weight:800;letter-spacing:-.9px;line-height:1}
 .hdNone{font-size:11.5px;color:var(--ink3);margin-top:7px;font-weight:600}
 .hempty{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:22px;
   text-align:center;font-size:13px;color:var(--ink3);line-height:1.6;box-shadow:var(--shadow)}
+.himport{background:linear-gradient(135deg,var(--deep),var(--brand2));color:#fff;
+  border-radius:16px;padding:20px;margin-bottom:16px;box-shadow:var(--shadow)}
+.himport b{display:block;font-size:19px;font-weight:800;letter-spacing:-.4px}
+.himport p{font-size:13px;line-height:1.55;opacity:.86;margin:7px 0 14px}
+.himport span{display:block;font-size:11px;opacity:.65;margin-top:10px;text-align:center}
+.impbig{display:block;background:#fff;color:var(--brand2);text-align:center;border-radius:12px;
+  padding:15px;font-size:14.5px;font-weight:800;cursor:pointer;
+  -webkit-user-select:none;user-select:none}
+.impbig:active{opacity:.85}
 .impbtn{display:block;width:100%;text-align:center;background:var(--card);
   border:1.5px solid var(--line2);color:var(--ink2);border-radius:12px;padding:14px;
   font-size:13px;font-weight:800;margin-top:18px;cursor:pointer;
@@ -235,8 +244,9 @@ h1{font-size:27px;font-weight:800;letter-spacing:-.9px;line-height:1}
 .bigbtn:active{transform:scale(.99)}
 .bigbtn.dirty{background:var(--warn)}
 .minis{display:flex;gap:6px;margin-top:7px}
-.minis button{flex:1;padding:9px 2px;border-radius:10px;border:1px solid var(--line2);
-  background:transparent;color:var(--ink2);font-size:10.5px;font-weight:800;cursor:pointer}
+.minis button,.minis .minilbl{flex:1;padding:9px 2px;border-radius:10px;border:1px solid var(--line2);
+  background:transparent;color:var(--ink2);font-size:10.5px;font-weight:800;cursor:pointer;
+  text-align:center;line-height:1.6;-webkit-user-select:none;user-select:none}
 
 .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:134px;background:var(--deep);
   color:#fff;padding:12px 22px;border-radius:12px;font-size:13.5px;font-weight:700;opacity:0;
@@ -487,14 +497,14 @@ h1{font-size:27px;font-weight:800;letter-spacing:-.9px;line-height:1}
 <div class="bar">
   <button class="bigbtn" id="saveBtn" onclick="backup()">✓ &nbsp;BACK UP &amp; FINISH</button>
   <div class="minis">
-    <button onclick="document.getElementById('restoreFile').click()">Restore</button>
+    <label class="minilbl" for="restoreFile">Restore</label>
     <button onclick="reportMenu()">Reports</button>
     <button onclick="exportCsv()">CSV</button>
     <button onclick="if(confirm('Set every count back to zero?'))zero()">Reset</button>
   </div>
-  <input type="file" id="restoreFile" accept=".json" style="display:none" onchange="restore(this)">
+  <input type="file" id="restoreFile" accept=".json,application/json" style="display:none" onchange="loadAnyFile(this)">
 </div>
-<input type="file" id="oldFile" accept=".json,application/json" class="hidefile" onchange="importOld(this)">
+<input type="file" id="oldFile" accept=".json,application/json" class="hidefile" onchange="loadAnyFile(this)">
 <div class="toast" id="toast"></div>
 <div id="sheet" class="sheet"><div class="sheetIn" id="sheetIn"></div></div>
 
@@ -10626,7 +10636,8 @@ let stock={}, fileHandle=null, poppy=false, moveDir=1;
 
 function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('on');
   clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove('on'),2200);}
-function payload(){return JSON.stringify({saved:new Date().toISOString(),app:'MyPeps Stock',stock},null,1);}
+function payload(){return JSON.stringify({saved:new Date().toISOString(),app:'MyPeps',
+  stock:stock, log:loadLog(), vials:loadVials()},null,1);}
 
 function setDir(d){ moveDir=d;
   document.getElementById('dIn').classList.toggle('on',d>0);
@@ -10922,7 +10933,7 @@ if('serviceWorker' in navigator){
     setInterval(()=>reg.update().catch(()=>{}), 60000);
   }).catch(()=>{});
 }
-const APP_VERSION='2026-10-06e';
+const APP_VERSION='2026-10-06f';
 document.getElementById('ver').innerHTML='<b>'+APP_VERSION+'</b><i>TAP TO UPDATE</i>';
 buildSchedule();
 
@@ -11239,7 +11250,88 @@ function skuFromOldName(nm){
   for(const [re,s] of OLDMAP){ if(re.test(n)) return s; }
   return null;
 }
-function importOld(inp){
+
+function readAnyBackup(text){
+  const raw=JSON.parse(text);
+  const out={stock:null, log:null, vials:null, kind:[]};
+
+  /* our own backup */
+  if(raw && raw.stock && typeof raw.stock==='object' && !raw.data){
+    out.stock=raw.stock; out.kind.push('stock counts');
+    if(raw.log) { out.log=raw.log; out.kind.push('dose history'); }
+    if(raw.vials){ out.vials=raw.vials; out.kind.push('open vials'); }
+    return out;
+  }
+
+  /* a backup from the old reminder app */
+  const data=raw.data||raw;
+  let itemsRaw=null, logsRaw=null;
+  if(data && typeof data==='object'){
+    Object.keys(data).forEach(k=>{
+      if(/dose-items/.test(k) && !itemsRaw) itemsRaw=data[k];
+      if(/dose-logs/.test(k)  && !logsRaw)  logsRaw=data[k];
+    });
+  }
+  if(itemsRaw && logsRaw){
+    const items = typeof itemsRaw==='string' ? JSON.parse(itemsRaw) : itemsRaw;
+    const logs  = typeof logsRaw==='string'  ? JSON.parse(logsRaw)  : logsRaw;
+    const idToSku={}; let unknown=0;
+    items.forEach(it=>{ const s=skuFromOldName(it.name); if(s) idToSku[it.id]=s; else unknown++; });
+    const entries=[];
+    Object.keys(logs).sort().forEach(day=>{
+      const rec=logs[day]||{};
+      Object.keys(rec).forEach(id=>{
+        if(!rec[id]) return;
+        const s=idToSku[id]; if(!s) return;
+        entries.push({d:day,t:'',s:s});
+      });
+    });
+    out.log=entries; out.unknown=unknown; out.kind.push('dose history');
+    return out;
+  }
+  throw new Error('that file does not look like a MyPeps or peptide reminder backup');
+}
+
+function loadAnyFile(inp){
+  const f=inp.files[0]; inp.value=''; if(!f) return;
+  const r=new FileReader();
+  r.onload=ev=>{
+    try{
+      const got=readAnyBackup(ev.target.result);
+      let msg=[];
+
+      if(got.stock){ stock=got.stock; save(); msg.push('stock counts restored'); }
+      if(got.vials){ saveVials(got.vials); msg.push('open vials restored'); }
+
+      if(got.log && got.log.length){
+        const existing=loadLog();
+        const seen=new Set(existing.map(e=>e.d+'|'+e.s));
+        let added=0; const days=new Set();
+        got.log.forEach(e=>{
+          const k=e.d+'|'+e.s;
+          if(seen.has(k)) return;
+          seen.add(k); days.add(e.d); existing.push(e); added++;
+        });
+        existing.sort((a,b)=> a.d<b.d?-1:a.d>b.d?1:0);
+        saveLog(existing);
+        msg.push(added+' doses across '+days.size+' days added'
+                 + (added===0 ? ' (already had them)' : ''));
+      }
+
+      clean(); refreshAll(); buildHistory();
+      if(got.log && got.log.length) showTab('hist');
+
+      alert('Done.\n\n' + msg.join('\n')
+        + (got.unknown ? '\n\n'+got.unknown+' compounds in that file had no match here and were skipped.' : '')
+        + '\n\nHistory now goes back to ' + ((loadLog()[0]||{}).d || 'nothing yet') + '.');
+    }catch(err){
+      alert('Could not read that file.\n\n'+err.message);
+    }
+  };
+  r.readAsText(f);
+}
+
+function importOld_unused(inp){
   const f=inp.files[0]; inp.value=''; if(!f) return;
   const r=new FileReader();
   r.onload=ev=>{
@@ -11365,8 +11457,13 @@ function buildHistory(){
              :'<div class="hdNone">nothing logged</div>')+'</div>';
   }
 
+  const empty = log.length===0;
   document.getElementById('viewHist').innerHTML=
-     '<div class="hstat">'
+     (empty ? '<div class="himport"><b>No history yet</b>'
+        +'<p>Got a backup from your old peptide reminder? Bring it in and your past doses appear here.</p>'
+        +'<label class="impbig" for="oldFile">Choose a backup file</label>'
+        +'<span>Or tick doses off on the TODAY tab and it builds from here.</span></div>' : '')
+    +'<div class="hstat">'
       +'<div class="hs2"><b>'+adherence+'%</b><span>ADHERENCE</span></div>'
       +'<div class="hs2"><b>'+streak+'</b><span>DAY STREAK</span></div>'
       +'<div class="hs2"><b>'+log.length+'</b><span>DOSES LOGGED</span></div>'
@@ -11376,9 +11473,8 @@ function buildHistory(){
       +'<div class="hkey"><span>less</span><i class="hc h0"></i><i class="hc h1"></i>'
       +'<i class="hc h2"></i><i class="hc h3"></i><i class="hc h4"></i><span>all done</span></div></div>'
     +(bars?'<div class="tgrp">LAST 30 DAYS, BY COMPOUND</div><div class="hbWrap">'+bars+'</div>':'')
-    +(days?'<div class="tgrp">RECENT DAYS</div>'+days
-          :'<div class="hempty">Nothing logged yet. Tick doses off on the TODAY tab and they will build up here.</div>')
-    +'<label class="impbtn" for="oldFile">&#8593;&nbsp; Bring in history from a backup file</label>'
+    +(days?'<div class="tgrp">RECENT DAYS</div>'+days:'')
+    +'<label class="impbtn" for="oldFile">&#8593;&nbsp; Bring in a backup file</label>'
     +'<div class="hfoot">Everything here is kept on this phone. Use <b>Reports</b> on the stock tab to print it.</div>';
 }
 
