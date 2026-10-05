@@ -309,6 +309,34 @@ h1{font-size:27px;font-weight:800;letter-spacing:-.9px;line-height:1}
 .warnbox li:last-child{margin-bottom:0}
 .warnbox li:before{content:"";position:absolute;left:0;top:7px;width:5px;height:5px;
   border-radius:50%;background:var(--warn)}
+
+.cycbox{border:1px solid var(--line);border-radius:14px;padding:14px}
+.cycTop b{font-size:15px;font-weight:800}
+.grade{display:inline-block;font-size:8.5px;font-weight:800;letter-spacing:.9px;
+  padding:3px 7px;border-radius:6px;margin-left:8px;vertical-align:2px;color:#fff}
+.gsettled{background:var(--good)} .gstudied{background:var(--brand)}
+.gconvention{background:#6B7F92} .gdisputed{background:var(--warn)}
+.ggoal-based{background:var(--teal)}
+.cycNote{font-size:12.5px;line-height:1.55;color:var(--ink2);margin:9px 0 13px}
+.cycFlat{font-size:12px;color:var(--ink3);font-weight:700;text-align:center;padding:9px 0}
+.cycBtn{width:100%;background:var(--brand);color:#fff;border:none;border-radius:11px;padding:13px;
+  font-size:13.5px;font-weight:800;cursor:pointer}
+.cycBtn.sm{padding:11px;font-size:12px}
+.cycBtn.off{background:transparent;color:var(--ink2);border:1.5px solid var(--line2)}
+.cycBtns{display:flex;gap:7px;margin-top:9px}
+.cycNow{border-radius:12px;padding:13px;background:var(--brandSoft)}
+.cycNow.off{background:var(--warnSoft)}
+.cycRow{display:flex;justify-content:space-between;align-items:baseline}
+.cycRow b{font-size:14.5px;font-weight:800;color:var(--brand)}
+.cycNow.off .cycRow b{color:var(--warn)}
+.cycRow span{font-size:10.5px;font-weight:700;color:var(--ink3)}
+.cycTrack{height:6px;background:rgba(0,0,0,.09);border-radius:3px;overflow:hidden;margin:9px 0 7px}
+.cycTrack i{display:block;height:100%;background:var(--brand);border-radius:3px}
+.cycNow.off .cycTrack i{background:var(--warn)}
+.cycLeft{font-size:11.5px;font-weight:700;color:var(--ink2)}
+.cycChip{display:inline-block;font-size:9.5px;font-weight:800;letter-spacing:.5px;
+  padding:3px 8px;border-radius:7px;margin-top:6px;background:var(--brandSoft);color:var(--brand)}
+.cycChip.brk{background:var(--warnSoft);color:var(--warn)}
 .shlink{display:block;background:var(--brand);color:#fff;text-align:center;text-decoration:none;
   padding:15px;border-radius:13px;font-size:13.5px;font-weight:800;margin-top:17px}
 
@@ -10632,6 +10660,8 @@ function findAlignmentPattern(matrix, alignmentPatternQuads, topRight, topLeft, 
 <script>
 const INFO={"RT30": "https://peptidehub.bio/database/retatrutide-glp-1-gip-glucagon-24mg", "TSM20": "https://peptidehub.bio/database/tesamorelin-10mg", "IPA10": "https://peptidehub.bio/database/ipamorelin-10mg", "CP10": "https://peptidehub.bio/database/2x-blend-cjc-no-dac-5mg-ipamorelin-5mg", "TA10": "https://peptidehub.bio/database/ta-1-10mg", "MS40": "https://peptidehub.bio/database/mots-c-10mg", "KL80": "https://peptidehub.bio/database/klow-blend-ghk-cu-50mg-kpv-10mg-bpc-157-10mg-tb-500-10mg", "XA10": "https://peptidehub.bio/database/semax-30mg", "SK10": "https://peptidehub.bio/database/selank-10mg", "DS10": "https://peptidehub.bio/database/dsip-5mg", "ET50": "https://peptidehub.bio/database/epithalon-50mg", "KP10": "https://peptidehub.bio/database/kpv-5mg", "NJ1000": "https://peptidehub.bio/database/nad-1000mg", "CU100": "https://peptidehub.bio/database/ghk-cu-75mg", "AD10": "https://peptidehub.bio/database/aod-9604-5mg", "BC10": "https://peptidehub.bio/database/bpc-157-10mg", "BB20": "https://peptidehub.bio/database/wolverine-blend-bpc-157-10mg-tb500-10mg", "RA10": "https://peptidehub.bio/database"};
 const VIAL={"RT30": {"doses": 20, "days": 30}, "TSM20": {"doses": 20, "days": 30}, "IPA10": {"doses": 80, "days": 30}, "CP10": {"doses": 50, "days": 30}, "TA10": {"doses": 6, "days": 30}, "MS40": {"doses": 15, "days": 30}, "KL80": {"doses": 14, "days": 30}, "XA10": {"doses": 50, "days": 30}, "SK10": {"doses": 27, "days": 30}, "DS10": {"doses": 33, "days": 30}, "ET50": {"doses": 10, "days": 30}, "KP10": {"doses": 20, "days": 30}, "NJ1000": {"doses": 13, "days": 30}, "CU100": {"doses": 66, "days": 30}, "AD10": {"doses": 33, "days": 30}, "RA10": {"doses": 2, "days": 30}, "BC10": {"doses": 20, "days": 30}, "BB20": {"doses": 20, "days": 30}, "LC600": {"doses": 2, "days": 60}};
+const CYCLE={"RT30": {"on": 0, "off": 0, "label": "Run continuously", "note": "A long-term therapy, like any GLP-1. No cycling — stopping returns appetite.", "grade": "Settled"}, "TSM20": {"on": 0, "off": 0, "label": "Run continuously", "note": "Trialled for 12 months continuously. The visceral fat returns when you stop.", "grade": "Settled"}, "IPA10": {"on": 84, "off": 28, "label": "12 weeks on, 4 off", "note": "Cycled to avoid the pituitary becoming less responsive. Clinical evidence for this is thin but the convention is near-universal.", "grade": "Convention"}, "CP10": {"on": 84, "off": 28, "label": "12 weeks on, 4 off", "note": "Same reasoning as Ipamorelin. Some clinics run 3–6 months on, 1–3 months off instead.", "grade": "Convention"}, "TA10": {"on": 90, "off": 30, "label": "3 months on, 1 off", "note": "Sources split. Some run it continuously for 6–12 months with no break, pointing to decades of clinical use and no receptor downregulation.", "grade": "Disputed"}, "MS40": {"on": 56, "off": 28, "label": "8 weeks on, 4 off", "note": "Genuinely disputed. Some clinics run it 6–12 months continuously. One source states plainly that no rationale for the break can be given.", "grade": "Disputed"}, "KL80": {"on": 30, "off": 14, "label": "30 days on, 14 off", "note": "Set by the GHK-Cu component, which has the longest cycle of the four.", "grade": "Convention"}, "XA10": {"on": 21, "off": 14, "label": "3 weeks on, 2 off", "note": "One of the few where on/off was actually studied. The focus effect reliably fades with continuous use and returns after a break.", "grade": "Studied"}, "SK10": {"on": 21, "off": 14, "label": "3 weeks on, 2 off", "note": "On/off patterns appear in the published work. Usually cycled alongside Semax.", "grade": "Studied"}, "DS10": {"on": 21, "off": 21, "label": "3 weeks on, 3 off", "note": "Disputed. Some sources say run continuously for 3–6 months, or only on poor-sleep nights, since there is no known desensitisation.", "grade": "Disputed"}, "ET50": {"on": 20, "off": 150, "label": "20 days on, then months off", "note": "The clearest protocol of the lot. Short pulse, then 4–6 months off, one or two courses a year. Straight from the original Khavinson work.", "grade": "Settled"}, "KP10": {"on": 42, "off": 14, "label": "6 weeks on, 2 off", "note": "Usually run as a course for a gut or skin flare rather than continuously.", "grade": "Convention"}, "NJ1000": {"on": 0, "off": 0, "label": "Run continuously", "note": "Refills a cofactor your cells constantly use. No desensitisation. Some do a loading month then maintenance.", "grade": "Settled"}, "CU100": {"on": 84, "off": 35, "label": "12 weeks on, 5 off", "note": "Skin and tissue remodelling is slow, so the course is long. Some sources say no cycling needed at all.", "grade": "Convention"}, "AD10": {"on": 112, "off": 28, "label": "16 weeks, then reassess", "note": "Run it for the body-composition goal, typically 3–6 months, then stop. Not a maintenance compound.", "grade": "Goal-based"}, "RA10": {"on": 28, "off": 28, "label": "4 weeks on, 4 off", "note": "Trials ran 28-day courses. Repeat courses are assessed on symptom response.", "grade": "Convention"}, "BC10": {"on": 42, "off": 21, "label": "6 weeks on, 3 off", "note": "Really goal-directed — run it until the injury resolves, then stop. One source notes the 8-on-4-off pattern was borrowed from steroid practice, where the reasoning does not transfer.", "grade": "Goal-based"}, "BB20": {"on": 42, "off": 28, "label": "6 weeks on, 4 off", "note": "Run the pair together for the active recovery phase, then stop together.", "grade": "Goal-based"}, "LC600": {"on": 0, "off": 0, "label": "Run continuously", "note": "Not a peptide. No cycling applies.", "grade": "Settled"}};
+const CKEY='mypeps-cycles';
 const CATCOL={"METABOLIC": "#0D8A91", "GH AXIS": "#0E7FC4", "REPAIR": "#157A4A", "COGNITIVE": "#1B63B8", "SLEEP": "#17567F", "IMMUNE": "#0E8FA8", "LONGEVITY": "#126E9C"};
 const CATOF={"RT30": "METABOLIC", "TSM20": "GH AXIS", "IPA10": "GH AXIS", "CP10": "GH AXIS", "TA10": "IMMUNE", "MS40": "METABOLIC", "KL80": "REPAIR", "XA10": "COGNITIVE", "SK10": "COGNITIVE", "DS10": "SLEEP", "ET50": "LONGEVITY", "KP10": "REPAIR", "NJ1000": "LONGEVITY", "CU100": "REPAIR", "AD10": "METABOLIC", "RA10": "REPAIR", "BC10": "REPAIR", "BB20": "REPAIR", "LC600": "METABOLIC"};
 const TAG={"RT30": "Cuts appetite and slows stomach emptying. Triple action on GLP-1, GIP and glucagon — the strongest of the weight-loss compounds.", "TSM20": "Prompts your own pituitary to release GH in natural pulses. Best evidence of any compound here for shifting visceral belly fat.", "IPA10": "Triggers a clean GH pulse about 30 minutes after injecting. Deeper sleep and faster recovery, without raising cortisol or hunger.", "CP10": "Two compounds working together for a GH pulse two to three times bigger than either alone. CJC extends the signal, Ipamorelin fires it.", "TA10": "Sharpens the immune response rather than blunt-stimulating it. Raises T-cell activity — used for chronic infection and immune fatigue.", "MS40": "A signal your mitochondria send when under energy stress. Reopens the glucose doors on muscle and shifts you toward burning fat.", "KL80": "Four repair compounds in one shot — GHK-Cu, KPV, BPC-157 and TB-500. Covers skin, gut lining, inflammation and soft tissue together.", "XA10": "Raises BDNF and lifts dopamine signalling. Shows up as mental clarity and recall rather than stimulation — no jitter, no crash.", "SK10": "Takes the edge off anxiety without dulling you. Unusual in that it calms and sharpens focus at the same time, with no sedation.", "DS10": "Shifts sleep architecture toward deep delta-wave sleep. Not a sedative — it changes the quality of sleep rather than forcing it.", "ET50": "Acts on the pineal gland to reset melatonin rhythm. Russian research links it to telomere maintenance, though that is not settled.", "KP10": "The active tail of alpha-MSH. Calms inflammation in the gut lining and skin without the pigmentation effects of the full molecule.", "NJ1000": "The coenzyme every cell uses for energy and DNA repair. Levels fall with age — this puts it back. Steady energy, less afternoon crash.", "CU100": "A copper peptide that drives collagen and elastin production. Skin thickness, hair follicles and wound repair all respond to it.", "AD10": "The fat-burning fragment of growth hormone with the growth signalling cut out. Triggers lipolysis without touching blood sugar or IGF-1.", "RA10": "Derived from EPO with the blood-cell effects removed. Targets the repair receptor on damaged nerve tissue — neuropathy and nerve pain.", "BC10": "Drives blood vessel growth into damaged tissue, which is why it works on tendon and gut alike. The all-rounder of repair compounds.", "BB20": "The Wolverine stack. BPC drives new blood vessels in, TB-500 drives cells to migrate to the damage. Standard pairing for real injuries.", "LC600": "Shuttles fatty acids into the mitochondria to be burned. Evidence is strongest for less soreness and faster recovery, not fat loss."};
@@ -10942,7 +10972,7 @@ if('serviceWorker' in navigator){
     setInterval(()=>reg.update().catch(()=>{}), 60000);
   }).catch(()=>{});
 }
-const APP_VERSION='2026-10-06g';
+const APP_VERSION='2026-10-06h';
 document.getElementById('ver').innerHTML='<b>'+APP_VERSION+'</b><i>TAP TO UPDATE</i>';
 buildSchedule();
 
@@ -11060,7 +11090,14 @@ function buildSchedule(){
         +'<div class="tick" onclick="tickDose(\''+sku+'\')">'+(on?'\u2713':'')+'</div>'
         +'<div class="di"><span class="dn">'+name+'</span>'
         +'<span class="dd">'+dose+'</span>'
-        +'<div class="dnote">'+note+'</div></div>'
+        +'<div class="dnote">'+note+'</div>'
+        +(function(){ const cs=cycleState(sku);
+            if(!cs||!cs.tracking) return '';
+            return '<span class="cycChip'+(cs.onPhase?'':' brk')+'">'
+              +(cs.onPhase? 'ON · day '+cs.dayIn+' of '+cs.phaseLen+' · '+cs.left+' to break'
+                          : 'BREAK · day '+cs.dayIn+' of '+cs.phaseLen+' · '+cs.left+' to restart')+'</span>';
+          })()
+        +'</div>'
         +'<div class="du">'+units+'</div>'
         +(TAG[sku]?'<span class="purpose" style="--pc:'+(CATCOL[CATOF[sku]]||'#0E7FC4')+'">'+TAG[sku]+'</span>':'')
         +'</div>'
@@ -11115,6 +11152,7 @@ function openDetail(sku){
     h+='<div class="shgrp">WATCH FOR</div><div class="warnbox"><ul>'
       +d.warn.map(w=>'<li>'+w+'</li>').join('')+'</ul></div>';
   }
+  h+=cycleBlock(sku);
   if(info) h+='<a class="shlink" href="'+info+'" target="_blank" rel="noopener">Read more about '+d.n+' &nbsp;&rarr;</a>';
   document.getElementById('sheetIn').innerHTML=h;
   document.getElementById('sheet').classList.add('on');
@@ -11399,6 +11437,77 @@ function importOld_unused(inp){
     }catch(err){ alert('Could not read that file.\n\n'+err.message); }
   };
   r.readAsText(f);
+}
+
+
+/* ---------- cycles ---------- */
+function loadCycles(){ try{ return JSON.parse(localStorage.getItem(CKEY))||{}; }catch(e){ return {}; } }
+function saveCycles(v){ try{ localStorage.setItem(CKEY,JSON.stringify(v)); }catch(e){} }
+function isoToday(){ const d=new Date();
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+function cycleState(sku){
+  const spec=CYCLE[sku]; if(!spec || !spec.on) return null;
+  const cy=loadCycles()[sku];
+  if(!cy || !cy.on) return {spec, tracking:false};
+  const start=new Date(cy.started+'T00:00:00');
+  const day=Math.floor((new Date()-start)/86400000);
+  const total=spec.on+spec.off;
+  const pos=day % total;
+  const onPhase = pos < spec.on;
+  return {spec, tracking:true, started:cy.started, day,
+    onPhase, dayIn: onPhase? pos+1 : pos-spec.on+1,
+    phaseLen: onPhase? spec.on : spec.off,
+    left: onPhase? spec.on-pos : total-pos,
+    cycleNo: Math.floor(day/total)+1};
+}
+function toggleCycle(sku){
+  const cy=loadCycles();
+  if(cy[sku] && cy[sku].on){
+    if(!confirm('Stop tracking the cycle for '+((DETAIL[sku]||{}).n||sku)+'?')) return;
+    delete cy[sku];
+    toast('Cycle tracking off');
+  }else{
+    cy[sku]={on:true, started:isoToday()};
+    toast('Cycle started today');
+  }
+  saveCycles(cy);
+  if(document.getElementById('sheet').classList.contains('on')) openDetail(sku);
+  refreshAll();
+}
+function restartCycle(sku){
+  const cy=loadCycles();
+  cy[sku]={on:true, started:isoToday()};
+  saveCycles(cy); toast('Cycle restarted today');
+  if(document.getElementById('sheet').classList.contains('on')) openDetail(sku);
+  refreshAll();
+}
+function cycleBlock(sku){
+  const spec=CYCLE[sku]; if(!spec) return '';
+  const st=cycleState(sku);
+  let h='<div class="shgrp">CYCLE</div><div class="cycbox">';
+  h+='<div class="cycTop"><div><b>'+spec.label+'</b>'
+    +'<span class="grade g'+spec.grade.toLowerCase()+'">'+spec.grade.toUpperCase()+'</span></div></div>';
+  h+='<p class="cycNote">'+spec.note+'</p>';
+  if(!spec.on){
+    h+='<div class="cycFlat">Nothing to track — this one runs continuously.</div></div>';
+    return h;
+  }
+  if(!st.tracking){
+    h+='<button class="cycBtn" onclick="toggleCycle(\''+sku+'\')">Start tracking this cycle</button>';
+  }else{
+    const pct=Math.round(st.dayIn/st.phaseLen*100);
+    h+='<div class="cycNow '+(st.onPhase?'on':'off')+'">'
+      +'<div class="cycRow"><b>'+(st.onPhase?'ON':'BREAK')+'  day '+st.dayIn+' of '+st.phaseLen+'</b>'
+      +'<span>cycle '+st.cycleNo+'</span></div>'
+      +'<div class="cycTrack"><i style="width:'+pct+'%"></i></div>'
+      +'<span class="cycLeft">'+(st.onPhase
+          ? st.left+' days until your break'
+          : st.left+' days until you start again')+'</span></div>'
+      +'<div class="cycBtns">'
+      +'<button class="cycBtn sm" onclick="restartCycle(\''+sku+'\')">Restart today</button>'
+      +'<button class="cycBtn sm off" onclick="toggleCycle(\''+sku+'\')">Stop tracking</button></div>';
+  }
+  return h+'</div>';
 }
 
 /* ---------- history ---------- */
