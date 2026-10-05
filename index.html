@@ -65,10 +65,10 @@ h1{font-size:27px;font-weight:800;letter-spacing:-.9px;line-height:1}
 .hs.alert{background:rgba(232,160,70,.2);border-color:rgba(232,160,70,.42)}
 .hs.alert b{color:#FFCF8F}
 .hs.alert span{color:rgba(255,207,143,.85)}
-.ring{width:40px;height:40px;flex-shrink:0;position:relative}
+.ring{width:48px;height:48px;flex-shrink:0;position:relative}
 .ring svg{transform:rotate(-90deg);display:block}
 .ring .rt{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
-  font-size:11px;font-weight:800;font-family:ui-monospace,"SF Mono",Consolas,monospace;color:var(--ink2)}
+  font-size:14px;font-weight:800;font-family:ui-monospace,"SF Mono",Consolas,monospace;color:var(--ink2)}
 
 
 .hstat{display:flex;gap:9px;margin-bottom:4px}
@@ -212,7 +212,7 @@ h1{font-size:27px;font-weight:800;letter-spacing:-.9px;line-height:1}
 .clrbtn{background:var(--card);color:var(--ink2);border:1.5px solid var(--line2);border-radius:13px;
   padding:15px 18px;font-size:13px;font-weight:800;cursor:pointer}
 .clrbtn:active{background:var(--bg2)}
-.tgrp{font-size:9.5px;font-weight:800;letter-spacing:1.5px;color:var(--ink3);margin:18px 0 8px 3px}
+.tgrp{font-size:12px;font-weight:800;letter-spacing:1.8px;color:var(--ink2);margin:22px 0 10px 3px}
 .dose{display:flex;align-items:center;gap:11px;border:1px solid var(--line);
   border-radius:14px 14px 0 0;border-bottom:none;padding:12px;margin-bottom:0;
   box-shadow:var(--shadow)}
@@ -222,22 +222,24 @@ h1{font-size:27px;font-weight:800;letter-spacing:-.9px;line-height:1}
   flex-shrink:0;cursor:pointer;display:flex;align-items:center;justify-content:center;
   font-size:16px;font-weight:800;color:#fff;transition:all .15s}
 .dose.done .tick{background:var(--good);border-color:var(--good)}
-.di{flex:1;min-width:0}
-.dn{font-size:17px;font-weight:800;display:block;letter-spacing:-.3px}
-.dd{font-size:13px;color:var(--ink2);font-weight:700;margin-top:3px;
-  font-family:ui-monospace,"SF Mono",Consolas,monospace}
-.dnote{font-size:11.5px;color:var(--ink3);margin-top:4px;font-weight:600}
-.du{font-family:ui-monospace,"SF Mono",Consolas,monospace;font-size:19px;font-weight:800;
-  color:var(--brand);flex-shrink:0;text-align:right;letter-spacing:-.6px}
+.di{flex:1;min-width:0;overflow:visible}
+.dn{font-size:19px;font-weight:800;display:block;letter-spacing:-.4px;line-height:1.2}
+.dd{font-size:15px;color:var(--ink);font-weight:800;margin-top:4px;
+  font-family:ui-monospace,"SF Mono",Consolas,monospace;letter-spacing:-.2px}
+.dnote{font-size:13px;color:var(--ink2);margin-top:5px;font-weight:600;line-height:1.4;
+  white-space:normal;overflow:visible}
+.du{font-family:ui-monospace,"SF Mono",Consolas,monospace;font-size:23px;font-weight:800;
+  color:var(--brand);flex-shrink:0;text-align:right;letter-spacing:-.8px;
+  max-width:38%;white-space:normal;line-height:1.15}
 
 /* vial bar */
 .vwrap{margin:0 0 10px 0;cursor:pointer}
 .vl{background:var(--card);border:1px solid var(--line);border-top:1px solid var(--line);
   border-radius:0 0 14px 14px;padding:9px 12px;display:flex;gap:10px;align-items:center;
   flex-wrap:wrap;box-shadow:var(--shadow)}
-.vl span{font-size:11.5px;color:var(--ink2);font-weight:700}
-.vl span b{font-size:14px;color:var(--ink);font-family:ui-monospace,"SF Mono",Consolas,monospace}
-.vl.none{color:var(--ink3);font-size:12px;font-weight:700;justify-content:center}
+.vl span{font-size:13px;color:var(--ink2);font-weight:700;line-height:1.4}
+.vl span b{font-size:17px;color:var(--ink);font-family:ui-monospace,"SF Mono",Consolas,monospace}
+.vl.none{color:var(--brand);font-size:14px;font-weight:800;justify-content:center;padding:14px 12px}
 .vl.warn{background:var(--warnSoft);border-color:var(--warn)}
 .vl.warn span,.vl.warn span b{color:var(--warn)}
 .vlbar{display:none;flex:1 0 100%;height:4px;background:var(--bg2);border-radius:2px;overflow:hidden}
@@ -290,7 +292,7 @@ h1{font-size:27px;font-weight:800;letter-spacing:-.9px;line-height:1}
 .shgrp{font-size:9.5px;font-weight:800;letter-spacing:1.5px;color:var(--ink3);margin:17px 0 9px}
 .mixbox{border:1px solid var(--line);border-radius:14px;padding:13px}
 .mixrow{display:flex;justify-content:space-between;align-items:baseline;
-  padding:8px 0;border-bottom:1px solid var(--line);font-size:13px}
+  padding:10px 0;border-bottom:1px solid var(--line);font-size:15px}
 .mixrow:last-child{border-bottom:none}
 .mixrow span{color:var(--ink2);font-weight:600}
 .mixrow b{font-family:ui-monospace,"SF Mono",Consolas,monospace;font-weight:800;text-align:right}
@@ -311,13 +313,13 @@ h1{font-size:27px;font-weight:800;letter-spacing:-.9px;line-height:1}
   border-radius:50%;background:var(--warn)}
 
 .cycbox{border:1px solid var(--line);border-radius:14px;padding:14px}
-.cycTop b{font-size:15px;font-weight:800}
-.grade{display:inline-block;font-size:8.5px;font-weight:800;letter-spacing:.9px;
+.cycTop b{font-size:17px;font-weight:800}
+.grade{display:inline-block;font-size:10px;font-weight:800;letter-spacing:.9px;
   padding:3px 7px;border-radius:6px;margin-left:8px;vertical-align:2px;color:#fff}
 .gsettled{background:var(--good)} .gstudied{background:var(--brand)}
 .gconvention{background:#6B7F92} .gdisputed{background:var(--warn)}
 .ggoal-based{background:var(--teal)}
-.cycNote{font-size:12.5px;line-height:1.55;color:var(--ink2);margin:9px 0 13px}
+.cycNote{font-size:13.5px;line-height:1.6;color:var(--ink2);margin:9px 0 13px}
 .cycFlat{font-size:12px;color:var(--ink3);font-weight:700;text-align:center;padding:9px 0}
 .cycBtn{width:100%;background:var(--brand);color:#fff;border:none;border-radius:11px;padding:13px;
   font-size:13.5px;font-weight:800;cursor:pointer}
@@ -327,15 +329,15 @@ h1{font-size:27px;font-weight:800;letter-spacing:-.9px;line-height:1}
 .cycNow{border-radius:12px;padding:13px;background:var(--brandSoft)}
 .cycNow.off{background:var(--warnSoft)}
 .cycRow{display:flex;justify-content:space-between;align-items:baseline}
-.cycRow b{font-size:14.5px;font-weight:800;color:var(--brand)}
+.cycRow b{font-size:17px;font-weight:800;color:var(--brand);letter-spacing:-.3px}
 .cycNow.off .cycRow b{color:var(--warn)}
 .cycRow span{font-size:10.5px;font-weight:700;color:var(--ink3)}
 .cycTrack{height:6px;background:rgba(0,0,0,.09);border-radius:3px;overflow:hidden;margin:9px 0 7px}
 .cycTrack i{display:block;height:100%;background:var(--brand);border-radius:3px}
 .cycNow.off .cycTrack i{background:var(--warn)}
-.cycLeft{font-size:11.5px;font-weight:700;color:var(--ink2)}
-.cycChip{display:inline-block;font-size:9.5px;font-weight:800;letter-spacing:.5px;
-  padding:3px 8px;border-radius:7px;margin-top:6px;background:var(--brandSoft);color:var(--brand)}
+.cycLeft{font-size:13px;font-weight:700;color:var(--ink2)}
+.cycChip{display:inline-block;font-size:12px;font-weight:800;letter-spacing:.2px;
+  padding:6px 11px;border-radius:9px;margin-top:8px;background:var(--brandSoft);color:var(--brand)}
 .cycChip.brk{background:var(--warnSoft);color:var(--warn)}
 .shlink{display:block;background:var(--brand);color:#fff;text-align:center;text-decoration:none;
   padding:15px;border-radius:13px;font-size:13.5px;font-weight:800;margin-top:17px}
@@ -10972,7 +10974,7 @@ if('serviceWorker' in navigator){
     setInterval(()=>reg.update().catch(()=>{}), 60000);
   }).catch(()=>{});
 }
-const APP_VERSION='2026-10-06h';
+const APP_VERSION='2026-10-06k';
 document.getElementById('ver').innerHTML='<b>'+APP_VERSION+'</b><i>TAP TO UPDATE</i>';
 buildSchedule();
 
@@ -11017,15 +11019,15 @@ function unuseDose(sku){
 function refreshAll(){ paint(); buildSchedule(); }
 function vialLine(sku){
   const s=vialState(sku);
-  if(!s) return '<div class="vl none">No vial open — tap to start one</div>';
+  if(!s) return '<div class="vl none">+ &nbsp;Start a vial of this</div>';
   const pct=Math.round(s.left/s.total*100);
   let cls=''; if(s.left<=2 || s.daysLeft<=5) cls=' warn';
   const col = cls ? 'var(--warn)' : 'var(--brand)';
-  const circ=94.2, off=circ*(1-pct/100);
+  const circ=113.1, off=circ*(1-pct/100);
   return '<div class="vl'+cls+'">'
-    +'<div class="ring"><svg width="40" height="40">'
-      +'<circle cx="20" cy="20" r="15" fill="none" stroke="var(--bg2)" stroke-width="4"/>'
-      +'<circle cx="20" cy="20" r="15" fill="none" stroke="'+col+'" stroke-width="4" '
+    +'<div class="ring"><svg width="48" height="48">'
+      +'<circle cx="24" cy="24" r="18" fill="none" stroke="var(--bg2)" stroke-width="5"/>'
+      +'<circle cx="24" cy="24" r="18" fill="none" stroke="'+col+'" stroke-width="5" '
       +'stroke-linecap="round" stroke-dasharray="'+circ+'" stroke-dashoffset="'+off.toFixed(1)+'"/>'
       +'</svg><div class="rt">'+s.left+'</div></div>'
     +'<div style="flex:1;min-width:0">'
