@@ -45,9 +45,17 @@ h1{font-size:27px;font-weight:800;letter-spacing:-.9px;line-height:1}
   border:1px solid rgba(255,255,255,.22);display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .heroName{flex:1;min-width:0}
 .heroName b{display:block;color:#fff;font-size:25px;font-weight:800;letter-spacing:-.9px;line-height:1}
-.heroName span{display:block;color:rgba(255,255,255,.72);font-size:11.5px;font-weight:600;margin-top:3px}
-.heroVer{color:rgba(255,255,255,.5);font-size:9px;font-weight:800;letter-spacing:.7px;
-  background:rgba(255,255,255,.1);border-radius:7px;padding:5px 8px;flex-shrink:0;align-self:flex-start}
+.heroName span{display:block;color:rgba(255,255,255,.75);font-size:12px;font-weight:600;
+  margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.heroVer{display:flex;flex-direction:column;align-items:center;gap:2px;
+  color:#fff;background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.3);
+  border-radius:11px;padding:8px 11px;flex-shrink:0;align-self:flex-start;cursor:pointer;
+  -webkit-user-select:none;user-select:none;min-width:84px}
+.heroVer:active{background:rgba(255,255,255,.34)}
+.heroVer b{font-size:14px;font-weight:800;letter-spacing:.2px;line-height:1;
+  font-family:ui-monospace,"SF Mono",Consolas,monospace}
+.heroVer i{font-style:normal;font-size:8px;font-weight:800;letter-spacing:.9px;
+  color:rgba(255,255,255,.7)}
 .heroStats{position:relative;display:flex;gap:9px;margin-top:17px}
 .hs{flex:1;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.14);
   border-radius:14px;padding:11px 8px;text-align:center}
@@ -318,7 +326,7 @@ h1{font-size:27px;font-weight:800;letter-spacing:-.9px;line-height:1}
       </svg>
     </div>
     <div class="heroName"><b>MyPeps</b><span id="heroSub">&nbsp;</span></div>
-    <div class="heroVer" id="ver"></div>
+    <div class="heroVer" id="ver" onclick="forceUpdate()" title="Tap to check for updates"></div>
   </div>
   <div class="heroStats" id="heroStats"></div>
 </div>
@@ -10768,6 +10776,31 @@ function clean(){ poppy=false; const b=document.getElementById('saveBtn');
   b.classList.remove('dirty'); b.textContent='✓  BACK UP & FINISH'; }
 function bump(sku,d){ stock[sku]=Math.max(0,(stock[sku]||0)+(d||0)); paint(); save(); mark(); }
 
+
+async function forceUpdate(){
+  const chip=document.getElementById('ver'); const was=chip.innerHTML;
+  chip.innerHTML='<b>CHECKING</b><i>HOLD ON</i>';
+  try{
+    if('serviceWorker' in navigator){
+      const regs=await navigator.serviceWorker.getRegistrations();
+      for(const r of regs){ try{ await r.update(); }catch(e){} }
+    }
+    if('caches' in window){
+      const keys=await caches.keys();
+      await Promise.all(keys.map(k=>caches.delete(k)));
+    }
+    chip.innerHTML='<b>UPDATING</b><i>ALMOST THERE</i>';
+    setTimeout(()=>{
+      const u=new URL(location.href);
+      u.searchParams.set('u', Date.now());
+      location.replace(u.toString());
+    }, 400);
+  }catch(err){
+    chip.innerHTML=was;
+    alert('Could not check: '+err.message);
+  }
+}
+
 function paintHero(v,k,l){
   const el=document.getElementById('heroStats'); if(!el) return;
   const DOW=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
@@ -10776,7 +10809,7 @@ function paintHero(v,k,l){
   const doses=loadDoses();
   const taken=due.filter(r=>doses.done[r[0]]).length;
   const sub=document.getElementById('heroSub');
-  if(sub) sub.textContent=DOW[now.getDay()]+' · '+taken+' of '+due.length+' doses done';
+  if(sub) sub.textContent=DOW[now.getDay()]+' · '+taken+'/'+due.length+' doses';
   el.innerHTML=
      '<div class="hs"><b>'+taken+'/'+due.length+'</b><span>TODAY</span></div>'
     +'<div class="hs"><b>'+v+'</b><span>VIALS</span></div>'
@@ -10889,8 +10922,8 @@ if('serviceWorker' in navigator){
     setInterval(()=>reg.update().catch(()=>{}), 60000);
   }).catch(()=>{});
 }
-const APP_VERSION='2026-10-06b';
-document.getElementById('ver').textContent='v '+APP_VERSION;
+const APP_VERSION='2026-10-06e';
+document.getElementById('ver').innerHTML='<b>'+APP_VERSION+'</b><i>TAP TO UPDATE</i>';
 buildSchedule();
 
 
@@ -11370,4 +11403,9 @@ document.addEventListener('click',function(e){
   var dd=e.target.closest('.dose'); if(dd){ openDetail(dd.id.replace('d-','')); }
 });
 load();
+if(new URLSearchParams(location.search).has('u')){
+  const uu=new URL(location.href); uu.searchParams.delete('u');
+  history.replaceState(null,'',uu.pathname+(uu.search||''));
+  setTimeout(()=>toast('Updated to '+APP_VERSION),600);
+}
 </script></body></html>
