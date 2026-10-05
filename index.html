@@ -2,159 +2,224 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>MyPeps</title>
 <link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#15202C">
+<meta name="theme-color" content="#F2F6FA" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0B1219" media="(prefers-color-scheme: dark)">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <link rel="apple-touch-icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMAAAADACAIAAADdvvtQAAADLElEQVR4nO3csW1bVxSAYcrwChLgTu5SSDBSufEEmcNIlwEyQQZIZ3gOT5DGVWC4cecyQKZIQZhVYov6Ld13Xr5vAZ7z8PM+gnjkxeX1zQHu68nqAZhNQCQCIhEQiYBIBEQiIBIBkQiIREAkAiIREImASAREIiASAZEIiERAJAIiERCJgEgERCIgEgGRCIhEQCRPVw/w4P7+/HHhq189v1346o/gYt+/jV9bz8mOM9rzLWwj9Ry2NMl3t+eAeAQCIhEQiYBIBEQiIBIBkQiIREAkAiIREImASAREIiCSPQe0nadwtjPJd7fngHgEe3gice7jWjs4mcYHNLeek9EZzb6F7aCew/AtZgfEcgIiERCJgEgERCIgEgGRCIhEQCQCIhEQiYBIBEQiIBIBkQiIREAkAiKZHdDop4lPRm8xOyCWG/+rjMOXh9Jf/PZ+9SDn+fDry9Fnz9H4gJ79/Hb1CMlfb16vHiGZHdD0ek7mZjT4M9Bu6jlM3mVqQHOv+H8ZutHIgIZe62+auNe8gCZe5bsbt928gNgUAZEMC2jcCX8Ps3YcFhBbIyASAZEIiERAJAIiERCJgEgERCIgEgGRCIhEQCQCIhEQiYBIBEQiIBIBkQiIREAkAiIREImASAREIiASAZEIiERAJAIiERCJgEierh7gDMd/pP8/uHqzeoI7cwKRCIhEQCQCIhEQiYBIBEQiIJJJXyRePb89/ov7j7c/rJ7lofz58dPqEc4z7wTacT2HgdvNC4hNERDJsIDGnfD3MGvHYQGxNQIiERCJgEgERCIgEgGRCIhEQCQCIhEQiYBIBEQiIBIBkQiIREAkAiIREImASAREIiASAZEIiERAJAIiERCJgEgERCIgEgGRCIhkWEDvfnm1eoQHN2vHYQGxNfMCmvUGPde47eYFxKaMDGjc2/SOJu41MqDDzGv9dUM3mhrQYewV/1dzd7m4vL5ZPUPy0+9/rB4hmZvO0fiATsaVND2do/0ExBKDPwOxBQIiERCJgEgERCIgEgGRCIhEQCQCIhEQiYBIBEQiIBIBkQiIREAkAiIREImASAREIiASAZEIiERAJP8ADzxR7ojYlRsAAAAASUVORK5CYII=">
 <style>
+:root{
+  --bg:#F2F6FA; --bg2:#E7EEF5; --card:#FFFFFF; --ink:#0E1A26; --ink2:#5A6B7C; --ink3:#93A4B5;
+  --line:#DCE6EF; --line2:#C6D4E2;
+  --brand:#0E7FC4; --brand2:#0A5F96; --brandSoft:#E4F1FA;
+  --teal:#0D8A91; --good:#157A4A; --goodSoft:#E6F3EC; --warn:#A86418; --warnSoft:#FDF3E4;
+  --deep:#0E1A26; --shadow:0 1px 2px rgba(14,26,38,.06),0 6px 18px rgba(14,26,38,.06);
+  --shadowUp:0 -4px 24px rgba(14,26,38,.10);
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#0B1219; --bg2:#121C26; --card:#162330; --ink:#EAF2F9; --ink2:#9FB2C4; --ink3:#6B8299;
+    --line:#223342; --line2:#2E4357;
+    --brand:#35A6E8; --brand2:#1F86C4; --brandSoft:#15293A;
+    --teal:#2BB3B8; --good:#2F9E6B; --goodSoft:#122A20; --warn:#D79A48; --warnSoft:#2A2115;
+    --deep:#0B1219; --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 22px rgba(0,0,0,.26);
+    --shadowUp:0 -4px 26px rgba(0,0,0,.4);
+  }
+}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-body{font-family:-apple-system,"Helvetica Neue",Arial,sans-serif;background:#EEF2F6;color:#15202C;
-  padding:14px 12px 118px;padding-top:calc(14px + env(safe-area-inset-top,0px))}
-h1{font-size:21px;font-weight:800;letter-spacing:-.4px}
-.sub{font-size:12.5px;color:#5B6B7C;margin-top:2px;margin-bottom:12px}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Helvetica Neue",Arial,sans-serif;
+  background:var(--bg);color:var(--ink);padding:16px 14px 124px;
+  padding-top:calc(18px + env(safe-area-inset-top,0px));
+  -webkit-font-smoothing:antialiased;transition:background .25s}
+h1{font-size:27px;font-weight:800;letter-spacing:-.9px;line-height:1}
+.sub{font-size:11.5px;color:var(--ink3);margin-top:5px;margin-bottom:16px;
+  font-weight:600;letter-spacing:.2px}
 
-.scanned{display:none;background:#1F7244;color:#fff;border-radius:12px;padding:14px;margin-bottom:13px}
-.scanned.on{display:block}
-.scanned b{display:block;font-size:16px}
-.scanned span{display:block;font-size:12.5px;opacity:.92;margin-top:3px;font-family:"SF Mono",Consolas,monospace}
-.undo{display:flex;gap:7px;margin-top:10px}
-.undo button{flex:1;background:transparent;border:1.6px solid rgba(255,255,255,.42);color:#fff;
-  border-radius:8px;padding:9px;font-size:12px;font-weight:800;cursor:pointer}
+/* tabs */
+.tabs{display:flex;gap:4px;margin-bottom:16px;background:var(--bg2);padding:4px;border-radius:13px}
+.tabs button{flex:1;padding:12px 4px;border-radius:10px;border:none;background:transparent;
+  color:var(--ink3);font-size:12px;font-weight:800;cursor:pointer;letter-spacing:.6px;
+  transition:all .18s}
+.tabs button.on{background:var(--card);color:var(--ink);box-shadow:var(--shadow)}
 
-.vwrap{margin:-3px 0 9px 0;cursor:pointer}
-.vl{background:#F4F7FA;border:2px solid #DCE4EC;border-top:none;border-radius:0 0 11px 11px;
-  padding:8px 11px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-.vl span{font-size:10.5px;color:#5B6B7C;font-weight:700}
-.vl span b{font-size:13px;color:#15202C;font-family:"SF Mono",Consolas,monospace}
-.vl.none{color:#8FA3B5;font-size:11px;font-weight:700;justify-content:center}
-.vl.warn{background:#FFF9F0;border-color:#E8CDA8}
-.vl.warn span{color:#8A4B12}
-.vlbar{flex:1 0 100%;height:5px;background:#DCE4EC;border-radius:3px;overflow:hidden}
-.vlbar i{display:block;height:100%;background:#2E86C8}
-.vl.warn .vlbar i{background:#C9873A}
-.dose{margin-bottom:0;border-radius:11px 11px 0 0;border-bottom:none}
-.sheet{position:fixed;inset:0;background:#0009;z-index:80;display:none;align-items:flex-end}
-.sheet.on{display:flex}
-.sheetIn{background:#fff;width:100%;max-height:92vh;overflow-y:auto;border-radius:16px 16px 0 0;
-  padding:18px 16px;padding-bottom:calc(26px + env(safe-area-inset-bottom,0px))}
-.sh{display:flex;align-items:flex-start;gap:10px;margin-bottom:4px}
-.sh h2{flex:1;font-size:22px;font-weight:800;letter-spacing:-.4px;line-height:1.15}
-.shx{width:34px;height:34px;border-radius:9px;border:2px solid #CBD6E2;background:#fff;
-  font-size:17px;font-weight:800;color:#44566A;flex-shrink:0;cursor:pointer}
-.shfor{font-size:11px;font-weight:800;letter-spacing:.9px;color:#2E86C8;margin-bottom:11px}
-.shwhat{font-size:13.5px;line-height:1.6;color:#33414F;margin-bottom:15px}
-.shgrp{font-size:10px;font-weight:800;letter-spacing:1.4px;color:#8FA3B5;margin:15px 0 8px}
-.mixbox{background:#F4F7FA;border:2px solid #DCE4EC;border-radius:11px;padding:12px}
-.mixrow{display:flex;justify-content:space-between;align-items:baseline;
-  padding:7px 0;border-bottom:1px solid #E4EAF0;font-size:13px}
-.mixrow:last-child{border-bottom:none}
-.mixrow span{color:#5B6B7C;font-weight:600}
-.mixrow b{font-family:"SF Mono",Consolas,monospace;font-weight:800;text-align:right}
-.bigdose{background:#15202C;color:#fff;border-radius:11px;padding:14px;margin-top:9px;
-  display:flex;align-items:center;gap:12px}
-.bigdose .bd1{flex:1}
-.bigdose .bd1 span{display:block;font-size:10px;font-weight:800;letter-spacing:1.2px;opacity:.65}
-.bigdose .bd1 b{font-size:17px;font-family:"SF Mono",Consolas,monospace}
-.bigdose .bd2{text-align:right}
-.bigdose .bd2 b{display:block;font-size:26px;font-weight:800;font-family:"SF Mono",Consolas,monospace;line-height:1}
-.bigdose .bd2 span{font-size:9.5px;font-weight:800;letter-spacing:1.4px;opacity:.65}
-.warnbox{background:#FFF4E6;border:2px solid #E8CDA8;border-radius:11px;padding:12px}
-.warnbox li{list-style:none;font-size:12.5px;color:#8A4B12;line-height:1.5;
-  padding-left:15px;position:relative;margin-bottom:6px}
-.warnbox li:last-child{margin-bottom:0}
-.warnbox li:before{content:"";position:absolute;left:0;top:7px;width:5px;height:5px;
-  border-radius:50%;background:#C9873A}
-.shlink{display:block;background:#2E86C8;color:#fff;text-align:center;text-decoration:none;
-  padding:13px;border-radius:10px;font-size:13.5px;font-weight:800;margin-top:15px}
-.row,.dose{cursor:pointer}
-.tabs{display:flex;gap:6px;margin-bottom:13px}
-.tabs button{flex:1;padding:12px 4px;border-radius:9px;border:2px solid #CBD6E2;background:#fff;
-  color:#7A8797;font-size:12.5px;font-weight:800;cursor:pointer;letter-spacing:.4px}
-.tabs button.on{background:#15202C;border-color:#15202C;color:#fff}
-.tgrp{font-size:10px;font-weight:800;letter-spacing:1.4px;color:#8FA3B5;margin:14px 0 7px 3px}
-.dose{display:flex;align-items:center;gap:10px;background:#fff;border:2px solid #DCE4EC;
-  border-radius:11px;padding:11px;margin-bottom:7px}
-.dose.done{background:#F2F8F4;border-color:#A8CFB5}
-.dose.done .dn{text-decoration:line-through;opacity:.55}
-.tick{width:34px;height:34px;border-radius:9px;border:2.4px solid #CBD6E2;background:#fff;
-  flex-shrink:0;cursor:pointer;display:flex;align-items:center;justify-content:center;
-  font-size:17px;font-weight:800;color:#fff}
-.dose.done .tick{background:#1F7244;border-color:#1F7244}
-.di{flex:1;min-width:0}
-.dn{font-size:14.5px;font-weight:800;display:block}
-.dd{font-size:11.5px;color:#5B6B7C;font-weight:600;margin-top:2px;
-  font-family:"SF Mono",Consolas,monospace}
-.dnote{font-size:10.5px;color:#8FA3B5;margin-top:2px}
-.du{font-family:"SF Mono",Consolas,monospace;font-size:17px;font-weight:800;color:#2E4A66;
-  flex-shrink:0;text-align:right}
-.dayhead{background:#15202C;color:#fff;border-radius:11px;padding:13px;margin-bottom:12px}
-.dayhead b{display:block;font-size:16px}
-.dayhead span{font-size:12px;opacity:.85;display:block;margin-top:2px}
-.scanbox{background:#fff;border:2px solid #DCE4EC;border-radius:12px;padding:11px;margin-bottom:13px}
-.dirsw{display:flex;gap:6px;margin-bottom:9px}
-.dirsw button{flex:1;padding:11px 2px;border-radius:8px;border:2px solid #CBD6E2;background:#F4F7FA;
-  color:#7A8797;font-size:12.5px;font-weight:800;cursor:pointer}
-.dirsw button.on{background:#2E86C8;border-color:#2E86C8;color:#fff}
-#dOut.on{background:#B5761F;border-color:#B5761F}
-.cam{width:100%;background:#15202C;color:#fff;border:none;border-radius:9px;padding:18px;
-  font-size:16px;font-weight:800;letter-spacing:.4px;cursor:pointer}
-.cam:active{background:#2E86C8}
-.cam.alt{display:block;background:#fff;color:#2E4A66;border:2px solid #CBD6E2;margin-top:7px;
-  padding:14px;font-size:14px;text-align:center;-webkit-user-select:none;user-select:none}
-.cam.alt:active{background:#E8F1F9}
+/* cards */
+.card,.row,.dose,.scanbox,.mixbox{background:var(--card)}
+.scanbox{border:1px solid var(--line);border-radius:16px;padding:13px;margin-bottom:14px;
+  box-shadow:var(--shadow)}
+.dirsw{display:flex;gap:4px;margin-bottom:11px;background:var(--bg2);padding:4px;border-radius:12px}
+.dirsw button{flex:1;padding:11px 2px;border-radius:9px;border:none;background:transparent;
+  color:var(--ink3);font-size:11.5px;font-weight:800;cursor:pointer;letter-spacing:.5px;transition:all .18s}
+.dirsw button.on{background:var(--brand);color:#fff;box-shadow:0 2px 8px rgba(14,127,196,.3)}
+#dOut.on{background:var(--warn);box-shadow:0 2px 8px rgba(168,100,24,.3)}
+.cam{width:100%;background:var(--deep);color:#fff;border:none;border-radius:12px;padding:17px;
+  font-size:15px;font-weight:800;letter-spacing:.3px;cursor:pointer;transition:transform .1s}
+.cam:active{transform:scale(.985);background:var(--brand)}
+.cam.alt{background:var(--card);color:var(--ink2);border:1.5px solid var(--line2);margin-top:8px;
+  padding:13px;font-size:13px;text-align:center;display:block;
+  -webkit-user-select:none;user-select:none}
+.cam.alt:active{background:var(--brandSoft)}
 .hidefile{position:absolute;width:1px;height:1px;opacity:0;overflow:hidden;border:0;padding:0;margin:-1px}
 .quick{display:flex;gap:7px;margin-top:9px}
-#code{flex:1;padding:12px;border:2px solid #CBD6E2;border-radius:9px;font-size:15px;font-weight:700;
-  font-family:"SF Mono",Consolas,monospace;min-width:0;background:#fff}
-.quick button{background:#2E4A66;color:#fff;border:none;border-radius:9px;padding:0 16px;
-  font-size:13px;font-weight:800;cursor:pointer}
+#code{flex:1;padding:13px;border:1.5px solid var(--line2);border-radius:11px;font-size:14px;
+  font-weight:700;font-family:ui-monospace,"SF Mono",Consolas,monospace;min-width:0;
+  background:var(--bg);color:var(--ink)}
+#code::placeholder{color:var(--ink3)}
+.quick button{background:var(--deep);color:#fff;border:none;border-radius:11px;padding:0 18px;
+  font-size:12.5px;font-weight:800;cursor:pointer}
 
-.sum{display:flex;gap:8px;margin-bottom:12px}
-.card{flex:1;background:#fff;border:2px solid #DCE4EC;border-radius:11px;padding:11px;text-align:center}
-.card b{display:block;font-size:24px;font-weight:800}
-.card span{font-size:9.5px;font-weight:800;letter-spacing:1px;color:#7A8797}
-.card.low{border-color:#C9873A;background:#FFF9F0}.card.low b{color:#B5761F}
+/* summary */
+.sum{display:flex;gap:8px;margin-bottom:14px}
+.sum .card{flex:1;border:1px solid var(--line);border-radius:14px;padding:13px 8px;
+  text-align:center;box-shadow:var(--shadow)}
+.sum .card b{display:block;font-size:27px;font-weight:800;letter-spacing:-1px;line-height:1}
+.sum .card span{font-size:8.5px;font-weight:800;letter-spacing:1.1px;color:var(--ink3);
+  display:block;margin-top:5px}
+.card.low{border-color:var(--warn);background:var(--warnSoft)}
+.card.low b{color:var(--warn)}
 
-.row{display:flex;align-items:center;gap:10px;background:#fff;border:2px solid #DCE4EC;
-  border-radius:11px;padding:10px 11px;margin-bottom:7px}
-.row.zero{opacity:.5}.row.lowstock{border-color:#C9873A;background:#FFFCF7}
-.id{display:flex;flex-direction:column;gap:3px;flex-shrink:0;width:66px}
-.sku{font-family:"SF Mono",Consolas,monospace;font-size:11px;font-weight:800;color:#fff;
-  background:#2E4A66;border-radius:9px;padding:2px 0;text-align:center}
-.cat{font-size:7px;font-weight:800;letter-spacing:.5px;color:#8FA3B5;text-align:center}
-.nm{flex:1;min-width:0}.nm b{display:block;font-size:14.5px;font-weight:800;
+/* stock rows */
+.row{display:flex;align-items:center;gap:11px;border:1px solid var(--line);
+  border-radius:14px;padding:11px 12px;margin-bottom:8px;box-shadow:var(--shadow);
+  transition:transform .1s,border-color .18s}
+.row:active{transform:scale(.995)}
+.row.zero{opacity:.42}
+.row.lowstock{border-color:var(--warn);background:var(--warnSoft)}
+.id{display:flex;flex-direction:column;gap:4px;flex-shrink:0;width:64px}
+.sku{font-family:ui-monospace,"SF Mono",Consolas,monospace;font-size:10px;font-weight:800;
+  color:#fff;background:var(--brand2);border-radius:7px;padding:3px 0;text-align:center;
+  letter-spacing:.4px}
+.cat{font-size:6.5px;font-weight:800;letter-spacing:.6px;color:var(--ink3);text-align:center}
+.nm{flex:1;min-width:0}
+.nm b{display:block;font-size:14.5px;font-weight:700;letter-spacing:-.2px;
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.nm i{font-style:normal;font-size:11px;color:#7A8797;font-weight:600}
-.ct{display:flex;align-items:center;gap:4px;flex-shrink:0}
-.ct button{width:38px;height:38px;border:2px solid #CBD6E2;background:#fff;border-radius:9px;
-  font-size:20px;font-weight:800;color:#2E4A66;cursor:pointer;line-height:1}
-.ct button:active{background:#2E86C8;color:#fff;border-color:#2E86C8}
-.qty{min-width:30px;text-align:center;font-size:20px;font-weight:800;font-family:"SF Mono",Consolas,monospace}
+.nm i{font-style:normal;font-size:11px;color:var(--ink3);font-weight:600}
+.ct{display:flex;align-items:center;gap:5px;flex-shrink:0}
+.ct button{width:36px;height:36px;border:1.5px solid var(--line2);background:var(--bg);
+  border-radius:11px;font-size:19px;font-weight:700;color:var(--ink2);cursor:pointer;line-height:1}
+.ct button:active{background:var(--brand);color:#fff;border-color:var(--brand)}
+.qty{min-width:28px;text-align:center;font-size:19px;font-weight:800;
+  font-family:ui-monospace,"SF Mono",Consolas,monospace;letter-spacing:-.5px}
 
-.bar{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:2px solid #DCE4EC;
-  padding:9px 12px;padding-bottom:calc(9px + env(safe-area-inset-bottom,0px))}
-.bigbtn{width:100%;background:#1F7244;color:#fff;border:none;border-radius:10px;padding:15px;
-  font-size:15.5px;font-weight:800;cursor:pointer}
-.bigbtn.dirty{background:#B5761F}
-.minis{display:flex;gap:7px;margin-top:7px}
-.minis button{flex:1;padding:9px 2px;border-radius:8px;border:2px solid #CBD6E2;background:#fff;
-  color:#44566A;font-size:11px;font-weight:800;cursor:pointer}
-.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:128px;background:#15202C;color:#fff;
-  padding:11px 20px;border-radius:9px;font-size:14px;font-weight:700;opacity:0;
-  transition:opacity .2s;pointer-events:none;z-index:9;max-width:88%;text-align:center}
+/* schedule */
+.dayhead{background:linear-gradient(135deg,var(--deep),var(--brand2));color:#fff;
+  border-radius:16px;padding:17px;margin-bottom:15px;box-shadow:var(--shadow)}
+.dayhead b{display:block;font-size:21px;font-weight:800;letter-spacing:-.6px}
+.dayhead span{font-size:12px;opacity:.82;display:block;margin-top:3px;font-weight:600}
+.tgrp{font-size:9.5px;font-weight:800;letter-spacing:1.5px;color:var(--ink3);margin:18px 0 8px 3px}
+.dose{display:flex;align-items:center;gap:11px;border:1px solid var(--line);
+  border-radius:14px 14px 0 0;border-bottom:none;padding:12px;margin-bottom:0;
+  box-shadow:var(--shadow)}
+.dose.done{background:var(--goodSoft);border-color:var(--good)}
+.dose.done .dn{text-decoration:line-through;opacity:.5}
+.tick{width:32px;height:32px;border-radius:10px;border:2px solid var(--line2);background:var(--bg);
+  flex-shrink:0;cursor:pointer;display:flex;align-items:center;justify-content:center;
+  font-size:16px;font-weight:800;color:#fff;transition:all .15s}
+.dose.done .tick{background:var(--good);border-color:var(--good)}
+.di{flex:1;min-width:0}
+.dn{font-size:14.5px;font-weight:700;display:block;letter-spacing:-.2px}
+.dd{font-size:11px;color:var(--ink2);font-weight:700;margin-top:2px;
+  font-family:ui-monospace,"SF Mono",Consolas,monospace}
+.dnote{font-size:10px;color:var(--ink3);margin-top:3px}
+.du{font-family:ui-monospace,"SF Mono",Consolas,monospace;font-size:16px;font-weight:800;
+  color:var(--brand);flex-shrink:0;text-align:right;letter-spacing:-.5px}
+
+/* vial bar */
+.vwrap{margin:0 0 10px 0;cursor:pointer}
+.vl{background:var(--card);border:1px solid var(--line);border-top:1px solid var(--line);
+  border-radius:0 0 14px 14px;padding:9px 12px;display:flex;gap:10px;align-items:center;
+  flex-wrap:wrap;box-shadow:var(--shadow)}
+.vl span{font-size:10px;color:var(--ink3);font-weight:700}
+.vl span b{font-size:12.5px;color:var(--ink);font-family:ui-monospace,"SF Mono",Consolas,monospace}
+.vl.none{color:var(--ink3);font-size:10.5px;font-weight:700;justify-content:center}
+.vl.warn{background:var(--warnSoft);border-color:var(--warn)}
+.vl.warn span,.vl.warn span b{color:var(--warn)}
+.vlbar{flex:1 0 100%;height:4px;background:var(--bg2);border-radius:2px;overflow:hidden}
+.vlbar i{display:block;height:100%;background:var(--brand);transition:width .3s}
+.vl.warn .vlbar i{background:var(--warn)}
+
+/* bottom bar */
+.bar{position:fixed;left:0;right:0;bottom:0;background:var(--card);
+  border-top:1px solid var(--line);box-shadow:var(--shadowUp);
+  padding:10px 14px;padding-bottom:calc(10px + env(safe-area-inset-bottom,0px))}
+.bigbtn{width:100%;background:var(--good);color:#fff;border:none;border-radius:13px;padding:16px;
+  font-size:15px;font-weight:800;cursor:pointer;letter-spacing:.2px;transition:transform .1s}
+.bigbtn:active{transform:scale(.99)}
+.bigbtn.dirty{background:var(--warn)}
+.minis{display:flex;gap:6px;margin-top:7px}
+.minis button{flex:1;padding:9px 2px;border-radius:10px;border:1px solid var(--line2);
+  background:transparent;color:var(--ink2);font-size:10.5px;font-weight:800;cursor:pointer}
+
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:134px;background:var(--deep);
+  color:#fff;padding:12px 22px;border-radius:12px;font-size:13.5px;font-weight:700;opacity:0;
+  transition:opacity .2s;pointer-events:none;z-index:95;max-width:88%;text-align:center;
+  box-shadow:0 8px 24px rgba(0,0,0,.3)}
 .toast.on{opacity:1}
 
-#camWrap{position:fixed;inset:0;background:#000;z-index:60;display:none;flex-direction:column}
+/* scanned banner */
+.scanned{display:none;background:linear-gradient(135deg,var(--good),var(--teal));color:#fff;
+  border-radius:16px;padding:16px;margin-bottom:14px;box-shadow:var(--shadow)}
+.scanned.on{display:block}
+.scanned b{display:block;font-size:17px;font-weight:800;letter-spacing:-.3px}
+.scanned span{display:block;font-size:12px;opacity:.9;margin-top:3px;
+  font-family:ui-monospace,"SF Mono",Consolas,monospace}
+.undo{display:flex;gap:7px;margin-top:12px}
+.undo button{flex:1;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.3);
+  color:#fff;border-radius:10px;padding:10px;font-size:12px;font-weight:800;cursor:pointer}
+
+/* detail sheet */
+.sheet{position:fixed;inset:0;background:rgba(5,12,18,.62);z-index:90;display:none;
+  align-items:flex-end;backdrop-filter:blur(3px)}
+.sheet.on{display:flex}
+.sheetIn{background:var(--card);width:100%;max-height:92vh;overflow-y:auto;
+  border-radius:22px 22px 0 0;padding:20px 17px;
+  padding-bottom:calc(28px + env(safe-area-inset-bottom,0px))}
+.sh{display:flex;align-items:flex-start;gap:10px;margin-bottom:5px}
+.sh h2{flex:1;font-size:24px;font-weight:800;letter-spacing:-.7px;line-height:1.1}
+.shx{width:34px;height:34px;border-radius:11px;border:1.5px solid var(--line2);
+  background:var(--bg);font-size:17px;font-weight:700;color:var(--ink2);flex-shrink:0;cursor:pointer}
+.shfor{font-size:10px;font-weight:800;letter-spacing:1px;color:var(--brand);margin-bottom:13px}
+.shwhat{font-size:14px;line-height:1.65;color:var(--ink2);margin-bottom:17px}
+.shgrp{font-size:9.5px;font-weight:800;letter-spacing:1.5px;color:var(--ink3);margin:17px 0 9px}
+.mixbox{border:1px solid var(--line);border-radius:14px;padding:13px}
+.mixrow{display:flex;justify-content:space-between;align-items:baseline;
+  padding:8px 0;border-bottom:1px solid var(--line);font-size:13px}
+.mixrow:last-child{border-bottom:none}
+.mixrow span{color:var(--ink2);font-weight:600}
+.mixrow b{font-family:ui-monospace,"SF Mono",Consolas,monospace;font-weight:800;text-align:right}
+.bigdose{background:linear-gradient(135deg,var(--deep),var(--brand2));color:#fff;
+  border-radius:14px;padding:16px;margin-top:10px;display:flex;align-items:center;gap:12px}
+.bigdose .bd1{flex:1}
+.bigdose .bd1 span{display:block;font-size:9px;font-weight:800;letter-spacing:1.3px;opacity:.7}
+.bigdose .bd1 b{font-size:17px;font-family:ui-monospace,"SF Mono",Consolas,monospace;margin-top:3px;display:block}
+.bigdose .bd2{text-align:right}
+.bigdose .bd2 b{display:block;font-size:28px;font-weight:800;letter-spacing:-1px;
+  font-family:ui-monospace,"SF Mono",Consolas,monospace;line-height:1}
+.bigdose .bd2 span{font-size:8.5px;font-weight:800;letter-spacing:1.4px;opacity:.7;margin-top:3px;display:block}
+.warnbox{background:var(--warnSoft);border:1px solid var(--warn);border-radius:14px;padding:13px}
+.warnbox li{list-style:none;font-size:12.5px;color:var(--warn);line-height:1.55;
+  padding-left:16px;position:relative;margin-bottom:7px;font-weight:600}
+.warnbox li:last-child{margin-bottom:0}
+.warnbox li:before{content:"";position:absolute;left:0;top:7px;width:5px;height:5px;
+  border-radius:50%;background:var(--warn)}
+.shlink{display:block;background:var(--brand);color:#fff;text-align:center;text-decoration:none;
+  padding:15px;border-radius:13px;font-size:13.5px;font-weight:800;margin-top:17px}
+
+/* camera overlay */
+#camWrap{position:fixed;inset:0;background:#000;z-index:100;display:none;flex-direction:column}
 #camWrap.on{display:flex}
 #cam{flex:1;width:100%;object-fit:cover}
-.aim{position:absolute;left:50%;top:46%;transform:translate(-50%,-50%);width:64vw;height:64vw;
-  max-width:320px;max-height:320px;border:3px solid #2E86C8;border-radius:16px;box-shadow:0 0 0 100vmax #0008}
-#camMsg{position:absolute;left:0;right:0;top:0;padding:16px;
-  padding-top:calc(16px + env(safe-area-inset-top,0px));
-  background:linear-gradient(#000D,transparent);color:#fff;font-size:15px;font-weight:800;text-align:center}
-.camBar{background:#15202C;padding:14px;padding-bottom:calc(14px + env(safe-area-inset-bottom,0px));
-  display:flex;gap:10px}
-.camBar button{flex:1;padding:14px;border-radius:9px;border:none;font-size:14px;font-weight:800;cursor:pointer}
-.camBar .dirb{background:#2E86C8;color:#fff}.camBar .cl{background:#44566A;color:#fff}
+.aim{position:absolute;left:50%;top:46%;transform:translate(-50%,-50%);width:66vw;height:66vw;
+  max-width:330px;max-height:330px;border:3px solid var(--brand);border-radius:22px;
+  box-shadow:0 0 0 100vmax rgba(0,0,0,.6)}
+#camMsg{position:absolute;left:0;right:0;top:0;padding:18px;
+  padding-top:calc(18px + env(safe-area-inset-top,0px));
+  background:linear-gradient(rgba(0,0,0,.85),transparent);color:#fff;font-size:15px;
+  font-weight:800;text-align:center}
+.camBar{background:var(--deep);padding:15px;
+  padding-bottom:calc(15px + env(safe-area-inset-bottom,0px));display:flex;gap:10px}
+.camBar button{flex:1;padding:15px;border-radius:12px;border:none;font-size:14px;
+  font-weight:800;cursor:pointer}
+.camBar .dirb{background:var(--brand);color:#fff}
+.camBar .cl{background:rgba(255,255,255,.14);color:#fff}
 </style></head><body>
 
 <div id="scanned" class="scanned"></div>
@@ -319,6 +384,7 @@ h1{font-size:21px;font-weight:800;letter-spacing:-.4px}
   <button class="bigbtn" id="saveBtn" onclick="backup()">✓ &nbsp;BACK UP &amp; FINISH</button>
   <div class="minis">
     <button onclick="document.getElementById('restoreFile').click()">Restore</button>
+    <button onclick="reportMenu()">Reports</button>
     <button onclick="exportCsv()">CSV</button>
     <button onclick="if(confirm('Set every count back to zero?'))zero()">Reset</button>
   </div>
@@ -10443,6 +10509,7 @@ function findAlignmentPattern(matrix, alignmentPatternQuads, topRight, topLeft, 
 const INFO={"RT30": "https://peptidehub.bio/database/retatrutide-glp-1-gip-glucagon-24mg", "TSM20": "https://peptidehub.bio/database/tesamorelin-10mg", "IPA10": "https://peptidehub.bio/database/ipamorelin-10mg", "CP10": "https://peptidehub.bio/database/2x-blend-cjc-no-dac-5mg-ipamorelin-5mg", "TA10": "https://peptidehub.bio/database/ta-1-10mg", "MS40": "https://peptidehub.bio/database/mots-c-10mg", "KL80": "https://peptidehub.bio/database/klow-blend-ghk-cu-50mg-kpv-10mg-bpc-157-10mg-tb-500-10mg", "XA10": "https://peptidehub.bio/database/semax-30mg", "SK10": "https://peptidehub.bio/database/selank-10mg", "DS10": "https://peptidehub.bio/database/dsip-5mg", "ET50": "https://peptidehub.bio/database/epithalon-50mg", "KP10": "https://peptidehub.bio/database/kpv-5mg", "NJ1000": "https://peptidehub.bio/database/nad-1000mg", "CU100": "https://peptidehub.bio/database/ghk-cu-75mg", "AD10": "https://peptidehub.bio/database/aod-9604-5mg", "BC10": "https://peptidehub.bio/database/bpc-157-10mg", "BB20": "https://peptidehub.bio/database/wolverine-blend-bpc-157-10mg-tb500-10mg", "RA10": "https://peptidehub.bio/database"};
 const VIAL={"RT30": {"doses": 20, "days": 30}, "TSM20": {"doses": 20, "days": 30}, "IPA10": {"doses": 80, "days": 30}, "CP10": {"doses": 50, "days": 30}, "TA10": {"doses": 6, "days": 30}, "MS40": {"doses": 15, "days": 30}, "KL80": {"doses": 14, "days": 30}, "XA10": {"doses": 50, "days": 30}, "SK10": {"doses": 27, "days": 30}, "DS10": {"doses": 33, "days": 30}, "ET50": {"doses": 10, "days": 30}, "KP10": {"doses": 20, "days": 30}, "NJ1000": {"doses": 13, "days": 30}, "CU100": {"doses": 66, "days": 30}, "AD10": {"doses": 33, "days": 30}, "RA10": {"doses": 2, "days": 30}, "BC10": {"doses": 20, "days": 30}, "BB20": {"doses": 20, "days": 30}, "LC600": {"doses": 2, "days": 60}};
 const VKEY='mypeps-vials';
+const LKEY='mypeps-log';
 const DETAIL={"RT30": {"n": "Retatrutide", "for": "Weight loss \u00b7 appetite \u00b7 metabolic", "what": "A triple agonist \u2014 it acts on GLP-1, GIP and glucagon receptors at once. Works mainly on the brain and gut to reduce appetite and slow stomach emptying, so you eat less without fighting it.", "vial": "30 mg", "water": "3 mL bacteriostatic water", "conc": "10 mg/mL", "unit": "0.1 mg per unit", "dose": "1500 mcg", "units": "15 units", "freq": "Weekly", "when": "Any time, same day each week", "warn": ["Titrate up slowly \u2014 nausea is the usual limiter", "Keep refrigerated once mixed"]}, "TSM20": {"n": "Tesamorelin", "for": "Visceral fat \u00b7 GH axis \u00b7 body composition", "what": "A growth hormone releasing hormone analogue. Prompts your pituitary to release its own GH in natural pulses, rather than injecting GH directly. Best evidence is for reducing visceral fat.", "vial": "20 mg", "water": "3 mL (the book specifies CAG water, not BAC)", "conc": "6.67 mg/mL", "unit": "0.067 mg per unit", "dose": "1 mg", "units": "15 units", "freq": "Nightly", "when": "Before bed, empty stomach", "warn": ["Can raise fasting glucose \u2014 worth watching", "Book specifies CAG water, not plain BAC"]}, "IPA10": {"n": "Ipamorelin", "for": "GH release \u00b7 deep sleep \u00b7 recovery", "what": "A selective GH secretagogue. Triggers a GH pulse without raising cortisol or hunger, which is what separates it from the older compounds in this class.", "vial": "10 mg", "water": "3 mL bacteriostatic water", "conc": "3.33 mg/mL", "unit": "33 mcg per unit", "dose": "100\u2013150 mcg", "units": "3\u20134.5 units", "freq": "Nightly", "when": "30 min before sleep, empty stomach", "warn": ["Food blunts the pulse \u2014 leave 2 hours after eating"]}, "CP10": {"n": "CJC-1295 + Ipamorelin", "for": "Growth hormone \u00b7 repair \u00b7 sleep", "what": "The two together produce a GH pulse two to three times bigger than either alone. CJC extends the signal, Ipamorelin triggers the release. The no-DAC version is preferred \u2014 its 30 minute half-life mimics a natural pulse.", "vial": "10 mg (5 mg each)", "water": "3 mL bacteriostatic water", "conc": "1.67 mg/mL each", "unit": "17 mcg each per unit", "dose": "100 mcg each", "units": "6 units", "freq": "Nightly", "when": "30 min before sleep, fasted", "warn": ["If you run this, drop standalone Ipamorelin", "8\u201312 weeks then a mandatory break"]}, "TA10": {"n": "Thymosin Alpha-1", "for": "Immune defence \u00b7 T-cell \u00b7 infection support", "what": "Modulates the immune system rather than stimulating it bluntly. Raises T-cell activity and helps the immune response discriminate properly.", "vial": "10 mg", "water": "3 mL bacteriostatic water", "conc": "3.33 mg/mL", "unit": "33 mcg per unit", "dose": "1.6 mg", "units": "48 units", "freq": "Twice weekly", "when": "Any time", "warn": ["Peptide Hub lists this as intramuscular at 3\u20138 mg \u2014 worth checking against your protocol"]}, "MS40": {"n": "MOTS-c", "for": "Metabolic \u00b7 energy \u00b7 insulin \u00b7 endurance", "what": "A peptide your mitochondria produce and send out as a signal \u2014 essentially a message saying the cell is under energy stress. Improves how muscle takes up glucose and shifts you toward burning fat.", "vial": "40 mg", "water": "3 mL bacteriostatic water", "conc": "13.3 mg/mL", "unit": "133 mcg per unit", "dose": "2650 mcg", "units": "20 units", "freq": "5 on, 2 off", "when": "Any time", "warn": ["Book says 2\u20133 doses a week is enough for the same weekly total", "Cap at 8 weeks, then break"]}, "KL80": {"n": "KLOW Blend", "for": "Tissue repair \u00b7 skin \u00b7 gut \u00b7 recovery", "what": "Four compounds in one vial \u2014 GHK-Cu 50 mg, KPV 10 mg, BPC-157 10 mg and TB-500 10 mg. Covers skin, inflammation, gut lining and soft tissue in a single injection.", "vial": "80 mg total", "water": "3 mL bacteriostatic water", "conc": "26.7 mg/mL", "unit": "267 mcg per unit", "dose": "5500 mcg", "units": "21 units", "freq": "Nightly", "when": "Night", "warn": ["Peptide Hub suggests 1\u20132 mg (4\u20138 units) daily, 30 on / 14 off \u2014 much lower than this"]}, "XA10": {"n": "Semax", "for": "Focus \u00b7 memory \u00b7 clarity \u00b7 neuroprotection", "what": "A fragment of ACTH with the hormonal activity stripped out. Raises BDNF and affects dopamine and serotonin signalling. Noticeable as mental clarity rather than stimulation.", "vial": "10 mg", "water": "3 mL bacteriostatic water", "conc": "3.33 mg/mL", "unit": "33 mcg per unit", "dose": "200 mcg", "units": "6 units", "freq": "Daily", "when": "Morning", "warn": ["Never at night \u2014 it will keep you awake"]}, "SK10": {"n": "Selank", "for": "Calm \u00b7 anxiety \u00b7 focus \u00b7 no sedation", "what": "An analogue of a natural immune peptide. Anxiolytic without sedation \u2014 it takes the edge off without dulling you, which is the usual trade-off with anxiety compounds.", "vial": "10 mg", "water": "3 mL bacteriostatic water", "conc": "3.33 mg/mL", "unit": "33 mcg per unit", "dose": "250\u2013500 mcg", "units": "7.5\u201315 units", "freq": "Daily", "when": "Afternoon or evening", "warn": ["Book puts the timing in the afternoon, not morning", "14\u201330 days then 2 weeks off"]}, "DS10": {"n": "DSIP", "for": "Deep sleep \u00b7 delta wave \u00b7 night recovery", "what": "Delta Sleep Inducing Peptide. Shifts sleep architecture toward deeper delta-wave sleep rather than simply making you drowsy.", "vial": "10 mg", "water": "3 mL bacteriostatic water", "conc": "3.33 mg/mL", "unit": "33 mcg per unit", "dose": "300 mcg", "units": "9 units", "freq": "Nightly", "when": "Before bed", "warn": ["Book: 10\u201320 nights then a 2\u20134 week break, not continuous"]}, "ET50": {"n": "Epitalon", "for": "Longevity \u00b7 sleep \u00b7 telomeres \u00b7 circadian", "what": "A four amino acid peptide that acts on the pineal gland, normalising melatonin rhythm. The telomerase claims come from Russian research and are not settled.", "vial": "50 mg", "water": "3 mL bacteriostatic water", "conc": "16.7 mg/mL", "unit": "167 mcg per unit", "dose": "5 mg", "units": "30 units", "freq": "20-day course", "when": "Night", "warn": ["Run 20 days straight then stop \u2014 1 to 2 courses a year", "Not a continuous compound"]}, "KP10": {"n": "KPV", "for": "Gut health \u00b7 skin \u00b7 inflammation \u00b7 repair", "what": "The active tail of alpha-MSH. Anti-inflammatory, particularly in the gut lining and skin, without the pigmentation effects of the full molecule.", "vial": "10 mg", "water": "3 mL bacteriostatic water", "conc": "3.33 mg/mL", "unit": "33 mcg per unit", "dose": "500 mcg", "units": "15 units", "freq": "Daily", "when": "Any time", "warn": []}, "NJ1000": {"n": "NAD+", "for": "Cellular energy \u00b7 mitochondria \u00b7 repair", "what": "A coenzyme every cell uses for energy production and DNA repair. Levels fall with age. Not a peptide \u2014 a nucleotide.", "vial": "1000 mg", "water": "10 mL bacteriostatic water", "conc": "100 mg/mL", "unit": "1 mg per unit", "dose": "75 mg", "units": "75 units", "freq": "Twice weekly", "when": "Morning", "warn": ["Push slowly \u2014 20 to 30 seconds. It stings if rushed", "Peptide Hub lists this as intramuscular", "30 days once mixed \u2014 about 8 doses per vial"]}, "CU100": {"n": "GHK-Cu", "for": "Skin \u00b7 hair \u00b7 collagen \u00b7 tissue repair", "what": "A copper peptide. Stimulates collagen and elastin, and signals tissue remodelling. The copper is part of the molecule, not an additive.", "vial": "100 mg", "water": "3 mL bacteriostatic water", "conc": "33.3 mg/mL", "unit": "333 mcg per unit", "dose": "1\u20132 mg", "units": "3\u20136 units", "freq": "Daily", "when": "Morning", "warn": ["Check it has not darkened before drawing \u2014 colour change means degradation"]}, "AD10": {"n": "AOD-9604", "for": "Fat burning \u00b7 lipolysis \u00b7 no GH effect", "what": "The fat-burning fragment of growth hormone with the growth-signalling part removed. Triggers lipolysis without touching IGF-1 or blood sugar, so it stacks cleanly with GH secretagogues.", "vial": "10 mg", "water": "3 mL \u2014 0.6% acetic acid or CAG water", "conc": "3.33 mg/mL", "unit": "33 mcg per unit", "dose": "250\u2013600 mcg", "units": "7.5\u201318 units", "freq": "Daily", "when": "Morning, fasted", "warn": ["Will NOT dissolve in plain BAC water \u2014 it forms threads", "Needs 0.6% acetic acid or CAG water", "Keep refrigerated"]}, "RA10": {"n": "ARA-290", "for": "Nerve repair \u00b7 neuropathy \u00b7 inflammation", "what": "An eleven amino acid peptide derived from erythropoietin, with the blood-cell effects removed. Targets the innate repair receptor on damaged nerve tissue.", "vial": "10 mg", "water": "3 mL bacteriostatic water", "conc": "3.33 mg/mL", "unit": "33 mcg per unit", "dose": "4 mg", "units": "120 units", "freq": "Daily", "when": "Any time", "warn": ["Published mostly under the name Cibinetide"]}, "BC10": {"n": "BPC-157", "for": "Healing \u00b7 gut \u00b7 tendon \u00b7 joint \u00b7 vessels", "what": "A fragment of a protein found in stomach acid. Promotes blood vessel growth into damaged tissue, which is why it works on tendon and gut alike.", "vial": "10 mg", "water": "3 mL bacteriostatic water", "conc": "3.33 mg/mL", "unit": "33 mcg per unit", "dose": "250\u2013500 mcg", "units": "7.5\u201315 units", "freq": "Daily", "when": "Any time", "warn": ["Inject near the injury site where practical"]}, "BB20": {"n": "BPC-157 + TB-500", "for": "Injury repair \u00b7 muscle \u00b7 tendon \u00b7 mobility", "what": "The two standard repair peptides together \u2014 often called the Wolverine stack. BPC drives blood vessel growth, TB-500 drives cell migration into the damaged area.", "vial": "20 mg (10 mg each)", "water": "3 mL bacteriostatic water", "conc": "3.33 mg/mL each", "unit": "33 mcg each per unit", "dose": "500 mcg each", "units": "15 units", "freq": "Daily", "when": "Any time", "warn": ["4\u20136 weeks for an acute injury, then reassess"]}, "LC600": {"n": "L-Carnitine", "for": "Fat transport \u00b7 recovery \u00b7 soreness", "what": "Not a peptide. Shuttles fatty acids into the mitochondria to be burned. Evidence is strongest for reduced soreness and faster recovery rather than fat loss.", "vial": "600 mg in 10 mL", "water": "Pre-mixed \u2014 no reconstitution", "conc": "60 mg/mL", "unit": "0.6 mg per unit", "dose": "300 mg", "units": "2.5 mL into each thigh", "freq": "3 \u00d7 week", "when": "30\u201345 min before training", "warn": ["INTRAMUSCULAR \u2014 25G \u00d7 1 inch, 5 mL syringe", "Too large a volume for subcutaneous", "2 g oral L-Carnitine L-Tartrate delivers more, for a fraction of the cost"]}};
 const SCHED=[["XA10", "Semax", "MORNING", "200 mcg", "6 u", [1, 1, 1, 1, 1, 1, 1], "Never at night"], ["CU100", "GHK-Cu", "MORNING", "1\u20132 mg", "3\u20136 u", [1, 1, 1, 1, 1, 1, 1], "Check it hasn't darkened"], ["NJ1000", "NAD+", "MORNING", "75 mg", "75 u", [1, 0, 0, 1, 0, 0, 0], "Push slowly, 20\u201330 sec"], ["SK10", "Selank", "AFTERNOON", "250\u2013500 mcg", "7.5\u201315 u", [1, 1, 1, 1, 1, 1, 1], "Calm without sedation"], ["LC600", "L-Carnitine", "PRE-GYM", "300 mg", "2.5 mL each leg", [1, 0, 1, 0, 1, 0, 0], "INTRAMUSCULAR \u2014 thigh"], ["MS40", "MOTS-c", "ANY TIME", "2650 mcg", "20 u", [1, 1, 1, 1, 1, 0, 0], "5 on, 2 off"], ["IPA10", "Ipamorelin", "NIGHT", "100\u2013150 mcg", "3\u20134.5 u", [1, 1, 1, 1, 1, 1, 1], "30 min before sleep, empty stomach"], ["ET50", "Epitalon", "NIGHT", "5 mg", "30 u", [1, 1, 1, 1, 1, 1, 1], "20-day course then stop"]];
 const DKEY='mypeps-doses';
@@ -10692,7 +10759,7 @@ if('serviceWorker' in navigator){
     setInterval(()=>reg.update().catch(()=>{}), 60000);
   }).catch(()=>{});
 }
-const APP_VERSION='2026-10-05c';
+const APP_VERSION='2026-10-05e';
 document.getElementById('ver').textContent='v '+APP_VERSION;
 buildSchedule();
 
@@ -10747,6 +10814,26 @@ function vialLine(sku){
     +'</div>';
 }
 
+
+/* ---------- the running record of doses taken ---------- */
+function loadLog(){ try{ return JSON.parse(localStorage.getItem(LKEY))||[]; }catch(e){ return []; } }
+function saveLog(l){ try{ localStorage.setItem(LKEY,JSON.stringify(l.slice(-4000))); }catch(e){} }
+function logDose(sku){
+  const l=loadLog(); const n=new Date();
+  l.push({d:todayKey(), t:String(n.getHours()).padStart(2,'0')+':'+String(n.getMinutes()).padStart(2,'0'), s:sku});
+  saveLog(l);
+}
+function unlogDose(sku){
+  const l=loadLog(); const k=todayKey();
+  for(let i=l.length-1;i>=0;i--){ if(l[i].s===sku && l[i].d===k){ l.splice(i,1); break; } }
+  saveLog(l);
+}
+function logSince(days){
+  const cut=new Date(Date.now()-days*86400000);
+  const ck=cut.getFullYear()+'-'+String(cut.getMonth()+1).padStart(2,'0')+'-'+String(cut.getDate()).padStart(2,'0');
+  return loadLog().filter(e=>e.d>=ck);
+}
+
 /* ---------- today's doses ---------- */
 function todayKey(){ const d=new Date();
   return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
@@ -10790,6 +10877,7 @@ function tickDose(sku){
   d.done[sku]=now;
   saveDoses(d);
   if(now){
+    logDose(sku);
     if(!useDose(sku)){
       const s=document.querySelector('#d-'+sku);
       toast('No vial open for '+(s?s.querySelector('.dn').textContent:sku));
@@ -10797,7 +10885,7 @@ function tickDose(sku){
       const st=vialState(sku);
       if(st && st.left<=2) toast('Only '+st.left+' doses left in that vial');
     }
-  } else unuseDose(sku);
+  } else { unuseDose(sku); unlogDose(sku); }
   refreshAll();
   if(navigator.vibrate) navigator.vibrate(40);
 }
@@ -10843,6 +10931,124 @@ function vialTap(sku){
     +'\n\nFinished with it and starting a fresh one?';
   if(confirm(msg)) openVial(sku);
 }
+
+/* ---------- printable reports ---------- */
+function esc(s){ return String(s).replace(/[&<>]/g,x=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[x])); }
+function niceDate(k){
+  const [y,m,d]=k.split('-');
+  const MN=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  return d.replace(/^0/,'')+' '+MN[+m-1]+' '+y;
+}
+function reportCss(){
+  return '<style>'
+   +'@page{size:A4;margin:14mm}'
+   +'*{box-sizing:border-box;margin:0;padding:0}'
+   +'body{font-family:-apple-system,"Helvetica Neue",Arial,sans-serif;color:#0E1A26;padding:6px}'
+   +'h1{font-size:23px;font-weight:800;letter-spacing:-.6px}'
+   +'.meta{font-size:11px;color:#5A6B7C;margin:4px 0 16px;font-weight:600}'
+   +'h2{font-size:13px;font-weight:800;letter-spacing:1.2px;color:#5A6B7C;margin:20px 0 8px;'
+     +'border-bottom:2px solid #0E1A26;padding-bottom:5px}'
+   +'table{width:100%;border-collapse:collapse;font-size:12px}'
+   +'th{text-align:left;font-size:9px;font-weight:800;letter-spacing:.9px;color:#5A6B7C;'
+     +'padding:7px 8px;border-bottom:1.5px solid #C6D4E2}'
+   +'td{padding:8px;border-bottom:1px solid #E7EEF5;vertical-align:top}'
+   +'tr:nth-child(even) td{background:#F6F9FC}'
+   +'.sku{font-family:"SF Mono",Consolas,monospace;font-weight:800;font-size:11px}'
+   +'.num{text-align:right;font-family:"SF Mono",Consolas,monospace;font-weight:800}'
+   +'.warn{color:#A86418;font-weight:800}'
+   +'.sum{display:flex;gap:10px;margin-bottom:6px}'
+   +'.sum div{flex:1;border:1.5px solid #C6D4E2;border-radius:8px;padding:10px;text-align:center}'
+   +'.sum b{display:block;font-size:22px;font-weight:800}'
+   +'.sum span{font-size:8.5px;font-weight:800;letter-spacing:.9px;color:#5A6B7C}'
+   +'.foot{margin-top:22px;font-size:10px;color:#93A4B5;border-top:1px solid #E7EEF5;padding-top:9px}'
+   +'@media print{.noprint{display:none}}'
+   +'.noprint{margin:18px 0;display:flex;gap:8px}'
+   +'.noprint button{flex:1;padding:13px;border-radius:9px;border:none;background:#0E7FC4;'
+     +'color:#fff;font-size:14px;font-weight:800;cursor:pointer}'
+   +'</style>';
+}
+function openReport(html){
+  const w=window.open('','_blank');
+  if(!w){ toast('Allow pop-ups to see the report'); return; }
+  w.document.write('<!DOCTYPE html><html><head><meta charset="utf-8">'
+    +'<meta name="viewport" content="width=device-width,initial-scale=1">'
+    +'<title>MyPeps report</title>'+reportCss()+'</head><body>'+html
+    +'<div class="noprint"><button onclick="window.print()">Print or save as PDF</button></div>'
+    +'</body></html>');
+  w.document.close();
+}
+function stockReport(){
+  const now=new Date();
+  let vials=0,kinds=0,low=[];
+  let rows='';
+  document.querySelectorAll('.row').forEach(r=>{
+    const s=r.dataset.sku, q=stock[s]||0;
+    const d=DETAIL[s]||{}; const v=vialState(s);
+    vials+=q; if(q>0)kinds++;
+    if(q<=1) low.push(d.n||s);
+    rows+='<tr><td class="sku">'+s+'</td><td><b>'+esc(d.n||r.dataset.name)+'</b><br>'
+      +'<span style="font-size:10px;color:#5A6B7C">'+esc(d["for"]||'')+'</span></td>'
+      +'<td>'+esc(d.vial||'')+'</td>'
+      +'<td class="num'+(q<=1?' warn':'')+'">'+q+'</td>'
+      +'<td>'+(v? v.left+' of '+v.total+' doses · mixed '+niceDate(v.mixed)
+                 +(v.daysLeft<=5?' <span class="warn">('+(v.daysLeft>0?v.daysLeft+' days left':'EXPIRED')+')</span>':'')
+               : '<span style="color:#93A4B5">none open</span>')+'</td></tr>';
+  });
+  const h='<h1>Stock report</h1><div class="meta">MyPeps · '+now.toLocaleString()+'</div>'
+   +'<div class="sum"><div><b>'+vials+'</b><span>VIALS HELD</span></div>'
+   +'<div><b>'+kinds+'</b><span>COMPOUNDS</span></div>'
+   +'<div><b>'+low.length+'</b><span>LOW OR OUT</span></div></div>'
+   +(low.length?'<h2>NEEDS REORDERING</h2><p style="font-size:12px;line-height:1.7">'
+      +low.map(esc).join(' &nbsp;·&nbsp; ')+'</p>':'')
+   +'<h2>FULL STOCK</h2><table><tr><th>Code</th><th>Compound</th><th>Vial</th>'
+   +'<th style="text-align:right">Held</th><th>Vial in use</th></tr>'+rows+'</table>'
+   +'<div class="foot">Counts are kept on this device only. Printed '+now.toLocaleString()+'.</div>';
+  openReport(h);
+}
+function doseReport(days){
+  const log=logSince(days);
+  const now=new Date();
+  const byDay={}; const bySku={};
+  log.forEach(e=>{ (byDay[e.d]=byDay[e.d]||[]).push(e); bySku[e.s]=(bySku[e.s]||0)+1; });
+  const dayKeys=Object.keys(byDay).sort().reverse();
+  let tally='';
+  Object.keys(bySku).sort((a,b)=>bySku[b]-bySku[a]).forEach(s=>{
+    const d=DETAIL[s]||{};
+    tally+='<tr><td class="sku">'+s+'</td><td><b>'+esc(d.n||s)+'</b></td>'
+      +'<td>'+esc(d.dose||'')+'</td><td>'+esc(d.units||'')+'</td>'
+      +'<td class="num">'+bySku[s]+'</td></tr>';
+  });
+  let diary='';
+  dayKeys.forEach(k=>{
+    const names=byDay[k].map(e=>{
+      const d=DETAIL[e.s]||{};
+      return '<span style="white-space:nowrap">'+esc(d.n||e.s)+' <span style="color:#93A4B5">'+e.t+'</span></span>';
+    }).join(' &nbsp;·&nbsp; ');
+    diary+='<tr><td style="white-space:nowrap"><b>'+niceDate(k)+'</b></td>'
+      +'<td class="num">'+byDay[k].length+'</td><td style="line-height:1.8">'+names+'</td></tr>';
+  });
+  const h='<h1>Doses taken</h1><div class="meta">MyPeps · last '+days+' days · '+now.toLocaleString()+'</div>'
+   +'<div class="sum"><div><b>'+log.length+'</b><span>DOSES</span></div>'
+   +'<div><b>'+dayKeys.length+'</b><span>DAYS LOGGED</span></div>'
+   +'<div><b>'+Object.keys(bySku).length+'</b><span>COMPOUNDS</span></div></div>'
+   +(tally?'<h2>BY COMPOUND</h2><table><tr><th>Code</th><th>Compound</th><th>Dose</th><th>Units</th>'
+     +'<th style="text-align:right">Taken</th></tr>'+tally+'</table>':'')
+   +(diary?'<h2>DAY BY DAY</h2><table><tr><th>Date</th><th style="text-align:right">Doses</th>'
+     +'<th>What was taken</th></tr>'+diary+'</table>'
+     :'<p style="font-size:13px;color:#5A6B7C;margin-top:14px">Nothing logged yet. '
+      +'Tick doses off on the TODAY\'S DOSES tab and they will appear here.</p>')
+   +'<div class="foot">Printed '+now.toLocaleString()+'. Kept on this device only.</div>';
+  openReport(h);
+}
+function reportMenu(){
+  const n=loadLog().length;
+  const pick=prompt('Which report?\n\n  1  Stock report\n  2  Doses — last 7 days\n  3  Doses — last 30 days\n  4  Doses — last 90 days\n\n('+n+' doses logged so far)','1');
+  if(pick==='1') stockReport();
+  else if(pick==='2') doseReport(7);
+  else if(pick==='3') doseReport(30);
+  else if(pick==='4') doseReport(90);
+}
+
 function showTab(which){
   const st=which==='stock';
   document.getElementById('viewStock').style.display=st?'':'none';
