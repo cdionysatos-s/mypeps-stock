@@ -132,6 +132,45 @@ h1{font-size:27px;font-weight:800;letter-spacing:-.9px;line-height:1}
   transition:all .18s}
 .tabs button.on{background:var(--card);color:var(--ink);box-shadow:var(--shadow)}
 
+
+.vswitch{display:flex;gap:4px;margin-bottom:13px;background:var(--bg2);padding:4px;border-radius:12px}
+.vswitch button{flex:1;padding:11px 4px;border-radius:9px;border:none;background:transparent;
+  color:var(--ink3);font-size:11.5px;font-weight:800;letter-spacing:.7px;cursor:pointer;transition:all .18s}
+.vswitch button.on{background:var(--card);color:var(--ink);box-shadow:var(--shadow)}
+
+#stockSheet{background:var(--card);border:1px solid var(--line);border-radius:16px;
+  padding:16px;box-shadow:var(--shadow)}
+.sheetHead{display:flex;align-items:flex-start;gap:12px;padding-bottom:13px;
+  border-bottom:2px solid var(--ink);margin-bottom:4px}
+.sheetHead>div:first-child{flex:1}
+.sheetHead b{display:block;font-size:21px;font-weight:800;letter-spacing:-.5px}
+.sheetHead span{display:block;font-size:11px;color:var(--ink3);font-weight:600;margin-top:3px}
+.sheetTot{text-align:right;flex-shrink:0}
+.sheetTot b{display:block;font-size:30px;font-weight:800;letter-spacing:-1px;line-height:1;color:var(--brand)}
+.sheetTot span{display:block;font-size:8px;font-weight:800;letter-spacing:1px;color:var(--ink3);margin-top:3px}
+
+.sTable{margin-top:6px}
+.sRow{display:flex;align-items:center;gap:9px;padding:9px 0;border-bottom:1px solid var(--line)}
+.sRow:last-child{border-bottom:none}
+.sRow.z{opacity:.4}
+.sRow.w .sQ{color:var(--warn)}
+.sHead{border-bottom:1.5px solid var(--line2);padding-bottom:6px}
+.sHead span{font-size:8px!important;font-weight:800!important;letter-spacing:.9px;color:var(--ink3)!important;
+  background:none!important;padding:0!important}
+.sC{flex-shrink:0;width:58px;font-family:ui-monospace,"SF Mono",Consolas,monospace;font-size:10px;
+  font-weight:800;color:#fff;border-radius:6px;padding:3px 0;text-align:center}
+.sN{flex:1;min-width:0;font-size:14.5px;font-weight:700;letter-spacing:-.2px}
+.sN i{display:block;font-style:normal;font-size:10.5px;color:var(--ink3);font-weight:600;margin-top:2px}
+.sV{flex-shrink:0;width:58px;text-align:right;font-size:12px;color:var(--ink2);font-weight:600}
+.sQ{flex-shrink:0;width:30px;text-align:right;font-size:19px;font-weight:800;
+  font-family:ui-monospace,"SF Mono",Consolas,monospace}
+
+.sLow{background:var(--warnSoft);border:1px solid var(--warn);border-radius:11px;
+  padding:12px;margin-top:14px}
+.sLow b{display:block;font-size:12px;font-weight:800;letter-spacing:.6px;color:var(--warn);margin-bottom:5px}
+.sLow p{font-size:12.5px;color:var(--warn);line-height:1.6;font-weight:600}
+.sFoot{font-size:11px;color:var(--ink3);text-align:center;margin-top:14px;font-weight:600}
+
 /* cards */
 .card,.row,.dose,.scanbox,.mixbox{background:var(--card)}
 .scanbox{border:1px solid var(--line);border-radius:16px;padding:13px;margin-bottom:14px;
@@ -435,6 +474,12 @@ h1{font-size:27px;font-weight:800;letter-spacing:-.9px;line-height:1}
 <div id="viewSched" style="display:none"></div>
 <div id="viewHist" style="display:none"></div>
 <div id="viewStock">
+<div class="vswitch">
+  <button id="vEdit" class="on" onclick="setStockView('edit')">COUNT</button>
+  <button id="vList" onclick="setStockView('list')">MY STOCK</button>
+</div>
+<div id="stockSheet" style="display:none"></div>
+<div id="stockEdit">
 
 <div class="scanbox">
   <div class="dirsw">
@@ -579,6 +624,7 @@ h1{font-size:27px;font-weight:800;letter-spacing:-.9px;line-height:1}
   <div class="ct"><button onclick="bump('BB20',-1)">–</button>
     <span class="qty" id="q-BB20">0</span>
     <button onclick="bump('BB20',1)">+</button></div>
+</div>
 </div>
 </div>
 <div class="bar">
@@ -11052,6 +11098,8 @@ function paint(){
   document.getElementById('tKinds').textContent=k;
   document.getElementById('tLow').textContent=l;
   paintHero(v,k,l);
+  var sv=document.getElementById('stockSheet');
+  if(sv && sv.style.display!=='none') buildSheet();
 }
 function zero(){ stock={}; paint(); save(); mark(); toast('All counts reset'); }
 
@@ -11207,7 +11255,7 @@ if('serviceWorker' in navigator){
     setInterval(()=>reg.update().catch(()=>{}), 60000);
   }).catch(()=>{});
 }
-const APP_VERSION='2026-10-11';
+const APP_VERSION='2026-10-11b';
 document.getElementById('ver').innerHTML='<b>'+APP_VERSION+'</b><i>TAP TO UPDATE</i>';
 buildSchedule();
 
@@ -11988,6 +12036,55 @@ function clearAllToday(){
   });
   saveDoses(d); refreshAll();
   toast(n? n+' cleared' : 'Nothing to clear');
+}
+
+
+function setStockView(which){
+  var list = which==='list';
+  document.getElementById('stockEdit').style.display = list?'none':'';
+  document.getElementById('stockSheet').style.display = list?'':'none';
+  document.getElementById('vEdit').classList.toggle('on',!list);
+  document.getElementById('vList').classList.toggle('on',list);
+  document.querySelector('.scanbox').style.display = list?'none':'';
+  if(list) buildSheet();
+}
+function buildSheet(){
+  var rows=[], vials=0, kinds=0, low=[];
+  document.querySelectorAll('.row').forEach(function(r){
+    var s=r.dataset.sku, q=stock[s]||0, d=DETAIL[s]||{}, v=vialState(s);
+    vials+=q; if(q>0) kinds++;
+    if(q<=1) low.push(d.n||s);
+    rows.push({s:s, n:d.n||s, size:d.vial||'', q:q, v:v, cat:CATOF[s]||''});
+  });
+  var now=new Date();
+  var MN=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  var when=now.getDate()+' '+MN[now.getMonth()]+' '+now.getFullYear()
+         +' \u00b7 '+String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0');
+
+  var h='<div class="sheetHead"><div><b>My stock</b><span>'+when+'</span></div>'
+       +'<div class="sheetTot"><b>'+vials+'</b><span>VIALS</span></div></div>';
+
+  h+='<div class="sTable">';
+  h+='<div class="sRow sHead"><span class="sC">CODE</span><span class="sN">COMPOUND</span>'
+    +'<span class="sV">VIAL</span><span class="sQ">HELD</span></div>';
+  rows.forEach(function(r){
+    var cls='sRow'+(r.q===0?' z':'')+(r.q>0&&r.q<=1?' w':'');
+    h+='<div class="'+cls+'">'
+      +'<span class="sC" style="background:'+(CATCOL[r.cat]||'#0E7FC4')+'">'+r.s+'</span>'
+      +'<span class="sN">'+esc(r.n)
+        +(r.v?'<i>vial open \u00b7 '+r.v.left+' of '+r.v.total+' doses \u00b7 '+(r.v.daysLeft>0?r.v.daysLeft+'d left':'EXPIRED')+'</i>':'')
+      +'</span>'
+      +'<span class="sV">'+esc(r.size)+'</span>'
+      +'<span class="sQ">'+r.q+'</span></div>';
+  });
+  h+='</div>';
+
+  if(low.length){
+    h+='<div class="sLow"><b>Needs reordering</b><p>'+low.map(esc).join(' \u00b7 ')+'</p></div>';
+  }
+  h+='<div class="sFoot">'+kinds+' of '+rows.length+' compounds in stock \u00b7 '
+    +low.length+' low or out</div>';
+  document.getElementById('stockSheet').innerHTML=h;
 }
 
 function buildHistory(){
