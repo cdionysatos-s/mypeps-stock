@@ -125,6 +125,18 @@ h1{font-size:27px;font-weight:800;letter-spacing:-.9px;line-height:1}
 .impbtn:active{background:var(--brandSoft)}
 .hfoot{font-size:11px;color:var(--ink3);margin-top:16px;line-height:1.6;text-align:center}
 
+
+.store{background:var(--deep);border-radius:16px;padding:15px;margin-bottom:14px;box-shadow:var(--shadow)}
+.store .lbl{font-size:10px;font-weight:800;letter-spacing:1.3px;color:#5FB3F0;margin-bottom:9px}
+.store .where{font-size:13px;color:#CFDAE6;font-weight:600;line-height:1.55;word-break:break-word;margin-bottom:11px}
+.store .where b.bad{color:#FFCF8F}
+.store .where b.good{color:#8FE0B4}
+.bkWhat{font-size:11.5px;color:#9FB2C4;line-height:1.5;margin-top:9px;padding-top:9px;border-top:1px solid rgba(255,255,255,.14)}
+.store button,.store label.sec{display:block;width:100%;text-align:center;background:var(--brand);
+  color:#fff;border:none;border-radius:11px;padding:13px;font-size:13.5px;font-weight:800;cursor:pointer;
+  -webkit-user-select:none;user-select:none}
+.store label.sec{background:transparent;border:1.5px solid #44566A;color:#CFDAE6;margin-top:8px;font-size:12.5px}
+
 /* tabs */
 .tabs{display:flex;gap:4px;margin-bottom:16px;background:var(--bg2);padding:4px;border-radius:13px}
 .tabs button{flex:1;padding:12px 2px;font-size:11px;border-radius:10px;border:none;background:transparent;
@@ -292,7 +304,7 @@ h1{font-size:27px;font-weight:800;letter-spacing:-.9px;line-height:1}
 .bigbtn{width:100%;background:var(--good);color:#fff;border:none;border-radius:13px;padding:16px;
   font-size:15px;font-weight:800;cursor:pointer;letter-spacing:.2px;transition:transform .1s}
 .bigbtn:active{transform:scale(.99)}
-.bigbtn.dirty{background:var(--warn)}
+.bigbtn.dirty,.bigbtn.stale{background:var(--warn)}
 .minis{display:flex;gap:6px;margin-top:7px}
 .minis button,.minis .minilbl{flex:1;padding:9px 1px;font-size:10px;border-radius:10px;border:1px solid var(--line2);
   background:transparent;color:var(--ink2);font-size:10.5px;font-weight:800;cursor:pointer;
@@ -536,6 +548,13 @@ h1{font-size:27px;font-weight:800;letter-spacing:-.9px;line-height:1}
 </div>
 <div id="stockSheet" style="display:none"></div>
 <div id="stockEdit">
+
+<div class="store">
+  <div class="lbl">BACKUP</div>
+  <div class="where" id="where">Checking&hellip;</div>
+  <button onclick="pickFolder()" id="pickBtn">&#128193; &nbsp;Choose your OneDrive folder</button>
+  <label class="sec" for="restoreFile">Restore from a backup file</label>
+</div>
 
 <div class="scanbox">
   <div class="dirsw">
@@ -10823,6 +10842,7 @@ const RECON_DEF={"RT30": [30, 3], "TSM20": [20, 3], "IPA10": [10, 3], "CP10": [1
 const CONC={"RT30": 10.0, "TSM20": 6.67, "IPA10": 3.33, "CP10": 1.67, "TA10": 3.33, "MS40": 13.3, "KL80": 26.7, "XA10": 3.33, "SK10": 3.33, "DS10": 3.33, "ET50": 16.7, "KP10": 3.33, "NJ1000": 100.0, "CU100": 33.3, "AD10": 3.33, "RA10": 3.33, "BC10": 3.33, "BB20": 3.33, "LC600": 60.0};
 const MCGU={"RT30": 100.0, "TSM20": 66.7, "IPA10": 33.3, "CP10": 16.7, "TA10": 33.3, "MS40": 133.0, "KL80": 267.0, "XA10": 33.3, "SK10": 33.3, "DS10": 33.3, "ET50": 167.0, "KP10": 33.3, "NJ1000": 1000.0, "CU100": 333.0, "AD10": 33.3, "RA10": 33.3, "BC10": 33.3, "BB20": 33.3, "LC600": 600.0};
 const DKEY2='mypeps-mydose';
+const BKEY='mypeps-lastbackup';
 const CYCLE={"RT30": {"on": 0, "off": 0, "label": "Continuous — no cycling", "grade": "Book + web agree", "weekly": "", "why": "A GLP-1 class drug is a long-term therapy, not a cycled compound. Your book's reference table lists it as continuous (p126).", "ifnot": "Nothing. The risk runs the other way — the book warns that stopping abruptly causes rebound weight gain, so plan a gradual exit rather than quitting.", "extra": "Escalate slowly: start at the bottom of the range and step up every 4 weeks. Nausea is the usual limiter (p115)."}, "TSM20": {"on": 84, "off": 28, "label": "12 weeks on, 4 weeks off", "grade": "Sources conflict", "weekly": "5 days on, 2 off", "why": "Honest answer: it may not need a break at all. Tesamorelin is a GHRH analogue, and the GHRH receptor does not appear to desensitise the way the ghrelin receptor does. Your book sets 8–12 weeks (p107), but the same page notes the approved clinical protocol ran 26 weeks continuously for 15–20% visceral fat reduction.", "ifnot": "On the evidence, probably nothing — the FDA-approved use was continuous. The 4-week break is the conservative reading.", "extra": "If you run it alongside Ipamorelin, the break is really for the Ipamorelin. Some protocols drop Ipamorelin for 4 weeks and keep Tesamorelin going."}, "IPA10": {"on": 84, "off": 28, "label": "12 weeks on, 4 weeks off", "grade": "Real mechanism", "weekly": "5 days on, 2 off", "why": "This is one of the few where cycling has genuine pharmacologic teeth. Ipamorelin hits the GHS-R1a ghrelin receptor, which downregulates under constant stimulation. Four weeks is roughly what the receptor needs to restore surface density. Your book says 8–12 weeks with a mandatory break (p86) but does not give the length — the 4 weeks comes from clinical practice.", "ifnot": "The same dose produces a weaker effect. Reported after 3–5 months of continuous use: sleep benefit fades, fat loss stalls, IGF-1 drifts down.", "extra": "After three consecutive cycles, extend the break to 6–8 weeks — cumulative feedback suppression of your own GHRH takes longer to reset."}, "CP10": {"on": 84, "off": 28, "label": "12 weeks on, 4 weeks off", "grade": "Real mechanism", "weekly": "5 days on, 2 off", "why": "The break is for the Ipamorelin half, not the CJC. GHRH receptors do not desensitise; ghrelin receptors do. Your book's tiers (p87): 100 mcg each for 8 weeks at basic level, 200–300 mcg for 8–12 weeks beyond that.", "ifnot": "Blunted GH pulse, and you lose the thing you are paying for. The book also flags that CJC without DAC desensitises within the week, which is what the 5-on-2-off pattern is for (p84).", "extra": "If you run this, drop standalone Ipamorelin — you would be stacking the same receptor twice."}, "TA10": {"on": 0, "off": 0, "label": "Continuous — 3 to 6 months, then review", "grade": "Web · not in your book", "weekly": "", "why": "No receptor downregulation mechanism. The original hepatitis protocols ran multi-year continuous courses without cycling. Your book does not cover this compound at all.", "ifnot": "No established consequence. This is a change from what the app said before — the 3-months-on, 1-month-off figure was convention rather than evidence.", "extra": "Review at 3 to 6 months rather than stopping to a schedule."}, "MS40": {"on": 56, "off": 28, "label": "8 weeks on, 4 weeks off", "grade": "Disputed · book caps it", "weekly": "", "why": "Your book sets a hard maximum of 8 weeks at 2–3 doses a week (p99). Web sources split three ways: run it continuously, run 8–12 weeks then break, or 4 on 4 off. One source states plainly that no rationale for the break can be reported.", "ifnot": "At low doses, probably nothing — the effect is transcriptional, not receptor-based. At higher doses the concern is AMPK–mTOR balance working against muscle.", "extra": "Worth noting: the book says 2–3 doses a week, not your 5-on-2-off. Same weekly total in fewer, larger injections."}, "KL80": {"on": 84, "off": 28, "label": "8–12 weeks on, 4 weeks off", "grade": "Set by the GHK-Cu", "weekly": "5 days on, 2 off", "why": "The GHK-Cu component decides, and the limit is copper handling rather than receptor fatigue — copper is a mineral your body clears slowly. The other three components are shorter: BPC-157 4–12 weeks, KPV 4–12, TB-500 4–8.", "ifnot": "Copper accumulation is the theoretical concern, which is why serum copper and ceruloplasmin are on your blood request.", "extra": "Peptide Hub suggests a much shorter 30 days on, 14 off for this blend. Either is defensible."}, "XA10": {"on": 21, "off": 14, "label": "2–4 weeks on, 2 weeks off", "grade": "Actually studied", "weekly": "", "why": "One of the very few where the on/off pattern appears in published work rather than convention. The effect genuinely fades with continuous use and returns after a break. Your book: 10–30 days on, 10–14 days off (p110).", "ifnot": "The focus and clarity effect tails off. It is not a safety issue, it simply stops working.", "extra": "The stroke research used courses of 5 to 10 days, in one trial repeated after a 20-day break. Never dose it at night."}, "SK10": {"on": 21, "off": 14, "label": "2–4 weeks on, 2 weeks off", "grade": "Actually studied", "weekly": "", "why": "Your book gives 14–30 days on with a 2-week break (p111), and its own table marks Selank as building no tolerance — which is why the courses are short rather than long.", "ifnot": "No tolerance mechanism is described, so this is closer to good practice than a requirement.", "extra": "Usually cycled alongside Semax. Unlike Semax it does not interfere with sleep, so evening dosing is fine."}, "DS10": {"on": 20, "off": 21, "label": "10–20 nights, then 2–4 weeks off", "grade": "Book", "weekly": "", "why": "\"Cycle: 10–20 nights | Break: 2–4 weeks\" (p94). Shorter than most people assume.", "ifnot": "No desensitisation is described in the literature. Some sources say run it continuously, or only on poor-sleep nights.", "extra": "30–60 minutes before sleep. Set here to 20 nights on, 3 weeks off — the middle of the book's range."}, "ET50": {"on": 20, "off": 150, "label": "20 days, then months off — 1 or 2 courses a year", "grade": "Clearest protocol you have", "weekly": "", "why": "\"Classic cycle: 20 consecutive days, 1–2 cycles per year\" (p98). Straight from the original Khavinson work. This is a pulse, not a maintenance compound.", "ifnot": "Not applicable — running it continuously is simply not how the compound was studied.", "extra": "Other sources say 10–20 days, two or three times a year. Either stays within the same shape."}, "KP10": {"on": 42, "off": 28, "label": "4–12 weeks, 4 weeks off", "grade": "Convention", "weekly": "", "why": "Your book gives 4–12 weeks at 150–750 mcg a day (p108). Web sources agree there is no desensitisation mechanism — KPV calms inflammation rather than driving a signal that provokes shutdown.", "ifnot": "No rationale can be given. The FDA's compounding advisory notes no human exposure data for KPV by any route.", "extra": "Best used as a course for a gut or skin flare, then stopped, rather than run indefinitely."}, "NJ1000": {"on": 0, "off": 0, "label": "Continuous — loading, then maintenance", "grade": "No protocol in your book", "weekly": "", "why": "It refills a cofactor your cells constantly consume. No receptor, so nothing to desensitise. Your book covers NAD+ biology at length but gives no injection protocol.", "ifnot": "Blood NAD+ simply falls back when you stop. That is the whole mechanism.", "extra": "Common pattern is a loading series of several weeks, then a lower maintenance frequency. Yours at twice weekly is a maintenance dose."}, "CU100": {"on": 84, "off": 35, "label": "8–12 weeks on, 4–5 weeks off", "grade": "Book · copper, not receptors", "weekly": "5 days on, 2 off", "why": "\"Cycle: 8–12 weeks\" at 1–4 mg a day (p91). The limit is copper handling, not receptor fatigue — the gene-expression mechanism does not desensitise.", "ifnot": "Theoretical copper accumulation. Some sources say no cycling is needed at all and run 3–6 months continuously.", "extra": "Check the vial has not darkened before drawing — the book flags colour change as a sign of oxidation."}, "AD10": {"on": 0, "off": 0, "label": "Can be run continuously", "grade": "Book states it plainly", "weekly": "", "why": "Your book's protocol table says \"Cycle: can be continuous\" (p93). No GH-axis involvement, so nothing to suppress — it is the fat-burning fragment with the growth signalling removed.", "ifnot": "Nothing described. Run it for the body-composition goal, then stop when the goal is met.", "extra": "The reconstitution matters more than the cycle here: 0.6% acetic acid or CAG water, never plain BAC — it forms threads and will not dissolve."}, "RA10": {"on": 28, "off": 28, "label": "4 weeks on, 4 weeks off", "grade": "Trial length, not a cycle", "weekly": "", "why": "The clinical trials ran 28-day courses. That is where the number comes from — it is a study design, not an established cycling requirement. Your book mentions ARA-290 once in passing with no protocol.", "ifnot": "Unknown. There is no long-duration human data to draw on.", "extra": "Repeat courses are judged on symptom response rather than a calendar."}, "BC10": {"on": 56, "off": 28, "label": "A course, not a cycle — 4–8 weeks", "grade": "Goal-directed", "weekly": "5 days on, 2 off", "why": "Run it until the injury resolves, then stop. Your book says 4–12 weeks with a 2–4 week break mandatory (p78), but contradicts itself on p74 saying no mandatory rest is required between short cycles. Web sources are blunter: the 8-on-4-off convention has no source and was borrowed from steroid practice, where the reasoning does not transfer.", "ifnot": "BPC-157 suppresses nothing, so the usual rationale does not apply even in principle. The genuine long-term concern is pro-angiogenic effect, not desensitisation.", "extra": "If the injury improved but is not finished, a break and a second course is defensible. Inject near the site where practical."}, "BB20": {"on": 42, "off": 28, "label": "4–8 weeks together, then stop", "grade": "Goal-directed", "weekly": "5 days on, 2 off", "why": "TB-500 is the shorter of the pair at 4–8 weeks (p89), so the stack runs to that. Your book structures it in three phases: a 2-week loading phase at 5–10 mg a week, then 4–6 weeks maintenance at 2–5 mg a week, then a completion phase at 2 mg a week.", "ifnot": "Same as BPC-157 — the concern is pro-angiogenic over long periods, not tolerance.", "extra": "The book calls this the most powerful regeneration combination it covers. BPC prepares the ground, TB-500 sends the cells."}, "LC600": {"on": 0, "off": 0, "label": "Continuous — not a peptide", "grade": "Supplement", "weekly": "", "why": "A nutrient cofactor. No cycling applies.", "ifnot": "Nothing.", "extra": "Your book only covers the oral form — 2 g of L-Carnitine L-Tartrate pre-training (p249) — and notes a synergy with AOD-9604."}};
 const CKEY='mypeps-cycles';
 const CATCOL={"METABOLIC": "#0D8A91", "GH AXIS": "#0E7FC4", "REPAIR": "#157A4A", "COGNITIVE": "#1B63B8", "SLEEP": "#17567F", "IMMUNE": "#0E8FA8", "LONGEVITY": "#126E9C"};
@@ -11088,12 +11108,26 @@ function take(d){
 /* ---------- counts ---------- */
 function load(){ try{stock=JSON.parse(localStorage.getItem(KEY))||{};}catch(e){stock={};}
   idb('get').then(h=>{if(h)fileHandle=h; showWhere();});
-  idb('getDir').then(h=>{if(h)dirHandle=h; showWhere();}); paint(); }
+  idb('getDir').then(h=>{if(h)dirHandle=h; showWhere();});
+  paint(); showWhere(); clean(); }
 function save(){ try{localStorage.setItem(KEY,JSON.stringify(stock));}catch(e){} }
 function mark(){ poppy=true; const b=document.getElementById('saveBtn');
-  b.classList.add('dirty'); b.textContent='⚠  BACK UP & FINISH'; }
+  b.classList.add('dirty'); b.textContent='\u26A0  BACK UP \u2014 unsaved changes'; }
+function markBackedUp(){ try{ localStorage.setItem(BKEY,new Date().toISOString()); }catch(e){}
+  setTimeout(function(){ showWhere(); clean(); },50); }
+function lastBackup(){ try{ return localStorage.getItem(BKEY); }catch(e){ return null; } }
+function daysSinceBackup(){ var b=lastBackup(); if(!b) return null;
+  return Math.floor((Date.now()-new Date(b).getTime())/86400000); }
 function clean(){ poppy=false; const b=document.getElementById('saveBtn');
-  b.classList.remove('dirty'); b.textContent='✓  BACK UP & FINISH'; }
+  if(!b) return;
+  b.classList.remove('dirty');
+  var dn=daysSinceBackup();
+  b.textContent = dn===null ? '\u2191  BACK UP \u2014 never done'
+                : dn===0 ? '\u2713  Backed up today'
+                : dn===1 ? '\u2191  BACK UP \u2014 last done yesterday'
+                : '\u2191  BACK UP \u2014 last done '+dn+' days ago';
+  b.classList.toggle('stale', dn===null || dn>=7); }
+
 function bump(sku,d){ stock[sku]=Math.max(0,(stock[sku]||0)+(d||0)); paint(); save(); mark(); }
 
 
@@ -11183,20 +11217,27 @@ async function writeFile(){ if(!fileHandle) return false;
 function showWhere(){
   const el=document.getElementById('where'); if(!el) return;
   const btn=document.getElementById('pickBtn');
-  if(dirHandle){
-    el.innerHTML='Backing up into <b>'+dirHandle.name+'</b><br>'
-      +'Each backup is a new dated file, so nothing gets overwritten.';
+  var dn=daysSinceBackup();
+  var age = dn===null ? '<b class="bad">You have never backed up.</b> Everything lives only on this phone.'
+    : dn===0 ? '<b class="good">Backed up today.</b>'
+    : dn===1 ? 'Last backed up <b>yesterday</b>.'
+    : dn<7 ? 'Last backed up <b>'+dn+' days ago</b>.'
+    : '<b class="bad">Last backed up '+dn+' days ago.</b>';
+  var what='<div class="bkWhat">A backup holds your stock counts, every dose logged, which vials are open, '
+    +'your cycles and your own mixing figures. One file restores all of it on a new phone.</div>';
+  if(dirHandle && dirHandle.name){
+    el.innerHTML=age+'<br>Backups land in <b>'+dirHandle.name+'</b>, a new dated file each time.'+what;
     if(btn){ btn.textContent='\uD83D\uDCC1  Change the folder'; btn.style.display=''; }
     return;
   }
   if(window.showDirectoryPicker){
-    el.innerHTML='Pick your OneDrive folder once and every backup lands there, dated.';
+    el.innerHTML=age+'<br>Pick your OneDrive folder once and every backup lands there, dated.'+what;
     if(btn) btn.style.display='';
   }else if(navigator.canShare){
-    el.innerHTML='<b>Backing up opens your share sheet</b> \u2014 choose OneDrive and it files itself.';
+    el.innerHTML=age+'<br><b>Backing up opens your share sheet.</b> Choose OneDrive, then your Peptide folder.'+what;
     if(btn) btn.style.display='none';
   }else{
-    el.innerHTML='Backing up downloads a dated file \u2014 move it into OneDrive.';
+    el.innerHTML=age+'<br>Backing up downloads a dated file \u2014 move it into your OneDrive Peptide folder.'+what;
     if(btn) btn.style.display='none';
   }
 }
@@ -11208,7 +11249,7 @@ async function backupAs(){
       const fh=await window.showSaveFilePicker({suggestedName:name,
         types:[{description:'MyPeps backup',accept:{'application/json':['.json']}}]});
       const w=await fh.createWritable(); await w.write(text); await w.close();
-      clean(); toast('Saved '+fh.name); return;
+      markBackedUp(); clean(); toast('Saved '+fh.name); return;
     }catch(e){ if(e&&e.name==='AbortError'){ toast('Cancelled'); return; } }
   }
   try{
@@ -11235,7 +11276,7 @@ async function backup(){
       if(perm==='granted'){
         const fh=await dirHandle.getFileHandle(name,{create:true});
         const w=await fh.createWritable(); await w.write(text); await w.close();
-        clean(); toast('Saved '+name+' to '+dirHandle.name); return;
+        markBackedUp(); clean(); toast('Saved '+name+' to '+dirHandle.name); return;
       }
     }catch(e){}
   }
@@ -11249,7 +11290,7 @@ async function backup(){
         types:[{description:'MyPeps backup',accept:{'application/json':['.json']}}]
       });
       const w=await fh.createWritable(); await w.write(text); await w.close();
-      clean(); toast('Saved '+fh.name);
+      markBackedUp(); clean(); toast('Saved '+fh.name);
       if(!dirHandle) toast('Tip — set a folder above and it saves there every time');
       return;
     }catch(e){
@@ -11262,7 +11303,7 @@ async function backup(){
     const file=new File([text],name,{type:'application/json'});
     if(navigator.canShare && navigator.canShare({files:[file]})){
       await navigator.share({files:[file],title:name});
-      clean(); toast('Sent — choose OneDrive'); return;
+      markBackedUp(); clean(); toast('Sent — choose OneDrive'); return;
     }
   }catch(err){
     if(err && err.name==='AbortError'){ toast('Backup cancelled'); return; }
@@ -11272,7 +11313,7 @@ async function backup(){
   const a=document.createElement('a');
   a.href=URL.createObjectURL(new Blob([text],{type:'application/json'}));
   a.download=name;
-  document.body.appendChild(a);a.click();a.remove(); clean();
+  document.body.appendChild(a);a.click();a.remove(); markBackedUp(); clean();
   toast('Downloaded '+name+' — move it into OneDrive');
 }
 function restore(inp){ const f=inp.files[0]; if(!f) return;
@@ -11332,8 +11373,8 @@ if('serviceWorker' in navigator){
     });
   }).catch(()=>{});
 }
-const APP_VERSION='2026-10-13';
-const BUILD_NO=49;
+const APP_VERSION='2026-10-13b';
+const BUILD_NO=51;
 const BUILT_AT='2026-10-12T09:00:00';
 (function(){
   var d=new Date(BUILT_AT);
