@@ -11265,57 +11265,102 @@ async function backupAs(){
 
 async function backup(){
   save();
-  const name=backupName();
-  const text=payload();
-
-  /* 1. a folder is already set — drop a dated file in, no questions */
-  if(dirHandle){
+  /* a folder is already set on a computer — just write it */
+  if(dirHandle && dirHandle.name){
     try{
       let perm=await dirHandle.queryPermission({mode:'readwrite'});
       if(perm!=='granted') perm=await dirHandle.requestPermission({mode:'readwrite'});
       if(perm==='granted'){
-        const fh=await dirHandle.getFileHandle(name,{create:true});
-        const w=await fh.createWritable(); await w.write(text); await w.close();
-        markBackedUp(); clean(); toast('Saved '+name+' to '+dirHandle.name); return;
+        const fh=await dirHandle.getFileHandle(backupName(),{create:true});
+        const w=await fh.createWritable(); await w.write(payload()); await w.close();
+        markBackedUp(); clean(); toast('Saved into '+dirHandle.name); return;
       }
     }catch(e){}
   }
-
-  /* 2. on a computer, ASK WHERE — this must come before anything that
-        swallows the tap, or the picker is refused for lack of a gesture */
-  if(window.showSaveFilePicker){
-    try{
-      const fh=await window.showSaveFilePicker({
-        suggestedName:name,
-        types:[{description:'MyPeps backup',accept:{'application/json':['.json']}}]
-      });
-      const w=await fh.createWritable(); await w.write(text); await w.close();
-      markBackedUp(); clean(); toast('Saved '+fh.name);
-      if(!dirHandle) toast('Tip — set a folder above and it saves there every time');
-      return;
-    }catch(e){
-      if(e && e.name==='AbortError'){ toast('Backup cancelled'); return; }
-    }
-  }
-
-  /* 3. a phone — the share sheet, so OneDrive can take it */
-  try{
-    const file=new File([text],name,{type:'application/json'});
-    if(navigator.canShare && navigator.canShare({files:[file]})){
-      await navigator.share({files:[file],title:name});
-      markBackedUp(); clean(); toast('Sent — choose OneDrive'); return;
-    }
-  }catch(err){
-    if(err && err.name==='AbortError'){ toast('Backup cancelled'); return; }
-  }
-
-  /* 4. nothing else available */
-  const a=document.createElement('a');
-  a.href=URL.createObjectURL(new Blob([text],{type:'application/json'}));
-  a.download=name;
-  document.body.appendChild(a);a.click();a.remove(); markBackedUp(); clean();
-  toast('Downloaded '+name+' — move it into OneDrive');
+  openBackupMenu();
 }
+
+function openBackupMenu(){
+  var canFolder = !!window.showDirectoryPicker;
+  var canPick   = !!window.showSaveFilePicker;
+  var canShare  = !!(navigator.canShare && navigator.canShare({files:[new File([''],'a.json',{type:'application/json'})]}));
+  var h='<div class="sh"><h2>Back up</h2>'
+    +'<button class="shx" onclick="closeBackupMenu()">&times;</button></div>'
+    +'<div class="shfor">WHERE SHOULD IT GO</div><div class="repList">';
+
+  if(canFolder){
+    h+='<div class="repItem" onclick="bkFolder()"><span class="repIc">&#128193;</span>'
+      +'<div><b>Pick a folder once</b><i>Then every backup lands there with no questions. '
+      +'Best option on a computer.</i></div><span class="repGo">&rsaquo;</span></div>';
+  }
+  if(canPick){
+    h+='<div class="repItem" onclick="bkSaveAs()"><span class="repIc">&#128190;</span>'
+      +'<div><b>Choose where to save it</b><i>Opens the save dialog so you can navigate to OneDrive.</i></div>'
+      +'<span class="repGo">&rsaquo;</span></div>';
+  }
+  h+='<div class="repItem" onclick="bkDownload()"><span class="repIc">&#11015;</span>'
+    +'<div><b>Download it</b><i>Goes to your Downloads folder. On a phone, open the OneDrive app '
+    +'and upload it from there \u2014 this is the reliable route on Android.</i></div>'
+    +'<span class="repGo">&rsaquo;</span></div>';
+  if(canShare){
+    h+='<div class="repItem" onclick="bkShare()"><span class="repIc">&#128228;</span>'
+      +'<div><b>Share it</b><i>Opens the share sheet. OneDrive does not always accept .json files '
+      +'this way \u2014 if it is missing from the list, use Download instead.</i></div>'
+      +'<span class="repGo">&rsaquo;</span></div>';
+  }
+  h+='</div><p class="repNote">The file holds everything: stock, dose history, open vials, '
+    +'cycles and your mixing figures.</p>';
+  document.getElementById('repIn').innerHTML=h;
+  document.getElementById('reports').classList.add('on');
+}
+function closeBackupMenu(){ document.getElementById('reports').classList.remove('on'); }
+
+async function bkFolder(){
+  closeBackupMenu();
+  try{
+    dirHandle=await window.showDirectoryPicker({mode:'readwrite'});
+    await idb('putDir',dirHandle);
+    const fh=await dirHandle.getFileHandle(backupName(),{create:true});
+    const w=await fh.createWritable(); await w.write(payload()); await w.close();
+    markBackedUp(); clean(); showWhere();
+    toast('Saved into '+dirHandle.name+' \u2014 it will go there from now on');
+  }catch(e){ if(e && e.name!=='AbortError') toast('Could not use that folder'); }
+}
+async function bkSaveAs(){
+  closeBackupMenu();
+  try{
+    const fh=await window.showSaveFilePicker({suggestedName:backupName(),
+      types:[{description:'MyPeps backup',accept:{'application/json':['.json']}}]});
+    const w=await fh.createWritable(); await w.write(payload()); await w.close();
+    markBackedUp(); clean(); toast('Saved '+fh.name);
+  }catch(e){ if(e && e.name!=='AbortError') toast('Could not save there'); }
+}
+function bkDownload(){
+  closeBackupMenu();
+  var name=backupName();
+  var a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([payload()],{type:'application/json'}));
+  a.download=name;
+  document.body.appendChild(a); a.click(); a.remove();
+  markBackedUp(); clean();
+  toast('Downloaded '+name);
+}
+async function bkShare(){
+  closeBackupMenu();
+  var name=backupName();
+  try{
+    var f=new File([payload()],name,{type:'application/json'});
+    if(navigator.canShare && navigator.canShare({files:[f]})){
+      await navigator.share({files:[f],title:name});
+      markBackedUp(); clean(); toast('Sent'); return;
+    }
+    toast('Sharing not available \u2014 use Download');
+  }catch(err){
+    if(err && err.name==='AbortError'){ toast('Cancelled'); return; }
+    toast('Share failed \u2014 use Download instead');
+  }
+}
+
 function restore(inp){ const f=inp.files[0]; if(!f) return;
   const r=new FileReader();
   r.onload=e=>{ try{ const d=JSON.parse(e.target.result);
@@ -11373,8 +11418,8 @@ if('serviceWorker' in navigator){
     });
   }).catch(()=>{});
 }
-const APP_VERSION='2026-10-13b';
-const BUILD_NO=51;
+const APP_VERSION='2026-10-13c';
+const BUILD_NO=52;
 const BUILT_AT='2026-10-12T09:00:00';
 (function(){
   var d=new Date(BUILT_AT);
