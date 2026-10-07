@@ -11255,7 +11255,7 @@ if('serviceWorker' in navigator){
     setInterval(()=>reg.update().catch(()=>{}), 60000);
   }).catch(()=>{});
 }
-const APP_VERSION='2026-10-11b';
+const APP_VERSION='2026-10-11c';
 document.getElementById('ver').innerHTML='<b>'+APP_VERSION+'</b><i>TAP TO UPDATE</i>';
 buildSchedule();
 
@@ -11472,47 +11472,60 @@ function stamp(){ return new Date().toLocaleString('en-AU',{dateStyle:'full',tim
 
 function reportCss(){
   return '<style>'
-   +'@page{size:A4;margin:14mm}'
+   +'@page{size:A4;margin:12mm}'
    +'*{box-sizing:border-box;margin:0;padding:0}'
-   +'body{font-family:-apple-system,"Helvetica Neue",Arial,sans-serif;color:#0E1A26;padding:8px;font-size:12px}'
-   +'h1{font-size:25px;font-weight:800;letter-spacing:-.7px}'
-   +'.meta{font-size:11px;color:#5A6B7C;margin:5px 0 18px;font-weight:600}'
-   +'h2{font-size:12px;font-weight:800;letter-spacing:1.3px;color:#5A6B7C;margin:24px 0 9px;'
-     +'border-bottom:2px solid #0E1A26;padding-bottom:6px}'
-   +'table{width:100%;border-collapse:collapse;font-size:12px}'
-   +'th{text-align:left;font-size:9px;font-weight:800;letter-spacing:.9px;color:#5A6B7C;'
-     +'padding:8px;border-bottom:1.5px solid #C6D4E2}'
-   +'td{padding:9px 8px;border-bottom:1px solid #E7EEF5;vertical-align:top}'
+   +'html{-webkit-text-size-adjust:100%}'
+   +'body{font-family:-apple-system,"Helvetica Neue",Arial,sans-serif;color:#0E1A26;'
+     +'padding:18px 14px 40px;font-size:16px;line-height:1.5;background:#fff}'
+   +'h1{font-size:30px;font-weight:800;letter-spacing:-.8px;line-height:1.1}'
+   +'.meta{font-size:14px;color:#5A6B7C;margin:7px 0 22px;font-weight:600}'
+   +'h2{font-size:14px;font-weight:800;letter-spacing:1.2px;color:#5A6B7C;margin:30px 0 11px;'
+     +'border-bottom:3px solid #0E1A26;padding-bottom:8px}'
+   /* tables become stacked cards on a phone, stay tables when printing */
+   +'.tw{width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch}'
+   +'table{width:100%;border-collapse:collapse;font-size:15px;min-width:520px}'
+   +'th{text-align:left;font-size:11px;font-weight:800;letter-spacing:.8px;color:#5A6B7C;'
+     +'padding:11px 10px;border-bottom:2px solid #C6D4E2;white-space:nowrap}'
+   +'td{padding:13px 10px;border-bottom:1px solid #E7EEF5;vertical-align:top}'
    +'tr:nth-child(even) td{background:#F6F9FC}'
-   +'.sku{font-family:"SF Mono",Consolas,monospace;font-weight:800;font-size:11px}'
-   +'.num{text-align:right;font-family:"SF Mono",Consolas,monospace;font-weight:800}'
+   +'.sku{font-family:"SF Mono",Consolas,monospace;font-weight:800;font-size:14px;white-space:nowrap}'
+   +'.num{text-align:right;font-family:"SF Mono",Consolas,monospace;font-weight:800;font-size:17px}'
    +'.warn{color:#A86418;font-weight:800}.ok{color:#157A4A;font-weight:800}.muted{color:#93A4B5}'
-   +'.sum{display:flex;gap:10px;margin-bottom:6px}'
-   +'.sum div{flex:1;border:1.5px solid #C6D4E2;border-radius:9px;padding:12px;text-align:center}'
-   +'.sum b{display:block;font-size:24px;font-weight:800;letter-spacing:-.6px}'
-   +'.sum span{font-size:8.5px;font-weight:800;letter-spacing:.9px;color:#5A6B7C}'
-   +'.note{background:#FFF4E6;border:1.5px solid #E8CDA8;border-radius:8px;padding:11px;'
-     +'font-size:11.5px;color:#8A4B12;line-height:1.55;margin-top:10px}'
-   +'.pill{display:inline-block;font-size:10px;font-weight:800;color:#fff;padding:3px 8px;'
-     +'border-radius:6px;margin:2px 3px 2px 0}'
-   +'.foot{margin-top:26px;font-size:10px;color:#93A4B5;border-top:1px solid #E7EEF5;padding-top:10px}'
+   +'.sum{display:flex;gap:10px;margin-bottom:8px;flex-wrap:wrap}'
+   +'.sum div{flex:1;min-width:92px;border:2px solid #C6D4E2;border-radius:12px;padding:16px 10px;text-align:center}'
+   +'.sum b{display:block;font-size:34px;font-weight:800;letter-spacing:-1px;line-height:1}'
+   +'.sum span{font-size:10px;font-weight:800;letter-spacing:.9px;color:#5A6B7C;display:block;margin-top:7px}'
+   +'.note{background:#FFF4E6;border:2px solid #E8CDA8;border-radius:10px;padding:15px;'
+     +'font-size:14.5px;color:#8A4B12;line-height:1.6;margin-top:14px}'
+   +'.pill{display:inline-block;font-size:13px;font-weight:800;color:#fff;padding:5px 11px;'
+     +'border-radius:8px;margin:3px 4px 3px 0}'
+   +'.foot{margin-top:34px;font-size:13px;color:#93A4B5;border-top:1px solid #E7EEF5;padding-top:14px}'
    +'.pb{page-break-before:always}'
-   +'@media print{.noprint{display:none}}'
-   +'.noprint{margin:22px 0;display:flex;gap:8px}'
-   +'.noprint button{flex:1;padding:14px;border-radius:9px;border:none;background:#0E7FC4;'
-     +'color:#fff;font-size:14px;font-weight:800;cursor:pointer}'
+   +'.bar{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:2px solid #E7EEF5;'
+     +'padding:12px 14px;padding-bottom:calc(12px + env(safe-area-inset-bottom,0px));'
+     +'display:flex;gap:9px;box-shadow:0 -4px 20px rgba(0,0,0,.08)}'
+   +'.bar button{flex:1;padding:16px;border-radius:11px;border:none;background:#0E7FC4;'
+     +'color:#fff;font-size:15px;font-weight:800;cursor:pointer}'
+   +'.bar button.sec{background:#fff;color:#44566A;border:2px solid #C6D4E2}'
+   +'@media print{.bar{display:none}body{padding:6px;font-size:12px}'
+     +'h1{font-size:25px}.meta{font-size:11px}h2{font-size:12px;margin:22px 0 9px}'
+     +'table{font-size:12px;min-width:0}th{font-size:9px;padding:8px}td{padding:9px 8px}'
+     +'.sum b{font-size:24px}.sum span{font-size:8.5px}.num{font-size:12px}'
+     +'.sku{font-size:11px}.note{font-size:11.5px}.pill{font-size:10px;padding:3px 8px}'
+     +'.foot{font-size:10px;margin-top:26px}}'
    +'</style>'; }
 
 function openReport(title, html){
   var w=window.open('','_blank');
   if(!w){ toast('Allow pop-ups to see reports'); return; }
   w.document.write('<!DOCTYPE html><html><head><meta charset="utf-8">'
-    +'<meta name="viewport" content="width=device-width,initial-scale=1">'
+    +'<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=5,user-scalable=yes">'
     +'<title>MyPeps \u2014 '+title+'</title>'+reportCss()+'</head><body>'
     +'<h1>'+title+'</h1><div class="meta">MyPeps &middot; '+stamp()+'</div>'
     +html
     +'<div class="foot">Kept on this device only. Printed '+stamp()+'.</div>'
-    +'<div class="noprint"><button onclick="window.print()">Print or save as PDF</button></div>'
+    +'<div class="bar"><button onclick="window.print()">Print or save as PDF</button>'
+    +'<button class="sec" onclick="window.close()">Close</button></div>'
     +'</body></html>');
   w.document.close();
 }
@@ -11533,8 +11546,8 @@ function repStock(){
     +'<div><b>'+kinds+'</b><span>COMPOUNDS</span></div>'
     +'<div><b>'+low.length+'</b><span>LOW OR OUT</span></div></div>'
     +(low.length?'<h2>NEEDS REORDERING</h2><p style="line-height:1.8">'+low.map(esc).join(' &middot; ')+'</p>':'')
-    +'<h2>FULL STOCK</h2><table><tr><th>Code</th><th>Compound</th><th>Vial</th>'
-    +'<th style="text-align:right">Held</th><th>Vial in use</th></tr>'+rows+'</table>';
+    +'<h2>FULL STOCK</h2><div class="tw"><table><tr><th>Code</th><th>Compound</th><th>Vial</th>'
+    +'<th style="text-align:right">Held</th><th>Vial in use</th></tr>'+rows+'</table></div></div>';
 }
 function repToday(){
   var DOW=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
@@ -11558,8 +11571,8 @@ function repToday(){
   return '<div class="sum"><div><b>'+done+'/'+due.length+'</b><span>DONE TODAY</span></div>'
     +'<div><b>'+DOW[now.getDay()].slice(0,3).toUpperCase()+'</b><span>'+niceDate(todayKey()).toUpperCase()+'</span></div>'
     +'<div><b>'+(due.length-done)+'</b><span>STILL DUE</span></div></div>'
-    +'<h2>TODAY</h2><table><tr><th></th><th>Code</th><th>Compound</th><th>When</th>'
-    +'<th>Dose</th><th style="text-align:right">Draw to</th><th>Vial</th></tr>'+rows+'</table>';
+    +'<h2>TODAY</h2><div class="tw"><table><tr><th></th><th>Code</th><th>Compound</th><th>When</th>'
+    +'<th>Dose</th><th style="text-align:right">Draw to</th><th>Vial</th></tr>'+rows+'</table></div></div>';
 }
 function repHistory(days){
   var log=logSince(days), byDay={}, bySku={};
@@ -11592,11 +11605,11 @@ function repHistory(days){
   return '<div class="sum"><div><b>'+log.length+'</b><span>DOSES</span></div>'
     +'<div><b>'+dayKeys.length+'</b><span>DAYS LOGGED</span></div>'
     +'<div><b>'+adh+'%</b><span>ADHERENCE</span></div></div>'
-    +(tally?'<h2>BY COMPOUND &middot; LAST '+days+' DAYS</h2><table><tr><th>Code</th><th>Compound</th>'
+    +(tally?'<h2>BY COMPOUND &middot; LAST '+days+' DAYS</h2><div class="tw"><table><tr><th>Code</th><th>Compound</th>'
       +'<th>Dose</th><th style="text-align:right">Taken</th><th style="text-align:right">Due</th>'
-      +'<th style="text-align:right">%</th></tr>'+tally+'</table>':'')
-    +(diary?'<h2>DAY BY DAY</h2><table><tr><th>Date</th><th style="text-align:right">Doses</th>'
-      +'<th>What was taken</th></tr>'+diary+'</table>'
+      +'<th style="text-align:right">%</th></tr>'+tally+'</table></div></div>':'')
+    +(diary?'<h2>DAY BY DAY</h2><div class="tw"><table><tr><th>Date</th><th style="text-align:right">Doses</th>'
+      +'<th>What was taken</th></tr>'+diary+'</table></div></div>'
       :'<p class="muted" style="margin-top:14px">Nothing logged in this period.</p>');
 }
 function repVials(){
@@ -11613,10 +11626,10 @@ function repVials(){
   });
   return '<div class="sum"><div><b>'+open+'</b><span>VIALS OPEN</span></div>'
     +'<div><b>'+expiring+'</b><span>NEED REPLACING</span></div></div>'
-    +(rows?'<h2>VIALS IN USE</h2><table><tr><th>Code</th><th>Compound</th><th>Mixed</th>'
+    +(rows?'<h2>VIALS IN USE</h2><div class="tw"><table><tr><th>Code</th><th>Compound</th><th>Mixed</th>'
       +'<th style="text-align:right">Age</th><th style="text-align:right">Used</th>'
       +'<th style="text-align:right">Left</th><th style="text-align:right">Remaining</th>'
-      +'<th>Expires in</th></tr>'+rows+'</table>'
+      +'<th>Expires in</th></tr>'+rows+'</table></div></div>'
       :'<p class="muted" style="margin-top:14px">No vials open.</p>')
     +'<div class="note">A mixed vial keeps about 30 days refrigerated, whatever the dose count says. '
     +'Whichever runs out first decides when you mix a fresh one.</div>';
@@ -11633,8 +11646,8 @@ function repCycles(){
     rows+='<tr><td class="sku">'+s+'</td><td><b>'+esc(d.n||s)+'</b></td>'
       +'<td>'+esc(spec.label)+'</td><td>'+spec.grade+'</td><td>'+where+'</td></tr>';
   });
-  return '<h2>CYCLES</h2><table><tr><th>Code</th><th>Compound</th><th>Recommended</th>'
-    +'<th>Evidence</th><th>Where you are</th></tr>'+rows+'</table>'
+  return '<h2>CYCLES</h2><div class="tw"><table><tr><th>Code</th><th>Compound</th><th>Recommended</th>'
+    +'<th>Evidence</th><th>Where you are</th></tr>'+rows+'</table></div></div>'
     +'<div class="note"><b>Evidence column.</b> STUDIED means on/off patterns appear in published work. '
     +'SETTLED means broad agreement. CONVENTION means common practice without strong evidence. '
     +'DISPUTED means sources genuinely disagree. GOAL-BASED means run it until the job is done, then stop.</div>';
@@ -11655,10 +11668,10 @@ function repProtocol(){
         +d.warn.map(function(w){return '&bull; '+esc(w);}).join('<br>')+'</td></tr>';
     }
   });
-  return '<h2>MIXING AND DOSING</h2><table><tr><th>Code</th><th>Compound</th><th>Vial / water</th>'
-    +'<th>Gives</th><th>Dose</th><th>When</th><th>Cycle</th></tr>'+rows+'</table>'
-    +'<h2 class="pb">THINGS TO WATCH</h2><table><tr><th>Code</th><th>Compound</th><th>Notes</th></tr>'
-    +warns+'</table>';
+  return '<h2>MIXING AND DOSING</h2><div class="tw"><table><tr><th>Code</th><th>Compound</th><th>Vial / water</th>'
+    +'<th>Gives</th><th>Dose</th><th>When</th><th>Cycle</th></tr>'+rows+'</table></div></div>'
+    +'<h2 class="pb">THINGS TO WATCH</h2><div class="tw"><table><tr><th>Code</th><th>Compound</th><th>Notes</th></tr>'
+    +warns+'</table></div></div>';
 }
 
 
@@ -11698,7 +11711,7 @@ function repLabels(){
   return '<h2>VIAL LABELS</h2><p style="font-size:11.5px;color:#5A6B7C;margin-bottom:10px">'
     +'Printed at 40 \u00d7 20 mm, the size of your label stock. '
     +'For the printer use the original PNG files rather than this page.</p>'
-    +'<table><tr><th>Code</th><th>Compound</th><th>Label</th></tr>'+rows+'</table>';
+    +'<div class="tw"><div class="tw"><table><tr><th>Code</th><th>Compound</th><th>Label</th></tr>'+rows+'</table></div></div>';
 }
 
 function runReport(which){
