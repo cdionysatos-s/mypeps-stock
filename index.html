@@ -386,6 +386,7 @@ h1{font-size:27px;font-weight:800;letter-spacing:-.9px;line-height:1}
 #camWrap{position:fixed;inset:0;background:#000;z-index:100;display:none;flex-direction:column}
 #camWrap.on{display:flex}
 #cam{flex:1;width:100%;object-fit:cover}
+#camWrap.lock .aim{border-color:var(--good)}
 .aim{position:absolute;left:50%;top:46%;transform:translate(-50%,-50%);width:66vw;height:66vw;
   max-width:330px;max-height:330px;border:3px solid var(--brand);border-radius:22px;
   box-shadow:0 0 0 100vmax rgba(0,0,0,.6)}
@@ -399,6 +400,7 @@ h1{font-size:27px;font-weight:800;letter-spacing:-.9px;line-height:1}
   box-shadow:0 6px 24px rgba(0,0,0,.45);z-index:3}
 .shutter:active{transform:translateX(-50%) scale(.96);background:var(--brand2)}
 .shutter.busy{background:var(--warn);border-color:rgba(255,255,255,.6)}
+.shutter.ready{background:var(--good);box-shadow:0 0 0 6px rgba(21,122,74,.3),0 6px 24px rgba(0,0,0,.45)}
 .camBar{background:var(--deep);padding:15px;
   padding-bottom:calc(15px + env(safe-area-inset-bottom,0px));display:flex;gap:10px}
 .camBar button{flex:1;padding:15px;border-radius:12px;border:none;font-size:14px;
@@ -596,7 +598,7 @@ h1{font-size:27px;font-weight:800;letter-spacing:-.9px;line-height:1}
 <div id="reports" class="sheet"><div class="sheetIn" id="repIn"></div></div>
 
 <div id="camWrap">
-  <div id="camMsg">Point at the code, or tap SCAN THIS</div>
+  <div id="camMsg">Line the code up in the square</div>
   <video id="cam" playsinline muted autoplay></video>
   <div class="aim"></div>
   <button class="shutter" id="shutter" onclick="grabFrame()">SCAN THIS</button>
@@ -10801,7 +10803,7 @@ async function grabFrame(){
   var msg=document.getElementById('camMsg');
   if(!v || !v.videoWidth){ toast('Camera not ready'); return; }
   btn.classList.add('busy'); btn.textContent='READING\u2026';
-  msg.textContent='Reading\u2026 hold still';
+  msg.dataset.lock='1'; msg.textContent='Reading\u2026 hold still';
 
   var cv=document.createElement('canvas');
   var ctx=cv.getContext('2d',{willReadFrequently:true});
@@ -10850,27 +10852,22 @@ async function grabFrame(){
     }
   }
 
-  btn.classList.remove('busy'); btn.textContent='SCAN THIS';
+  btn.classList.remove('busy'); btn.textContent='SCAN THIS'; msg.dataset.lock='0';
   if(!found){
+    msg.dataset.lock='1';
     msg.textContent='No code found \u2014 move closer, fill the square';
     if(navigator.vibrate) navigator.vibrate([60,80,60]);
-    setTimeout(function(){ msg.textContent='Point at the code on the vial'; },2200);
+    setTimeout(function(){ msg.dataset.lock='0'; },2400);
     return;
   }
-  var now=Date.now();
-  if(found===lastHit && now-lastAt<1200){
-    msg.textContent='Just counted that one';
-    setTimeout(function(){ msg.textContent='Point at the code, or tap SCAN THIS'; },1600);
-    return;
-  }
-  lastHit=found; lastAt=now; missCount=0;
   if(resolveCode(found,true)){
     if(navigator.vibrate) navigator.vibrate(90);
-    msg.textContent=document.getElementById('toast').textContent;
+    closeCam();                 /* one scan, one vial, out */
   } else {
+    msg.dataset.lock='1';
     msg.textContent='Not one of your codes';
+    setTimeout(function(){ msg.dataset.lock='0'; },2200);
   }
-  setTimeout(function(){ msg.textContent='Point at the code on the vial'; },1800);
 }
 function boostCanvas(ctx,cv,g){
   var d=ctx.getImageData(0,0,cv.width,cv.height), a=d.data;
@@ -10905,35 +10902,29 @@ async function openCam(){
     let val=null;
     if(det){ try{ const h=await det.detect(v); if(h.length) val=h[0].rawValue; }catch(e){} }
     if(!val){
-      cv.width=Math.min(v.videoWidth,1280);
+      cv.width=Math.min(v.videoWidth,1000);
       cv.height=Math.round(cv.width*v.videoHeight/v.videoWidth);
       ctx.drawImage(v,0,0,cv.width,cv.height);
       const d=ctx.getImageData(0,0,cv.width,cv.height);
-      const r=jsQR(d.data,cv.width,cv.height,{inversionAttempts:'attemptBoth'});
+      const r=jsQR(d.data,cv.width,cv.height,{inversionAttempts:'dontInvert'});
       if(r&&r.data) val=r.data;
     }
-    if(!val){
-      if(lastHit && ++missCount>=CLEAR_AFTER){ lastHit=''; missCount=0; }
-      return;
+    /* viewfinder only — it never counts. Pressing SCAN THIS does that. */
+    const sh=document.getElementById('shutter');
+    const msg=document.getElementById('camMsg');
+    if(sh && sh.classList.contains('busy')) return;
+    if(val){
+      if(sh) sh.classList.add('ready');
+      document.getElementById('camWrap').classList.add('lock');
+      if(msg && msg.dataset.lock!=='1') msg.textContent='Code in view \u2014 tap SCAN THIS';
+    }else{
+      if(sh) sh.classList.remove('ready');
+      document.getElementById('camWrap').classList.remove('lock');
+      if(msg && msg.dataset.lock!=='1') msg.textContent='Line the code up in the square';
     }
-    missCount=0;
-    if(val===lastHit){
-      const m0=document.getElementById('camMsg');
-      if(m0 && m0.dataset.held!=='1'){
-        m0.dataset.held='1';
-        m0.textContent='Counted \u2014 move to the next vial';
-        setTimeout(function(){ m0.dataset.held='0'; },1500);
-      }
-      return;
-    }
-    lastHit=val; lastAt=Date.now();
-    const m=document.getElementById('camMsg');
-    if(resolveCode(val,true)){ if(navigator.vibrate)navigator.vibrate(70);
-      m.textContent=document.getElementById('toast').textContent;
-    } else m.textContent='Not one of your codes';
-    setTimeout(()=>m.textContent='Point at the code on the vial',1500);
   },250);
 }
+
 function closeCam(){
   clearInterval(camTimer); camTimer=null;
   if(camStream){camStream.getTracks().forEach(t=>t.stop()); camStream=null;}
@@ -11216,7 +11207,7 @@ if('serviceWorker' in navigator){
     setInterval(()=>reg.update().catch(()=>{}), 60000);
   }).catch(()=>{});
 }
-const APP_VERSION='2026-10-10d';
+const APP_VERSION='2026-10-11';
 document.getElementById('ver').innerHTML='<b>'+APP_VERSION+'</b><i>TAP TO UPDATE</i>';
 buildSchedule();
 
