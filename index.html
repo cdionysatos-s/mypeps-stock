@@ -393,6 +393,12 @@ h1{font-size:27px;font-weight:800;letter-spacing:-.9px;line-height:1}
   padding-top:calc(18px + env(safe-area-inset-top,0px));
   background:linear-gradient(rgba(0,0,0,.85),transparent);color:#fff;font-size:15px;
   font-weight:800;text-align:center}
+.shutter{position:absolute;left:50%;transform:translateX(-50%);bottom:106px;
+  background:var(--brand);color:#fff;border:4px solid rgba(255,255,255,.9);border-radius:50px;
+  padding:18px 40px;font-size:17px;font-weight:800;letter-spacing:.6px;cursor:pointer;
+  box-shadow:0 6px 24px rgba(0,0,0,.45);z-index:3}
+.shutter:active{transform:translateX(-50%) scale(.96);background:var(--brand2)}
+.shutter.busy{background:var(--warn);border-color:rgba(255,255,255,.6)}
 .camBar{background:var(--deep);padding:15px;
   padding-bottom:calc(15px + env(safe-area-inset-bottom,0px));display:flex;gap:10px}
 .camBar button{flex:1;padding:15px;border-radius:12px;border:none;font-size:14px;
@@ -590,9 +596,10 @@ h1{font-size:27px;font-weight:800;letter-spacing:-.9px;line-height:1}
 <div id="reports" class="sheet"><div class="sheetIn" id="repIn"></div></div>
 
 <div id="camWrap">
-  <div id="camMsg">Point at the code on the vial</div>
+  <div id="camMsg">Point at the code, or tap SCAN THIS</div>
   <video id="cam" playsinline muted autoplay></video>
   <div class="aim"></div>
+  <button class="shutter" id="shutter" onclick="grabFrame()">SCAN THIS</button>
   <div class="camBar">
     <button class="dirb" id="camDir" onclick="setDir(-moveDir)">IN &nbsp;+1</button>
     <button class="cl" onclick="closeCam()">Done</button>
@@ -10787,13 +10794,104 @@ async function fromPhoto(inp){
   img.src=URL.createObjectURL(f);
 }
 
+
+async function grabFrame(){
+  var v=document.getElementById('cam');
+  var btn=document.getElementById('shutter');
+  var msg=document.getElementById('camMsg');
+  if(!v || !v.videoWidth){ toast('Camera not ready'); return; }
+  btn.classList.add('busy'); btn.textContent='READING\u2026';
+  msg.textContent='Reading\u2026 hold still';
+
+  var cv=document.createElement('canvas');
+  var ctx=cv.getContext('2d',{willReadFrequently:true});
+  var found=null;
+
+  // the native detector first, on the live element
+  if('BarcodeDetector' in window){
+    try{
+      var det=new BarcodeDetector({formats:['qr_code','code_128','code_39','ean_13']});
+      var hits=await det.detect(v);
+      if(hits.length) found=hits[0].rawValue;
+    }catch(e){}
+  }
+
+  if(!found){
+    // several sizes, several rotations, then a contrast boost — same effort as the photo path
+    var widths=[1400,1000,760,1900,560];
+    var rots=[0,90,270,180,7,-7];
+    outer:
+    for(var wi=0; wi<widths.length; wi++){
+      for(var ri=0; ri<rots.length; ri++){
+        var w=widths[wi], rot=rots[ri];
+        var sc=w/Math.max(v.videoWidth,v.videoHeight);
+        var iw=Math.round(v.videoWidth*sc), ih=Math.round(v.videoHeight*sc);
+        if(rot%180===0){ cv.width=iw; cv.height=ih; } else { cv.width=ih; cv.height=iw; }
+        ctx.fillStyle='#fff'; ctx.fillRect(0,0,cv.width,cv.height);
+        ctx.save(); ctx.translate(cv.width/2,cv.height/2); ctx.rotate(rot*Math.PI/180);
+        ctx.drawImage(v,-iw/2,-ih/2,iw,ih); ctx.restore();
+
+        var d=ctx.getImageData(0,0,cv.width,cv.height);
+        var r=jsQR(d.data,cv.width,cv.height,{inversionAttempts:'attemptBoth'});
+        if(r && r.data){ found=r.data; break outer; }
+
+        if('BarcodeDetector' in window){
+          try{
+            var det2=new BarcodeDetector({formats:['qr_code','code_128','code_39','ean_13']});
+            var h2=await det2.detect(cv);
+            if(h2.length){ found=h2[0].rawValue; break outer; }
+          }catch(e){}
+        }
+        boostCanvas(ctx,cv,1.9);
+        var d2=ctx.getImageData(0,0,cv.width,cv.height);
+        var r2=jsQR(d2.data,cv.width,cv.height,{inversionAttempts:'attemptBoth'});
+        if(r2 && r2.data){ found=r2.data; break outer; }
+      }
+    }
+  }
+
+  btn.classList.remove('busy'); btn.textContent='SCAN THIS';
+  if(!found){
+    msg.textContent='No code found \u2014 move closer, fill the square';
+    if(navigator.vibrate) navigator.vibrate([60,80,60]);
+    setTimeout(function(){ msg.textContent='Point at the code on the vial'; },2200);
+    return;
+  }
+  var now=Date.now();
+  if(found===lastHit && now-lastAt<1200){
+    msg.textContent='Just counted that one';
+    setTimeout(function(){ msg.textContent='Point at the code, or tap SCAN THIS'; },1600);
+    return;
+  }
+  lastHit=found; lastAt=now; missCount=0;
+  if(resolveCode(found,true)){
+    if(navigator.vibrate) navigator.vibrate(90);
+    msg.textContent=document.getElementById('toast').textContent;
+  } else {
+    msg.textContent='Not one of your codes';
+  }
+  setTimeout(function(){ msg.textContent='Point at the code on the vial'; },1800);
+}
+function boostCanvas(ctx,cv,g){
+  var d=ctx.getImageData(0,0,cv.width,cv.height), a=d.data;
+  for(var i=0;i<a.length;i+=4){
+    var val=a[i]*0.299+a[i+1]*0.587+a[i+2]*0.114;
+    val=Math.max(0,Math.min(255,(val-128)*g+128));
+    a[i]=a[i+1]=a[i+2]=val;
+  }
+  ctx.putImageData(d,0,0);
+}
+
 /* ---------- live camera ---------- */
-let camStream=null, camTimer=null, lastHit='', lastAt=0;
+let camStream=null, camTimer=null, lastHit='', lastAt=0, missCount=0;
+const CLEAR_AFTER=6;   // ~1.5s of not seeing it before the same code can count again
 async function openCam(){
   if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
     toast('Camera not available here — type the code instead'); return; }
   try{ camStream=await navigator.mediaDevices.getUserMedia(
-        {video:{facingMode:{ideal:'environment'},width:{ideal:1280}}}); }
+        {video:{facingMode:{ideal:'environment'},
+                width:{ideal:1920}, height:{ideal:1080},
+                focusMode:{ideal:'continuous'}}}); }
   catch(err){ toast('Camera blocked: '+err.name+' — allow it in site settings'); return; }
   const v=document.getElementById('cam');
   v.srcObject=camStream; try{ await v.play(); }catch(e){}
@@ -10801,28 +10899,40 @@ async function openCam(){
   const det=('BarcodeDetector' in window)
     ? new BarcodeDetector({formats:['qr_code','code_128','code_39','ean_13']}) : null;
   const cv=document.createElement('canvas'), ctx=cv.getContext('2d',{willReadFrequently:true});
+  lastHit=''; missCount=0;
   camTimer=setInterval(async()=>{
     if(!v.videoWidth) return;
     let val=null;
     if(det){ try{ const h=await det.detect(v); if(h.length) val=h[0].rawValue; }catch(e){} }
     if(!val){
-      cv.width=Math.min(v.videoWidth,960);
+      cv.width=Math.min(v.videoWidth,1280);
       cv.height=Math.round(cv.width*v.videoHeight/v.videoWidth);
       ctx.drawImage(v,0,0,cv.width,cv.height);
       const d=ctx.getImageData(0,0,cv.width,cv.height);
-      const r=jsQR(d.data,cv.width,cv.height,{inversionAttempts:'dontInvert'});
+      const r=jsQR(d.data,cv.width,cv.height,{inversionAttempts:'attemptBoth'});
       if(r&&r.data) val=r.data;
     }
-    if(!val) return;
-    const now=Date.now();
-    if(val===lastHit && now-lastAt<1800) return;
-    lastHit=val; lastAt=now;
+    if(!val){
+      if(lastHit && ++missCount>=CLEAR_AFTER){ lastHit=''; missCount=0; }
+      return;
+    }
+    missCount=0;
+    if(val===lastHit){
+      const m0=document.getElementById('camMsg');
+      if(m0 && m0.dataset.held!=='1'){
+        m0.dataset.held='1';
+        m0.textContent='Counted \u2014 move to the next vial';
+        setTimeout(function(){ m0.dataset.held='0'; },1500);
+      }
+      return;
+    }
+    lastHit=val; lastAt=Date.now();
     const m=document.getElementById('camMsg');
     if(resolveCode(val,true)){ if(navigator.vibrate)navigator.vibrate(70);
       m.textContent=document.getElementById('toast').textContent;
     } else m.textContent='Not one of your codes';
     setTimeout(()=>m.textContent='Point at the code on the vial',1500);
-  },300);
+  },250);
 }
 function closeCam(){
   clearInterval(camTimer); camTimer=null;
@@ -11106,7 +11216,7 @@ if('serviceWorker' in navigator){
     setInterval(()=>reg.update().catch(()=>{}), 60000);
   }).catch(()=>{});
 }
-const APP_VERSION='2026-10-10';
+const APP_VERSION='2026-10-10d';
 document.getElementById('ver').innerHTML='<b>'+APP_VERSION+'</b><i>TAP TO UPDATE</i>';
 buildSchedule();
 
