@@ -52,10 +52,10 @@ h1{font-size:27px;font-weight:800;letter-spacing:-.9px;line-height:1}
   border-radius:11px;padding:8px 11px;flex-shrink:0;align-self:flex-start;cursor:pointer;
   -webkit-user-select:none;user-select:none;min-width:84px}
 .heroVer:active{background:rgba(255,255,255,.34)}
-.heroVer b{font-size:14px;font-weight:800;letter-spacing:.2px;line-height:1;
+.heroVer b{font-size:13px;font-weight:800;letter-spacing:.2px;line-height:1.1;
   font-family:ui-monospace,"SF Mono",Consolas,monospace}
-.heroVer i{font-style:normal;font-size:8px;font-weight:800;letter-spacing:.9px;
-  color:rgba(255,255,255,.7)}
+.heroVer i{font-style:normal;font-size:10px;font-weight:700;letter-spacing:.4px;
+  color:rgba(255,255,255,.72);font-family:ui-monospace,"SF Mono",Consolas,monospace}
 .heroStats{position:relative;display:flex;gap:9px;margin-top:17px}
 .hs{flex:1;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.14);
   border-radius:14px;padding:11px 8px;text-align:center}
@@ -390,6 +390,26 @@ h1{font-size:27px;font-weight:800;letter-spacing:-.9px;line-height:1}
 .gsources{background:var(--warn)} .gclearest{background:var(--good)}
 .gset{background:#0D8A91} .gconvention{background:#6B7F92} .ggoal{background:#0D8A91}
 .gtrial{background:#6B7F92} .gno{background:#6B7F92} .gsupplement{background:#6B7F92}
+
+.stopbox{background:#8A2B16;color:#fff;border-radius:16px;padding:16px;margin-bottom:13px;
+  box-shadow:0 4px 18px rgba(138,43,22,.3)}
+.stopHead{font-size:15px;font-weight:800;letter-spacing:.8px;margin-bottom:11px}
+.stopRow{background:rgba(255,255,255,.12);border-radius:11px;padding:12px;margin-bottom:7px}
+.stopRow:last-child{margin-bottom:0}
+.stopRow b{display:block;font-size:17px;font-weight:800;letter-spacing:-.3px}
+.stopRow span{display:block;font-size:12.5px;opacity:.88;margin-top:3px;font-weight:600}
+.stopRow i{display:block;font-style:normal;font-size:13px;font-weight:800;margin-top:6px;
+  background:rgba(255,255,255,.16);border-radius:7px;padding:6px 9px}
+.soonbox{background:var(--warnSoft);border:2px solid var(--warn);border-radius:14px;
+  padding:13px;margin-bottom:13px}
+.soonbox b{display:block;font-size:12px;font-weight:800;letter-spacing:.9px;color:var(--warn);margin-bottom:6px}
+.soonbox span{display:block;font-size:13px;color:var(--warn);font-weight:700;line-height:1.5}
+.dose.onbreak{background:#FBEDE9;border-color:#C2512F;opacity:1}
+@media (prefers-color-scheme: dark){ .dose.onbreak{background:#2B1510;border-color:#A8422A} }
+.dose.onbreak .dn{color:#8A2B16}
+@media (prefers-color-scheme: dark){ .dose.onbreak .dn{color:#E8927A} }
+.cycChip.brk{background:#8A2B16;color:#fff}
+.cycBtn.cal{background:var(--teal);margin-top:9px}
 .cycbox{border:1px solid var(--line);border-radius:14px;padding:14px}
 .cycTop b{font-size:17px;font-weight:800}
 .grade{display:inline-block;font-size:10px;font-weight:800;letter-spacing:.9px;
@@ -630,6 +650,7 @@ h1{font-size:27px;font-weight:800;letter-spacing:-.9px;line-height:1}
 <div class="bar">
   <button class="bigbtn" id="saveBtn" onclick="backup()">✓ &nbsp;BACK UP &amp; FINISH</button>
   <div class="minis">
+    <button onclick="exportCycles()">Calendar</button>
     <button onclick="backupAs()">Save as…</button>
     <label class="minilbl" for="restoreFile">Restore</label>
     <button onclick="reportMenu()">Reports</button>
@@ -11037,7 +11058,7 @@ function bump(sku,d){ stock[sku]=Math.max(0,(stock[sku]||0)+(d||0)); paint(); sa
 
 async function forceUpdate(){
   const chip=document.getElementById('ver'); const was=chip.innerHTML;
-  chip.innerHTML='<b>CHECKING</b><i>HOLD ON</i>';
+  chip.innerHTML='<b>CHECKING</b><i>hold on</i>';
   try{
     if('serviceWorker' in navigator){
       const regs=await navigator.serviceWorker.getRegistrations();
@@ -11047,7 +11068,7 @@ async function forceUpdate(){
       const keys=await caches.keys();
       await Promise.all(keys.map(k=>caches.delete(k)));
     }
-    chip.innerHTML='<b>UPDATING</b><i>ALMOST THERE</i>';
+    chip.innerHTML='<b>UPDATING</b><i>almost there</i>';
     setTimeout(()=>{
       const u=new URL(location.href);
       u.searchParams.set('u', Date.now());
@@ -11233,11 +11254,23 @@ function exportCsv(){
 window.addEventListener('beforeunload',e=>{ if(poppy){ e.preventDefault(); e.returnValue=''; } });
 if('serviceWorker' in navigator){
   navigator.serviceWorker.register('sw.js').then(reg=>{
+    /* look for a newer build every time the app opens, and take it without asking */
+    reg.update().catch(()=>{});
+    navigator.serviceWorker.addEventListener('controllerchange', function(){
+      if(sessionStorage.getItem('mypeps-reloaded')==='1') return;   /* never loop */
+      sessionStorage.setItem('mypeps-reloaded','1');
+      location.reload();
+    });
     reg.addEventListener('updatefound',()=>{
       const w=reg.installing;
       if(!w) return;
       w.addEventListener('statechange',()=>{
         if(w.state==='installed' && navigator.serviceWorker.controller){
+          /* a newer build is ready — switch to it straight away */
+          w.postMessage('skipWaiting');
+          return;
+        }
+        if(false){
           const bar=document.createElement('div');
           bar.style.cssText='position:fixed;left:12px;right:12px;bottom:92px;background:#2E86C8;'
             +'color:#fff;border-radius:10px;padding:13px;font-size:13.5px;font-weight:800;'
@@ -11253,10 +11286,20 @@ if('serviceWorker' in navigator){
       });
     });
     setInterval(()=>reg.update().catch(()=>{}), 60000);
+    document.addEventListener('visibilitychange',function(){
+      if(!document.hidden) reg.update().catch(function(){});
+    });
   }).catch(()=>{});
 }
-const APP_VERSION='2026-10-11d';
-document.getElementById('ver').innerHTML='<b>'+APP_VERSION+'</b><i>TAP TO UPDATE</i>';
+const APP_VERSION='2026-10-12';
+const BUILT_AT='2026-10-12T09:00:00';
+(function(){
+  var d=new Date(BUILT_AT);
+  var p2=function(n){return String(n).padStart(2,'0');};
+  var stamp=p2(d.getDate())+'/'+p2(d.getMonth()+1)+'/'+d.getFullYear();
+  var tm=p2(d.getHours())+':'+p2(d.getMinutes());
+  document.getElementById('ver').innerHTML='<b>'+stamp+'</b><i>'+tm+'</i>';
+})();
 buildSchedule();
 
 
@@ -11339,6 +11382,112 @@ function logSince(days){
   return loadLog().filter(e=>e.d>=ck);
 }
 
+
+/* ---------- cycle warnings and calendar ---------- */
+function phaseDates(sku){
+  var st=cycleState(sku);
+  if(!st || !st.tracking) return null;
+  var spec=st.spec, total=spec.on+spec.off;
+  var start=new Date(st.started+'T00:00:00');
+  var cyc=Math.floor(st.day/total);
+  var onStart=new Date(start.getTime()+cyc*total*86400000);
+  var breakStart=new Date(onStart.getTime()+spec.on*86400000);
+  var nextOn=new Date(onStart.getTime()+total*86400000);
+  return {st:st, onStart:onStart, breakStart:breakStart, nextOn:nextOn};
+}
+function shortDate(d){
+  var MN=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  return d.getDate()+' '+MN[d.getMonth()];
+}
+function longDate(d){
+  var DW=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  var MN=['January','February','March','April','May','June','July','August','September','October','November','December'];
+  return DW[d.getDay()]+' '+d.getDate()+' '+MN[d.getMonth()];
+}
+/* every compound on a break right now */
+function onBreakNow(){
+  var out=[];
+  Object.keys(CYCLE).forEach(function(sku){
+    var st=cycleState(sku);
+    if(st && st.tracking && !st.onPhase) out.push(sku);
+  });
+  return out;
+}
+/* anything that changes phase within the next 7 days */
+function comingUp(){
+  var out=[];
+  Object.keys(CYCLE).forEach(function(sku){
+    var st=cycleState(sku);
+    if(!st || !st.tracking) return;
+    if(st.left<=7) out.push({sku:sku, st:st});
+  });
+  return out.sort(function(a,b){ return a.st.left-b.st.left; });
+}
+
+function icsStamp(d){
+  return d.getFullYear()+String(d.getMonth()+1).padStart(2,'0')+String(d.getDate()).padStart(2,'0');
+}
+function buildIcs(){
+  var now=new Date();
+  var L=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//MyPeps//Cycles//EN','CALSCALE:GREGORIAN'];
+  var n=0;
+  Object.keys(CYCLE).forEach(function(sku){
+    var pd=phaseDates(sku); if(!pd) return;
+    var nm=(DETAIL[sku]||{}).n||sku;
+    var spec=pd.st.spec, total=spec.on+spec.off;
+    /* three cycles ahead is plenty */
+    for(var k=0;k<3;k++){
+      var bs=new Date(pd.breakStart.getTime()+k*total*86400000);
+      var ns=new Date(pd.nextOn.getTime()+k*total*86400000);
+      if(bs>=new Date(now.getTime()-86400000)){
+        L.push('BEGIN:VEVENT',
+          'UID:mypeps-'+sku+'-break-'+icsStamp(bs)+'@mypeps',
+          'DTSTAMP:'+icsStamp(now)+'T090000Z',
+          'DTSTART;VALUE=DATE:'+icsStamp(bs),
+          'SUMMARY:STOP '+nm+' \u2014 break starts',
+          'DESCRIPTION:'+nm+' ('+sku+') goes on its break today. '
+            +spec.off+' days off\\nBack on '+icsStamp(ns).replace(/(\d{4})(\d{2})(\d{2})/,'$3/$2/$1')
+            +'\\n\\n'+String(spec.label).replace(/,/g,'\\,'),
+          'BEGIN:VALARM','TRIGGER:-PT9H','ACTION:DISPLAY',
+          'DESCRIPTION:'+nm+' break starts tomorrow','END:VALARM',
+          'END:VEVENT');
+        n++;
+      }
+      if(ns>=new Date(now.getTime()-86400000)){
+        L.push('BEGIN:VEVENT',
+          'UID:mypeps-'+sku+'-restart-'+icsStamp(ns)+'@mypeps',
+          'DTSTAMP:'+icsStamp(now)+'T090000Z',
+          'DTSTART;VALUE=DATE:'+icsStamp(ns),
+          'SUMMARY:START '+nm+' \u2014 break over',
+          'DESCRIPTION:'+nm+' ('+sku+') starts again today.',
+          'BEGIN:VALARM','TRIGGER:-PT9H','ACTION:DISPLAY',
+          'DESCRIPTION:'+nm+' starts again tomorrow','END:VALARM',
+          'END:VEVENT');
+        n++;
+      }
+    }
+  });
+  L.push('END:VCALENDAR');
+  return {text:L.join('\r\n'), count:n};
+}
+async function exportCycles(){
+  var r=buildIcs();
+  if(!r.count){ toast('No cycles being tracked yet'); return; }
+  var name='MyPeps-Cycles.ics';
+  var blob=new Blob([r.text],{type:'text/calendar'});
+  try{
+    var f=new File([blob],name,{type:'text/calendar'});
+    if(navigator.canShare && navigator.canShare({files:[f]})){
+      await navigator.share({files:[f],title:'MyPeps cycle dates'});
+      toast(r.count+' dates sent \u2014 open with your calendar'); return;
+    }
+  }catch(err){ if(err && err.name==='AbortError'){ toast('Cancelled'); return; } }
+  var a=document.createElement('a');
+  a.href=URL.createObjectURL(blob); a.download=name;
+  document.body.appendChild(a); a.click(); a.remove();
+  toast(r.count+' dates downloaded \u2014 open the file to add them');
+}
+
 /* ---------- today's doses ---------- */
 function todayKey(){ const d=new Date();
   return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
@@ -11353,13 +11502,38 @@ function buildSchedule(){
   const due=SCHED.filter(r=>r[5][idx]===1);
   const doses=loadDoses();
   const order=['MORNING','PRE-GYM','AFTERNOON','ANY TIME','NIGHT'];
+  const brk=onBreakNow();
+  let warnHtml='';
+  if(brk.length){
+    warnHtml='<div class="stopbox"><div class="stopHead">\u26A0  DO NOT TAKE '
+      +(brk.length===1?'THIS ONE':'THESE')+'</div>';
+    brk.forEach(function(sku){
+      const pd=phaseDates(sku), d=DETAIL[sku]||{};
+      warnHtml+='<div class="stopRow"><b>'+(d.n||sku)+'</b>'
+        +'<span>On a break \u00b7 day '+pd.st.dayIn+' of '+pd.st.phaseLen+'</span>'
+        +'<i>Starts again '+longDate(pd.nextOn)+' \u2014 '+pd.st.left+' days</i></div>';
+    });
+    warnHtml+='</div>';
+  }
+  const soon=comingUp().filter(function(x){ return x.st.onPhase; });
+  if(soon.length){
+    warnHtml+='<div class="soonbox"><b>Coming up</b>';
+    soon.forEach(function(x){
+      const pd=phaseDates(x.sku), d=DETAIL[x.sku]||{};
+      warnHtml+='<span>'+(d.n||x.sku)+' \u2014 break starts '+longDate(pd.breakStart)
+        +' ('+x.st.left+' day'+(x.st.left===1?'':'s')+')</span>';
+    });
+    warnHtml+='</div>';
+  }
   const doneNow=due.filter(r=>doses.done[r[0]]).length;
   const allDone=doneNow===due.length && due.length>0;
-  let html='<div class="dayhead"><b>'+DOW[jsDay]+'</b><span>'
+  let html=warnHtml+'<div class="dayhead"><b>'+DOW[jsDay]+'</b><span>'
     +doneNow+' of '+due.length+' done</span></div>'
     + (due.length ? '<div class="allbar">'
         +'<button class="allbtn'+(allDone?' off':'')+'" onclick="takeAllToday()">'
-        +(allDone?'\u2713  All done today':'\u2713  Take all '+(due.length-doneNow)+' remaining')+'</button>'
+        +(allDone?'\u2713  All done today':'\u2713  Take all '
+           +(due.length-doneNow-brk.filter(function(s){return due.some(function(r){return r[0]===s;});}).length)
+           +' remaining')+'</button>'
         +(doneNow?'<button class="clrbtn" onclick="clearAllToday()">Clear</button>':'')
       +'</div>' : '');
   order.forEach(slot=>{
@@ -11369,13 +11543,20 @@ function buildSchedule(){
     rows.forEach(r=>{
       const [sku,name,when,dose,units,days,note]=r;
       const on=!!doses.done[sku];
-      html+='<div class="dose'+(on?' done':'')+'" id="d-'+sku+'">'
+      const cs0=cycleState(sku);
+      const onBreak = cs0 && cs0.tracking && !cs0.onPhase;
+      html+='<div class="dose'+(on?' done':'')+(onBreak?' onbreak':'')+'" id="d-'+sku+'">'
         +'<div class="tick" onclick="tickDose(\''+sku+'\')">'+(on?'\u2713':'')+'</div>'
         +'<div class="di"><span class="dn">'+name+'</span>'
         +'<span class="dd">'+dose+'</span>'
         +'<div class="dnote">'+note+'</div>'
         +(function(){ const cs=cycleState(sku);
             if(!cs||!cs.tracking) return '';
+            if(!cs.onPhase){
+              const pd=phaseDates(sku);
+              return '<span class="cycChip brk">\u26A0 ON BREAK \u00b7 do not take \u00b7 back '
+                +shortDate(pd.nextOn)+'</span>';
+            }
             return '<span class="cycChip'+(cs.onPhase?'':' brk')+'">'
               +(cs.onPhase? 'ON · day '+cs.dayIn+' of '+cs.phaseLen+' · '+cs.left+' to break'
                           : 'BREAK · day '+cs.dayIn+' of '+cs.phaseLen+' · '+cs.left+' to restart')+'</span>';
@@ -11393,6 +11574,12 @@ function buildSchedule(){
   document.getElementById('viewSched').innerHTML=html;
 }
 function tickDose(sku){
+  const cs=cycleState(sku);
+  if(cs && cs.tracking && !cs.onPhase && !loadDoses().done[sku]){
+    const pd=phaseDates(sku), nm=(DETAIL[sku]||{}).n||sku;
+    if(!confirm(nm+' is on a break.\n\nDay '+cs.dayIn+' of '+cs.phaseLen
+      +'. It starts again on '+longDate(pd.nextOn)+'.\n\nTick it anyway?')) return;
+  }
   const d=loadDoses();
   const now=!d.done[sku];
   d.done[sku]=now;
@@ -12008,7 +12195,8 @@ function cycleBlock(sku){
       +'<span class="cycStart">Started '+st.started+'</span></div>'
       +'<div class="cycBtns">'
       +'<button class="cycBtn sm" onclick="restartCycle(\''+sku+'\')">Restart today</button>'
-      +'<button class="cycBtn sm off" onclick="toggleCycle(\''+sku+'\')">Stop tracking</button></div>';
+      +'<button class="cycBtn sm off" onclick="toggleCycle(\''+sku+'\')">Stop tracking</button></div>'
+      +'<button class="cycBtn cal" onclick="exportCycles()">\uD83D\uDCC5  Put these dates in my calendar</button>';
   }
   return h+'</div>';
 }
@@ -12023,14 +12211,17 @@ function takeAllToday(){
   const due=SCHED.filter(r=>r[5][idx]===1);
   const d=loadDoses();
   let n=0, noVial=[];
+  let skipped=[];
   due.forEach(r=>{
     const sku=r[0];
     if(d.done[sku]) return;
+    const cs=cycleState(sku);
+    if(cs && cs.tracking && !cs.onPhase){ skipped.push((DETAIL[sku]||{}).n||sku); return; }
     d.done[sku]=true; n++;
     logDose(sku);
     if(!useDose(sku)) noVial.push((DETAIL[sku]||{}).n||sku);
   });
-  if(!n){ toast('Already all ticked off'); return; }
+  if(!n){ toast(skipped.length? 'Nothing to tick \u2014 '+skipped.length+' on a break' : 'Already all ticked off'); return; }
   saveDoses(d); refreshAll();
   if(navigator.vibrate) navigator.vibrate([40,60,40]);
   toast(n+' dose'+(n===1?'':'s')+' ticked off'
