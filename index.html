@@ -185,6 +185,24 @@ h1{font-size:27px;font-weight:800;letter-spacing:-.9px;line-height:1}
 
 /* cards */
 .card,.row,.dose,.scanbox,.mixbox{background:var(--card)}
+
+.pepFind{display:none;margin-top:9px}
+.pepFind.on{display:block}
+.pfRow{display:flex;align-items:center;gap:8px;background:var(--bg);border:1px solid var(--line);
+  border-radius:11px;padding:9px 10px;margin-bottom:6px}
+.pfSku{flex-shrink:0;width:56px;text-align:center;font-family:ui-monospace,"SF Mono",Consolas,monospace;
+  font-size:10px;font-weight:800;color:#fff;border-radius:7px;padding:4px 0}
+.pfNm{flex:1;min-width:0;font-size:14.5px;font-weight:700;cursor:pointer;letter-spacing:-.2px}
+.pfNm i{display:block;font-style:normal;font-size:10.5px;color:var(--ink3);font-weight:600;margin-top:1px}
+.pfMinus,.pfPlus{flex-shrink:0;width:32px;height:32px;border:1.5px solid var(--line2);
+  background:var(--card);border-radius:9px;font-size:17px;font-weight:800;color:var(--ink2);cursor:pointer;line-height:1}
+.pfMinus:active,.pfPlus:active{background:var(--brand);color:#fff;border-color:var(--brand)}
+.pfQty{flex-shrink:0;min-width:24px;text-align:center;font-size:17px;font-weight:800;
+  font-family:ui-monospace,"SF Mono",Consolas,monospace}
+.pfNone{background:var(--bg);border:1px dashed var(--line2);border-radius:12px;padding:14px;text-align:center}
+.pfNone b{display:block;font-size:13.5px;font-weight:700;color:var(--ink2);margin-bottom:11px}
+.pfAdd{width:100%;background:var(--brand);color:#fff;border:none;border-radius:10px;padding:12px;
+  font-size:13.5px;font-weight:800;cursor:pointer}
 .scanbox{border:1px solid var(--line);border-radius:16px;padding:13px;margin-bottom:14px;
   box-shadow:var(--shadow)}
 .dirsw{display:flex;gap:4px;margin-bottom:11px;background:var(--bg2);padding:4px;border-radius:12px}
@@ -458,6 +476,15 @@ h1{font-size:27px;font-weight:800;letter-spacing:-.9px;line-height:1}
 .deWarn{background:rgba(232,160,70,.22);border:1px solid rgba(255,207,143,.5);border-radius:9px;
   padding:10px;margin-top:13px;font-size:12.5px;font-weight:700;color:#FFCF8F;line-height:1.45}
 .deNote{font-size:12px;color:var(--ink3);line-height:1.55;margin-top:14px;text-align:center}
+
+.penPrev{width:100%;height:auto;display:block;border:1px solid var(--line2);border-radius:10px;
+  background:#fff;margin-bottom:17px;image-rendering:-webkit-optimize-contrast}
+.deIn select{flex:1;min-width:0;padding:15px;border:none;background:transparent;color:var(--ink);
+  font-size:16px;font-weight:700;outline:none;-webkit-appearance:none;appearance:none}
+.penWhen{display:flex;gap:5px}
+.penWhen button{flex:1;padding:12px 2px;border-radius:10px;border:1.5px solid var(--line2);
+  background:var(--card);color:var(--ink2);font-size:12px;font-weight:800;cursor:pointer}
+.penWhen button.on{background:var(--brand);border-color:var(--brand);color:#fff}
 .cycbox{border:1px solid var(--line);border-radius:14px;padding:14px}
 .cycTop b{font-size:17px;font-weight:800}
 .grade{display:inline-block;font-size:10px;font-weight:800;letter-spacing:.9px;
@@ -565,10 +592,12 @@ h1{font-size:27px;font-weight:800;letter-spacing:-.9px;line-height:1}
   <label class="cam alt" for="pic">🖼 &nbsp;PICK A PICTURE</label>
   <input type="file" id="pic" accept="image/*" class="hidefile" onchange="fromPhoto(this)">
   <div class="quick">
-    <input id="code" placeholder="or type a code" autocomplete="off"
-      onkeydown="if(event.key==='Enter')take(moveDir)" onpaste="setTimeout(()=>take(moveDir),60)">
+    <input id="code" placeholder="Search or type a code" autocomplete="off"
+      oninput="searchPeps()" onfocus="searchPeps()"
+      onkeydown="if(event.key==='Enter')take(moveDir)" onpaste="setTimeout(()=>{searchPeps();take(moveDir);},60)">
     <button onclick="take(moveDir)">ADD</button>
   </div>
+  <div id="pepFind" class="pepFind"></div>
 </div>
 
 <div style="display:none"><b id="tVials"></b><b id="tKinds"></b><b id="tLow"></b></div>
@@ -719,6 +748,7 @@ h1{font-size:27px;font-weight:800;letter-spacing:-.9px;line-height:1}
 <div id="sheet" class="sheet"><div class="sheetIn" id="sheetIn"></div></div>
 <div id="reports" class="sheet"><div class="sheetIn" id="repIn"></div></div>
 <div id="doseSheet" class="sheet"><div class="sheetIn" id="doseIn"></div></div>
+<div id="penSheet" class="sheet"><div class="sheetIn" id="penIn"></div></div>
 
 <div id="camWrap">
   <div id="camMsg">Line the code up in the square</div>
@@ -10843,6 +10873,7 @@ const CONC={"RT30": 10.0, "TSM20": 6.67, "IPA10": 3.33, "CP10": 1.67, "TA10": 3.
 const MCGU={"RT30": 100.0, "TSM20": 66.7, "IPA10": 33.3, "CP10": 16.7, "TA10": 33.3, "MS40": 133.0, "KL80": 267.0, "XA10": 33.3, "SK10": 33.3, "DS10": 33.3, "ET50": 167.0, "KP10": 33.3, "NJ1000": 1000.0, "CU100": 333.0, "AD10": 33.3, "RA10": 33.3, "BC10": 33.3, "BB20": 33.3, "LC600": 600.0};
 const DKEY2='mypeps-mydose';
 const BKEY='mypeps-lastbackup';
+const PURPOSE={"RT30": "WEIGHT LOSS · APPETITE · FAT · METABOLIC", "TSM20": "VISCERAL FAT · GH AXIS · BODY COMPOSITION", "IPA10": "GH RELEASE · DEEP SLEEP · RECOVERY · REPAIR", "CP10": "GROWTH HORMONE · REPAIR · SLEEP · RECOVERY", "TA10": "IMMUNE DEFENCE · T-CELL · INFECTION SUPPORT", "MS40": "METABOLIC · ENERGY · INSULIN · ENDURANCE", "KL80": "TISSUE REPAIR · SKIN · GUT · RECOVERY", "XA10": "FOCUS · MEMORY · CLARITY · NEUROPROTECTION", "SK10": "CALM · ANXIETY · FOCUS · NO SEDATION", "DS10": "DEEP SLEEP · DELTA WAVE · NIGHT RECOVERY", "ET50": "LONGEVITY · SLEEP · TELOMERES · CIRCADIAN", "KP10": "GUT HEALTH · SKIN · INFLAMMATION · REPAIR", "NJ1000": "CELLULAR ENERGY · MITOCHONDRIA · REPAIR", "CU100": "SKIN · HAIR · COLLAGEN · TISSUE REPAIR", "AD10": "FAT BURNING · LIPOLYSIS · NO GH EFFECT", "RA10": "NERVE REPAIR · NEUROPATHY · INFLAMMATION", "BC10": "HEALING · GUT · TENDON · JOINT · VESSELS", "BB20": "INJURY REPAIR · MUSCLE · TENDON · MOBILITY", "LC600": "FAT TRANSPORT · RECOVERY · SORENESS"};
 const CYCLE={"RT30": {"on": 0, "off": 0, "label": "Continuous — no cycling", "grade": "Book + web agree", "weekly": "", "why": "A GLP-1 class drug is a long-term therapy, not a cycled compound. Your book's reference table lists it as continuous (p126).", "ifnot": "Nothing. The risk runs the other way — the book warns that stopping abruptly causes rebound weight gain, so plan a gradual exit rather than quitting.", "extra": "Escalate slowly: start at the bottom of the range and step up every 4 weeks. Nausea is the usual limiter (p115)."}, "TSM20": {"on": 84, "off": 28, "label": "12 weeks on, 4 weeks off", "grade": "Sources conflict", "weekly": "5 days on, 2 off", "why": "Honest answer: it may not need a break at all. Tesamorelin is a GHRH analogue, and the GHRH receptor does not appear to desensitise the way the ghrelin receptor does. Your book sets 8–12 weeks (p107), but the same page notes the approved clinical protocol ran 26 weeks continuously for 15–20% visceral fat reduction.", "ifnot": "On the evidence, probably nothing — the FDA-approved use was continuous. The 4-week break is the conservative reading.", "extra": "If you run it alongside Ipamorelin, the break is really for the Ipamorelin. Some protocols drop Ipamorelin for 4 weeks and keep Tesamorelin going."}, "IPA10": {"on": 84, "off": 28, "label": "12 weeks on, 4 weeks off", "grade": "Real mechanism", "weekly": "5 days on, 2 off", "why": "This is one of the few where cycling has genuine pharmacologic teeth. Ipamorelin hits the GHS-R1a ghrelin receptor, which downregulates under constant stimulation. Four weeks is roughly what the receptor needs to restore surface density. Your book says 8–12 weeks with a mandatory break (p86) but does not give the length — the 4 weeks comes from clinical practice.", "ifnot": "The same dose produces a weaker effect. Reported after 3–5 months of continuous use: sleep benefit fades, fat loss stalls, IGF-1 drifts down.", "extra": "After three consecutive cycles, extend the break to 6–8 weeks — cumulative feedback suppression of your own GHRH takes longer to reset."}, "CP10": {"on": 84, "off": 28, "label": "12 weeks on, 4 weeks off", "grade": "Real mechanism", "weekly": "5 days on, 2 off", "why": "The break is for the Ipamorelin half, not the CJC. GHRH receptors do not desensitise; ghrelin receptors do. Your book's tiers (p87): 100 mcg each for 8 weeks at basic level, 200–300 mcg for 8–12 weeks beyond that.", "ifnot": "Blunted GH pulse, and you lose the thing you are paying for. The book also flags that CJC without DAC desensitises within the week, which is what the 5-on-2-off pattern is for (p84).", "extra": "If you run this, drop standalone Ipamorelin — you would be stacking the same receptor twice."}, "TA10": {"on": 0, "off": 0, "label": "Continuous — 3 to 6 months, then review", "grade": "Web · not in your book", "weekly": "", "why": "No receptor downregulation mechanism. The original hepatitis protocols ran multi-year continuous courses without cycling. Your book does not cover this compound at all.", "ifnot": "No established consequence. This is a change from what the app said before — the 3-months-on, 1-month-off figure was convention rather than evidence.", "extra": "Review at 3 to 6 months rather than stopping to a schedule."}, "MS40": {"on": 56, "off": 28, "label": "8 weeks on, 4 weeks off", "grade": "Disputed · book caps it", "weekly": "", "why": "Your book sets a hard maximum of 8 weeks at 2–3 doses a week (p99). Web sources split three ways: run it continuously, run 8–12 weeks then break, or 4 on 4 off. One source states plainly that no rationale for the break can be reported.", "ifnot": "At low doses, probably nothing — the effect is transcriptional, not receptor-based. At higher doses the concern is AMPK–mTOR balance working against muscle.", "extra": "Worth noting: the book says 2–3 doses a week, not your 5-on-2-off. Same weekly total in fewer, larger injections."}, "KL80": {"on": 84, "off": 28, "label": "8–12 weeks on, 4 weeks off", "grade": "Set by the GHK-Cu", "weekly": "5 days on, 2 off", "why": "The GHK-Cu component decides, and the limit is copper handling rather than receptor fatigue — copper is a mineral your body clears slowly. The other three components are shorter: BPC-157 4–12 weeks, KPV 4–12, TB-500 4–8.", "ifnot": "Copper accumulation is the theoretical concern, which is why serum copper and ceruloplasmin are on your blood request.", "extra": "Peptide Hub suggests a much shorter 30 days on, 14 off for this blend. Either is defensible."}, "XA10": {"on": 21, "off": 14, "label": "2–4 weeks on, 2 weeks off", "grade": "Actually studied", "weekly": "", "why": "One of the very few where the on/off pattern appears in published work rather than convention. The effect genuinely fades with continuous use and returns after a break. Your book: 10–30 days on, 10–14 days off (p110).", "ifnot": "The focus and clarity effect tails off. It is not a safety issue, it simply stops working.", "extra": "The stroke research used courses of 5 to 10 days, in one trial repeated after a 20-day break. Never dose it at night."}, "SK10": {"on": 21, "off": 14, "label": "2–4 weeks on, 2 weeks off", "grade": "Actually studied", "weekly": "", "why": "Your book gives 14–30 days on with a 2-week break (p111), and its own table marks Selank as building no tolerance — which is why the courses are short rather than long.", "ifnot": "No tolerance mechanism is described, so this is closer to good practice than a requirement.", "extra": "Usually cycled alongside Semax. Unlike Semax it does not interfere with sleep, so evening dosing is fine."}, "DS10": {"on": 20, "off": 21, "label": "10–20 nights, then 2–4 weeks off", "grade": "Book", "weekly": "", "why": "\"Cycle: 10–20 nights | Break: 2–4 weeks\" (p94). Shorter than most people assume.", "ifnot": "No desensitisation is described in the literature. Some sources say run it continuously, or only on poor-sleep nights.", "extra": "30–60 minutes before sleep. Set here to 20 nights on, 3 weeks off — the middle of the book's range."}, "ET50": {"on": 20, "off": 150, "label": "20 days, then months off — 1 or 2 courses a year", "grade": "Clearest protocol you have", "weekly": "", "why": "\"Classic cycle: 20 consecutive days, 1–2 cycles per year\" (p98). Straight from the original Khavinson work. This is a pulse, not a maintenance compound.", "ifnot": "Not applicable — running it continuously is simply not how the compound was studied.", "extra": "Other sources say 10–20 days, two or three times a year. Either stays within the same shape."}, "KP10": {"on": 42, "off": 28, "label": "4–12 weeks, 4 weeks off", "grade": "Convention", "weekly": "", "why": "Your book gives 4–12 weeks at 150–750 mcg a day (p108). Web sources agree there is no desensitisation mechanism — KPV calms inflammation rather than driving a signal that provokes shutdown.", "ifnot": "No rationale can be given. The FDA's compounding advisory notes no human exposure data for KPV by any route.", "extra": "Best used as a course for a gut or skin flare, then stopped, rather than run indefinitely."}, "NJ1000": {"on": 0, "off": 0, "label": "Continuous — loading, then maintenance", "grade": "No protocol in your book", "weekly": "", "why": "It refills a cofactor your cells constantly consume. No receptor, so nothing to desensitise. Your book covers NAD+ biology at length but gives no injection protocol.", "ifnot": "Blood NAD+ simply falls back when you stop. That is the whole mechanism.", "extra": "Common pattern is a loading series of several weeks, then a lower maintenance frequency. Yours at twice weekly is a maintenance dose."}, "CU100": {"on": 84, "off": 35, "label": "8–12 weeks on, 4–5 weeks off", "grade": "Book · copper, not receptors", "weekly": "5 days on, 2 off", "why": "\"Cycle: 8–12 weeks\" at 1–4 mg a day (p91). The limit is copper handling, not receptor fatigue — the gene-expression mechanism does not desensitise.", "ifnot": "Theoretical copper accumulation. Some sources say no cycling is needed at all and run 3–6 months continuously.", "extra": "Check the vial has not darkened before drawing — the book flags colour change as a sign of oxidation."}, "AD10": {"on": 0, "off": 0, "label": "Can be run continuously", "grade": "Book states it plainly", "weekly": "", "why": "Your book's protocol table says \"Cycle: can be continuous\" (p93). No GH-axis involvement, so nothing to suppress — it is the fat-burning fragment with the growth signalling removed.", "ifnot": "Nothing described. Run it for the body-composition goal, then stop when the goal is met.", "extra": "The reconstitution matters more than the cycle here: 0.6% acetic acid or CAG water, never plain BAC — it forms threads and will not dissolve."}, "RA10": {"on": 28, "off": 28, "label": "4 weeks on, 4 weeks off", "grade": "Trial length, not a cycle", "weekly": "", "why": "The clinical trials ran 28-day courses. That is where the number comes from — it is a study design, not an established cycling requirement. Your book mentions ARA-290 once in passing with no protocol.", "ifnot": "Unknown. There is no long-duration human data to draw on.", "extra": "Repeat courses are judged on symptom response rather than a calendar."}, "BC10": {"on": 56, "off": 28, "label": "A course, not a cycle — 4–8 weeks", "grade": "Goal-directed", "weekly": "5 days on, 2 off", "why": "Run it until the injury resolves, then stop. Your book says 4–12 weeks with a 2–4 week break mandatory (p78), but contradicts itself on p74 saying no mandatory rest is required between short cycles. Web sources are blunter: the 8-on-4-off convention has no source and was borrowed from steroid practice, where the reasoning does not transfer.", "ifnot": "BPC-157 suppresses nothing, so the usual rationale does not apply even in principle. The genuine long-term concern is pro-angiogenic effect, not desensitisation.", "extra": "If the injury improved but is not finished, a break and a second course is defensible. Inject near the site where practical."}, "BB20": {"on": 42, "off": 28, "label": "4–8 weeks together, then stop", "grade": "Goal-directed", "weekly": "5 days on, 2 off", "why": "TB-500 is the shorter of the pair at 4–8 weeks (p89), so the stack runs to that. Your book structures it in three phases: a 2-week loading phase at 5–10 mg a week, then 4–6 weeks maintenance at 2–5 mg a week, then a completion phase at 2 mg a week.", "ifnot": "Same as BPC-157 — the concern is pro-angiogenic over long periods, not tolerance.", "extra": "The book calls this the most powerful regeneration combination it covers. BPC prepares the ground, TB-500 sends the cells."}, "LC600": {"on": 0, "off": 0, "label": "Continuous — not a peptide", "grade": "Supplement", "weekly": "", "why": "A nutrient cofactor. No cycling applies.", "ifnot": "Nothing.", "extra": "Your book only covers the oral form — 2 g of L-Carnitine L-Tartrate pre-training (p249) — and notes a synergy with AOD-9604."}};
 const CKEY='mypeps-cycles';
 const CATCOL={"METABOLIC": "#0D8A91", "GH AXIS": "#0E7FC4", "REPAIR": "#157A4A", "COGNITIVE": "#1B63B8", "SLEEP": "#17567F", "IMMUNE": "#0E8FA8", "LONGEVITY": "#126E9C"};
@@ -11102,7 +11133,7 @@ function undoScan(sku,d){ bump(sku,d);
 function take(d){
   const el=document.getElementById('code');
   const v=(el.value||'').trim(); if(!v) return;
-  el.value=''; const keep=moveDir; moveDir=d; resolveCode(v); moveDir=keep; el.focus();
+  el.value=''; clearFind(); const keep=moveDir; moveDir=d; resolveCode(v); moveDir=keep; el.focus();
 }
 
 /* ---------- counts ---------- */
@@ -11265,57 +11296,102 @@ async function backupAs(){
 
 async function backup(){
   save();
-  const name=backupName();
-  const text=payload();
-
-  /* 1. a folder is already set — drop a dated file in, no questions */
-  if(dirHandle){
+  /* a folder is already set on a computer — just write it */
+  if(dirHandle && dirHandle.name){
     try{
       let perm=await dirHandle.queryPermission({mode:'readwrite'});
       if(perm!=='granted') perm=await dirHandle.requestPermission({mode:'readwrite'});
       if(perm==='granted'){
-        const fh=await dirHandle.getFileHandle(name,{create:true});
-        const w=await fh.createWritable(); await w.write(text); await w.close();
-        markBackedUp(); clean(); toast('Saved '+name+' to '+dirHandle.name); return;
+        const fh=await dirHandle.getFileHandle(backupName(),{create:true});
+        const w=await fh.createWritable(); await w.write(payload()); await w.close();
+        markBackedUp(); clean(); toast('Saved into '+dirHandle.name); return;
       }
     }catch(e){}
   }
-
-  /* 2. on a computer, ASK WHERE — this must come before anything that
-        swallows the tap, or the picker is refused for lack of a gesture */
-  if(window.showSaveFilePicker){
-    try{
-      const fh=await window.showSaveFilePicker({
-        suggestedName:name,
-        types:[{description:'MyPeps backup',accept:{'application/json':['.json']}}]
-      });
-      const w=await fh.createWritable(); await w.write(text); await w.close();
-      markBackedUp(); clean(); toast('Saved '+fh.name);
-      if(!dirHandle) toast('Tip — set a folder above and it saves there every time');
-      return;
-    }catch(e){
-      if(e && e.name==='AbortError'){ toast('Backup cancelled'); return; }
-    }
-  }
-
-  /* 3. a phone — the share sheet, so OneDrive can take it */
-  try{
-    const file=new File([text],name,{type:'application/json'});
-    if(navigator.canShare && navigator.canShare({files:[file]})){
-      await navigator.share({files:[file],title:name});
-      markBackedUp(); clean(); toast('Sent — choose OneDrive'); return;
-    }
-  }catch(err){
-    if(err && err.name==='AbortError'){ toast('Backup cancelled'); return; }
-  }
-
-  /* 4. nothing else available */
-  const a=document.createElement('a');
-  a.href=URL.createObjectURL(new Blob([text],{type:'application/json'}));
-  a.download=name;
-  document.body.appendChild(a);a.click();a.remove(); markBackedUp(); clean();
-  toast('Downloaded '+name+' — move it into OneDrive');
+  openBackupMenu();
 }
+
+function openBackupMenu(){
+  var canFolder = !!window.showDirectoryPicker;
+  var canPick   = !!window.showSaveFilePicker;
+  var canShare  = !!(navigator.canShare && navigator.canShare({files:[new File([''],'a.json',{type:'application/json'})]}));
+  var h='<div class="sh"><h2>Back up</h2>'
+    +'<button class="shx" onclick="closeBackupMenu()">&times;</button></div>'
+    +'<div class="shfor">WHERE SHOULD IT GO</div><div class="repList">';
+
+  if(canFolder){
+    h+='<div class="repItem" onclick="bkFolder()"><span class="repIc">&#128193;</span>'
+      +'<div><b>Pick a folder once</b><i>Then every backup lands there with no questions. '
+      +'Best option on a computer.</i></div><span class="repGo">&rsaquo;</span></div>';
+  }
+  if(canPick){
+    h+='<div class="repItem" onclick="bkSaveAs()"><span class="repIc">&#128190;</span>'
+      +'<div><b>Choose where to save it</b><i>Opens the save dialog so you can navigate to OneDrive.</i></div>'
+      +'<span class="repGo">&rsaquo;</span></div>';
+  }
+  h+='<div class="repItem" onclick="bkDownload()"><span class="repIc">&#11015;</span>'
+    +'<div><b>Download it</b><i>Goes to your Downloads folder. On a phone, open the OneDrive app '
+    +'and upload it from there \u2014 this is the reliable route on Android.</i></div>'
+    +'<span class="repGo">&rsaquo;</span></div>';
+  if(canShare){
+    h+='<div class="repItem" onclick="bkShare()"><span class="repIc">&#128228;</span>'
+      +'<div><b>Share it</b><i>Opens the share sheet. OneDrive does not always accept .json files '
+      +'this way \u2014 if it is missing from the list, use Download instead.</i></div>'
+      +'<span class="repGo">&rsaquo;</span></div>';
+  }
+  h+='</div><p class="repNote">The file holds everything: stock, dose history, open vials, '
+    +'cycles and your mixing figures.</p>';
+  document.getElementById('repIn').innerHTML=h;
+  document.getElementById('reports').classList.add('on');
+}
+function closeBackupMenu(){ document.getElementById('reports').classList.remove('on'); }
+
+async function bkFolder(){
+  closeBackupMenu();
+  try{
+    dirHandle=await window.showDirectoryPicker({mode:'readwrite'});
+    await idb('putDir',dirHandle);
+    const fh=await dirHandle.getFileHandle(backupName(),{create:true});
+    const w=await fh.createWritable(); await w.write(payload()); await w.close();
+    markBackedUp(); clean(); showWhere();
+    toast('Saved into '+dirHandle.name+' \u2014 it will go there from now on');
+  }catch(e){ if(e && e.name!=='AbortError') toast('Could not use that folder'); }
+}
+async function bkSaveAs(){
+  closeBackupMenu();
+  try{
+    const fh=await window.showSaveFilePicker({suggestedName:backupName(),
+      types:[{description:'MyPeps backup',accept:{'application/json':['.json']}}]});
+    const w=await fh.createWritable(); await w.write(payload()); await w.close();
+    markBackedUp(); clean(); toast('Saved '+fh.name);
+  }catch(e){ if(e && e.name!=='AbortError') toast('Could not save there'); }
+}
+function bkDownload(){
+  closeBackupMenu();
+  var name=backupName();
+  var a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([payload()],{type:'application/json'}));
+  a.download=name;
+  document.body.appendChild(a); a.click(); a.remove();
+  markBackedUp(); clean();
+  toast('Downloaded '+name);
+}
+async function bkShare(){
+  closeBackupMenu();
+  var name=backupName();
+  try{
+    var f=new File([payload()],name,{type:'application/json'});
+    if(navigator.canShare && navigator.canShare({files:[f]})){
+      await navigator.share({files:[f],title:name});
+      markBackedUp(); clean(); toast('Sent'); return;
+    }
+    toast('Sharing not available \u2014 use Download');
+  }catch(err){
+    if(err && err.name==='AbortError'){ toast('Cancelled'); return; }
+    toast('Share failed \u2014 use Download instead');
+  }
+}
+
 function restore(inp){ const f=inp.files[0]; if(!f) return;
   const r=new FileReader();
   r.onload=e=>{ try{ const d=JSON.parse(e.target.result);
@@ -11373,8 +11449,8 @@ if('serviceWorker' in navigator){
     });
   }).catch(()=>{});
 }
-const APP_VERSION='2026-10-13b';
-const BUILD_NO=51;
+const APP_VERSION='2026-10-14f';
+const BUILD_NO=58;
 const BUILT_AT='2026-10-12T09:00:00';
 (function(){
   var d=new Date(BUILT_AT);
@@ -11466,6 +11542,133 @@ function logSince(days){
 }
 
 
+
+
+/* ---------- search the list instead of scrolling ---------- */
+function searchPeps(){
+  var el=document.getElementById('code');
+  var box=document.getElementById('pepFind');
+  if(!el||!box) return;
+  var q=(el.value||'').trim().toLowerCase();
+  if(!q){ box.innerHTML=''; box.classList.remove('on'); return; }
+
+  var hits=[];
+  document.querySelectorAll('.row[data-sku]').forEach(function(r){
+    var sku=r.dataset.sku;
+    var nm=(DETAIL[sku]||{}).n || r.dataset.name || sku;
+    var tag=TAG[sku]||'';
+    var hay=(sku+' '+nm+' '+tag).toLowerCase();
+    if(hay.indexOf(q)>=0) hits.push({sku:sku, nm:nm, q:stock[sku]||0});
+  });
+  /* an exact code match goes to the top */
+  hits.sort(function(a,b){
+    var ae=a.sku.toLowerCase()===q?0:1, be=b.sku.toLowerCase()===q?0:1;
+    if(ae!==be) return ae-be;
+    var as=a.nm.toLowerCase().indexOf(q)===0?0:1, bs=b.nm.toLowerCase().indexOf(q)===0?0:1;
+    if(as!==bs) return as-bs;
+    return a.nm.localeCompare(b.nm);
+  });
+
+  var h='';
+  if(hits.length){
+    hits.slice(0,6).forEach(function(x){
+      var col=CATCOL[CATOF[x.sku]]||'#0E7FC4';
+      h+='<div class="pfRow">'
+        +'<span class="pfSku" style="background:'+col+'">'+x.sku+'</span>'
+        +'<span class="pfNm" onclick="jumpTo(\''+x.sku+'\')">'+esc(x.nm)
+          +'<i>'+(x.q? x.q+' in stock' : 'none in stock')+'</i></span>'
+        +'<button class="pfMinus" onclick="findBump(\''+x.sku+'\',-1)">\u2212</button>'
+        +'<span class="pfQty" id="pf-'+x.sku+'">'+x.q+'</span>'
+        +'<button class="pfPlus" onclick="findBump(\''+x.sku+'\',1)">+</button>'
+        +'</div>';
+    });
+  }else{
+    h='<div class="pfNone"><b>Nothing matches \u201c'+esc(el.value.trim())+'\u201d</b>'
+     +'<button class="pfAdd" onclick="addNewPep()">+ &nbsp;Add it as a new compound</button></div>';
+  }
+  box.innerHTML=h; box.classList.add('on');
+}
+function findBump(sku,d){
+  bump(sku,d);
+  var q=document.getElementById('pf-'+sku);
+  if(q) q.textContent=stock[sku]||0;
+  var nm=(DETAIL[sku]||{}).n||sku;
+  toast(nm+'  \u2192  '+(stock[sku]||0));
+  searchPeps();
+}
+function jumpTo(sku){
+  clearFind();
+  openDetail(sku);
+}
+function clearFind(){
+  var el=document.getElementById('code'); if(el) el.value='';
+  var box=document.getElementById('pepFind');
+  if(box){ box.innerHTML=''; box.classList.remove('on'); }
+}
+
+/* ---------- add a compound of your own ---------- */
+function loadExtra(){ try{ return JSON.parse(localStorage.getItem('mypeps-extra'))||[]; }catch(e){ return []; } }
+function saveExtra(v){ try{ localStorage.setItem('mypeps-extra',JSON.stringify(v)); }catch(e){} }
+function addNewPep(){
+  var typed=(document.getElementById('code').value||'').trim();
+  var h='<div class="sh"><h2>New compound</h2>'
+    +'<button class="shx" onclick="closeBackupMenu()">&times;</button></div>'
+    +'<div class="shfor">ADD IT TO YOUR LIST</div>'
+    +'<div class="deField"><label>Name</label>'
+      +'<div class="deIn"><input id="npName" type="text" value="'+esc(typed)+'"></div></div>'
+    +'<div class="deField"><label>Short code</label>'
+      +'<div class="deIn"><input id="npSku" type="text" placeholder="e.g. XX10" '
+      +'value="'+esc(typed.replace(/[^A-Za-z0-9]/g,'').slice(0,4).toUpperCase())+'"></div></div>'
+    +'<div class="deField"><label>Vial strength</label>'
+      +'<div class="deIn"><input id="npMg" type="number" inputmode="decimal" step="any" value="10"><span>mg</span></div></div>'
+    +'<div class="deField"><label>What it is for</label>'
+      +'<div class="deIn"><input id="npTag" type="text" placeholder="Repair, sleep, metabolic\u2026"></div></div>'
+    +'<button class="cycBtn" onclick="saveNewPep()">Add it</button>'
+    +'<p class="deNote">It joins your stock list straight away. You can set the mixing figures '
+    +'and dose afterwards by tapping its dose panel.</p>';
+  document.getElementById('repIn').innerHTML=h;
+  document.getElementById('reports').classList.add('on');
+}
+function saveNewPep(){
+  var nm=(document.getElementById('npName').value||'').trim();
+  var sku=(document.getElementById('npSku').value||'').trim().toUpperCase().replace(/[^A-Z0-9]/g,'');
+  var mg=parseFloat(document.getElementById('npMg').value)||0;
+  var tag=(document.getElementById('npTag').value||'').trim();
+  if(!nm){ toast('Give it a name'); return; }
+  if(!sku){ toast('Give it a short code'); return; }
+  if(document.querySelector('.row[data-sku="'+sku+'"]')){ toast(sku+' is already in your list'); return; }
+  var extra=loadExtra();
+  extra.push({sku:sku, n:nm, mg:mg, tag:tag});
+  saveExtra(extra);
+  closeBackupMenu(); clearFind();
+  toast(nm+' added \u2014 reloading');
+  setTimeout(function(){ location.reload(); }, 600);
+}
+/* put any of your own compounds into the list at startup */
+function injectExtra(){
+  var extra=loadExtra(); if(!extra.length) return;
+  var host=document.querySelector('.row[data-sku]'); host=host?host.parentNode:document.getElementById('viewStock');
+  if(!host) return;
+  extra.forEach(function(x){
+    if(document.querySelector('.row[data-sku="'+x.sku+'"]')) return;
+    DETAIL[x.sku]={n:x.n, "for":x.tag||'Added by you', what:'You added this compound.',
+      vial:(x.mg||10)+' mg', water:'3 mL bacteriostatic water',
+      conc:((x.mg||10)/3).toFixed(2)+' mg/mL', unit:(((x.mg||10)/3)*10).toFixed(1)+' mcg per unit',
+      dose:'', units:'', freq:'As you choose', when:'As you choose', warn:[]};
+    TAG[x.sku]=x.tag||'Added by you';
+    CATOF[x.sku]='REPAIR';
+    RECON_DEF[x.sku]=[x.mg||10,3];
+    VIAL[x.sku]={doses:20,days:30};
+    var d=document.createElement('div');
+    d.className='row'; d.dataset.sku=x.sku; d.dataset.name=x.n;
+    d.innerHTML='<div class="id"><span class="sku">'+x.sku+'</span><span class="cat">YOURS</span></div>'
+      +'<div class="nm"><b>'+x.n+'</b><i>'+(x.mg||10)+'mg</i></div>'
+      +'<div class="ct"><button onclick="bump(\''+x.sku+'\',-1)">\u2013</button>'
+      +'<span class="qty" id="q-'+x.sku+'">0</span>'
+      +'<button onclick="bump(\''+x.sku+'\',1)">+</button></div>';
+    host.appendChild(d);
+  });
+}
 
 /* ---------- reconstitution and your own doses ---------- */
 function loadMyDose(){ try{ return JSON.parse(localStorage.getItem(DKEY2))||{}; }catch(e){ return {}; } }
@@ -11872,6 +12075,254 @@ function vialTap(sku){
 }
 
 
+
+/* ---------- pen labels ---------- */
+var PEN={sku:'KL80', units:20, when:'AM', note:''};
+
+function openPenLabels(){
+  closeReports();
+  var opts='';
+  document.querySelectorAll('.row[data-sku]').forEach(function(r){
+    var s=r.dataset.sku, n=(DETAIL[s]||{}).n||r.dataset.name||s;
+    opts+='<option value="'+s+'"'+(s===PEN.sku?' selected':'')+'>'+esc(n)+' ('+s+')</option>';
+  });
+  var h='<div class="sh"><h2>Pen label</h2>'
+    +'<button class="shx" onclick="closePen()">&times;</button></div>'
+    +'<div class="shfor">FOR THE SYRINGE OR PEN</div>'
+    +'<canvas id="penCv" width="944" height="472" class="penPrev"></canvas>'
+    +'<div class="deField"><label>Compound</label>'
+      +'<div class="deIn"><select id="penSku" onchange="penPick()">'+opts+'</select></div></div>'
+    +'<div class="deField"><label>Units to draw</label>'
+      +'<div class="deIn"><input id="penU" type="number" inputmode="decimal" step="any" value="'+PEN.units+'"'
+        +' oninput="drawPen()"><span>units</span></div>'
+      +'<div class="deChips" id="penUChips"></div></div>'
+    +'<div class="deField"><label>When</label>'
+      +'<div class="penWhen">'
+        +['AM','PM','AM + PM','ANY TIME'].map(function(w){
+          return '<button class="'+(PEN.when===w?'on':'')+'" onclick="setPenWhen(\''+w+'\')">'+w+'</button>';}).join('')
+      +'</div></div>'
+    +'<div class="deField"><label>Extra line (optional)</label>'
+      +'<div class="deIn"><input id="penNote" type="text" placeholder="e.g. 5 on 2 off" '
+        +'value="'+esc(PEN.note)+'" oninput="drawPen()"></div></div>'
+    +'<button class="lblBtn send" onclick="penSend()">&#128228; &nbsp;Send to the printer app</button>'
+    +'<div class="lblBtns"><button class="lblBtn alt" onclick="penSave()">Save the image</button>'
+      +'<button class="lblBtn alt" onclick="penSheet()">Print a sheet</button></div>'
+    +'<p class="deNote">40 \u00d7 20 mm, same stock as your vial labels.</p>';
+  document.getElementById('penIn').innerHTML=h;
+  document.getElementById('penSheet').classList.add('on');
+  penPick();
+}
+function closePen(){ document.getElementById('penSheet').classList.remove('on'); }
+function setPenWhen(w){
+  PEN.when=w;
+  document.querySelectorAll('.penWhen button').forEach(function(b){
+    b.classList.toggle('on', b.textContent===w); });
+  drawPen();
+}
+function penPick(){
+  PEN.sku=document.getElementById('penSku').value;
+  var r=reconOf(PEN.sku);
+  if(r && r.units>0){
+    document.getElementById('penU').value=Math.round(r.units*10)/10;
+  }
+  var ch=document.getElementById('penUChips');
+  if(ch && r && r.perUnit>0){
+    ch.innerHTML=[5,10,15,20,25,30].map(function(u){
+      return '<button onclick="setPenUnits('+u+')">'+u+'u<i>'+fmtMcg(u*r.perUnit)+'</i></button>';}).join('');
+  }
+  drawPen();
+}
+function setPenUnits(u){ document.getElementById('penU').value=u; drawPen(); }
+
+function drawMolecule(ctx,cx,cy,R){
+  /* the same ball-and-stick mark as the vial labels */
+  var pts=[[0,-1],[0.87,-0.5],[0.87,0.5],[0,1],[-0.87,0.5],[-0.87,-0.5]];
+  var spurs=[[0,-1.75,0],[1.52,-0.88,1],[1.52,0.88,2],[-1.52,0.88,4]];
+  ctx.save();
+  ctx.lineWidth=Math.max(2,R*0.11); ctx.strokeStyle='#000'; ctx.lineCap='round';
+  /* ring bonds */
+  ctx.beginPath();
+  pts.forEach(function(p,i){
+    var x=cx+p[0]*R, y=cy+p[1]*R;
+    if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+  });
+  ctx.closePath(); ctx.stroke();
+  /* spur bonds */
+  spurs.forEach(function(s){
+    var a=pts[s[2]];
+    ctx.beginPath();
+    ctx.moveTo(cx+a[0]*R, cy+a[1]*R);
+    ctx.lineTo(cx+s[0]*R, cy+s[1]*R);
+    ctx.stroke();
+  });
+  /* atoms */
+  function atom(x,y,r){
+    ctx.beginPath(); ctx.arc(x,y,r,0,Math.PI*2);
+    ctx.fillStyle='#fff'; ctx.fill();
+    ctx.lineWidth=Math.max(2,R*0.1); ctx.strokeStyle='#000'; ctx.stroke();
+    ctx.beginPath(); ctx.arc(x-r*0.3,y-r*0.3,r*0.34,0,Math.PI*2);
+    ctx.fillStyle='#000'; ctx.fill();
+  }
+  pts.forEach(function(p){ atom(cx+p[0]*R, cy+p[1]*R, R*0.30); });
+  spurs.forEach(function(s){ atom(cx+s[0]*R, cy+s[1]*R, R*0.24); });
+  ctx.restore();
+}
+
+function drawPen(){
+  var cv=document.getElementById('penCv'); if(!cv) return;
+  PEN.units=parseFloat(document.getElementById('penU').value)||0;
+  PEN.note=(document.getElementById('penNote').value||'').trim();
+  var sku=PEN.sku, d=DETAIL[sku]||{}, r=reconOf(sku);
+  var ctx=cv.getContext('2d');
+  var W=944, H=472;
+  ctx.fillStyle='#fff'; ctx.fillRect(0,0,W,H);
+  ctx.fillStyle='#000'; ctx.strokeStyle='#000';
+  var F='"DejaVu Sans Condensed",Arial,sans-serif';
+  ctx.textBaseline='middle';
+  var L=28;                      /* the left edge everything lines up to */
+
+  /* masthead with rules */
+  var my='MY', pe='PEPS', ty=40;
+  ctx.font='400 36px '+F; var w1=ctx.measureText(my).width;
+  ctx.font='700 36px '+F; var w2=ctx.measureText(pe).width;
+  var tot=w1+w2, cx=W/2;
+  ctx.textAlign='left';
+  ctx.font='400 36px '+F; ctx.fillText(my, cx-tot/2, ty);
+  ctx.font='700 36px '+F; ctx.fillText(pe, cx-tot/2+w1, ty);
+  ctx.lineWidth=6;
+  ctx.beginPath(); ctx.moveTo(26,ty); ctx.lineTo(cx-tot/2-20,ty); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(cx+tot/2+20,ty); ctx.lineTo(W-26,ty); ctx.stroke();
+
+  /* AM / PM box first, so the rest can be kept clear of it */
+  var wsz=58;
+  ctx.font='700 '+wsz+'px '+F;
+  while(ctx.measureText(PEN.when).width>220 && wsz>24){ wsz-=2; ctx.font='700 '+wsz+'px '+F; }
+  var tw=ctx.measureText(PEN.when).width;
+  var bw=Math.max(132, Math.min(272, tw+40)), bh=96;
+  var bx=W-26-bw, by=222-bh/2;
+  roundRect(ctx,bx,by,bw,bh,15); ctx.fill();
+  ctx.fillStyle='#fff';
+  ctx.textAlign='center';
+  ctx.fillText(PEN.when, bx+bw/2, by+bh/2+3);
+  ctx.fillStyle='#000';
+
+  /* name and strength — left aligned, same edge as the units below */
+  var mg = r && r.vialMg ? String(r.vialMg) : String(d.vial||'').replace(/[^\d.]/g,'');
+  var nm = ((d.n||sku)+' '+mg).toUpperCase().trim();
+  var size=84;
+  ctx.textAlign='left';
+  do { ctx.font='700 '+size+'px '+F; size-=2; } while(ctx.measureText(nm).width>W-L-30 && size>30);
+  ctx.fillText(nm, L, 122);
+
+  /* units, left aligned to the same edge */
+  var u=(Math.round(PEN.units*10)/10);
+  var big=String(u)+' UNITS';
+  var avail=bx-L-150;                 /* leave room for the molecule */
+  size=112;
+  do { ctx.font='700 '+size+'px '+F; size-=2; } while(ctx.measureText(big).width>avail && size>44);
+  ctx.fillText(big, L, 222);
+  var unitsEnd = L + ctx.measureText(big).width;
+
+  /* the molecule sits where the units finish */
+  var gap = bx - unitsEnd;
+  if(gap > 96){
+    drawMolecule(ctx, unitsEnd + gap/2, 222, Math.min(34, gap*0.26));
+  }
+
+  /* what it is for */
+  ctx.textAlign='center';
+  var purpose=(PURPOSE[sku]||d['for']||'').toUpperCase();
+  if(purpose){
+    size=40;
+    ctx.font='700 '+size+'px '+F;
+    if(ctx.measureText(purpose).width>W-50){
+      var bits=purpose.split(' \u00b7 ');
+      var half=Math.ceil(bits.length/2);
+      var l1=bits.slice(0,half).join(' \u00b7 '), l2=bits.slice(half).join(' \u00b7 ');
+      size=36;
+      do { ctx.font='700 '+size+'px '+F; size-=1.5; }
+      while(Math.max(ctx.measureText(l1).width,ctx.measureText(l2).width)>W-50 && size>18);
+      ctx.fillText(l1, cx, 302);
+      ctx.fillText(l2, cx, 302+size+10);
+    } else {
+      do { ctx.font='700 '+size+'px '+F; size-=1.5; } while(ctx.measureText(purpose).width>W-50 && size>20);
+      ctx.fillText(purpose, cx, 312);
+    }
+  }
+
+  /* rule, then storage */
+  ctx.lineWidth=5;
+  ctx.beginPath(); ctx.moveTo(26,362); ctx.lineTo(W-26,362); ctx.stroke();
+
+  var low='STORE AT 2-8 \u00B0C';
+  if(PEN.note) low += '   \u00b7   '+PEN.note.toUpperCase();
+  size=40;
+  do { ctx.font='700 '+size+'px '+F; size-=1.5; } while(ctx.measureText(low).width>W-130 && size>20);
+  var lw=ctx.measureText(low).width;
+  var sx=cx-lw/2;
+  var fy=414, fr=17, fx=sx-32;
+  ctx.lineWidth=5; ctx.lineCap='round';
+  for(var a=0;a<3;a++){
+    var ang=a*Math.PI/3;
+    ctx.beginPath();
+    ctx.moveTo(fx-Math.cos(ang)*fr, fy-Math.sin(ang)*fr);
+    ctx.lineTo(fx+Math.cos(ang)*fr, fy+Math.sin(ang)*fr);
+    ctx.stroke();
+  }
+  ctx.textAlign='left';
+  ctx.font='700 '+(size+1.5)+'px '+F;
+  ctx.fillText(low, sx, fy);
+  ctx.textAlign='center';
+}
+function roundRect(ctx,x,y,w,h,r){
+  ctx.beginPath();
+  ctx.moveTo(x+r,y); ctx.lineTo(x+w-r,y); ctx.quadraticCurveTo(x+w,y,x+w,y+r);
+  ctx.lineTo(x+w,y+h-r); ctx.quadraticCurveTo(x+w,y+h,x+w-r,y+h);
+  ctx.lineTo(x+r,y+h); ctx.quadraticCurveTo(x,y+h,x,y+h-r);
+  ctx.lineTo(x,y+r); ctx.quadraticCurveTo(x,y,x+r,y); ctx.closePath();
+}
+function penName(){
+  return 'MyPeps-PEN-'+PEN.sku+'-'+(Math.round(PEN.units*10)/10)+'u-'+PEN.when.replace(/[^A-Z]/g,'')+'.png';
+}
+function penBlob(){
+  return new Promise(function(res){
+    document.getElementById('penCv').toBlob(function(b){ res(b); },'image/png');
+  });
+}
+async function penSave(){
+  var b=await penBlob();
+  var a=document.createElement('a');
+  a.href=URL.createObjectURL(b); a.download=penName();
+  document.body.appendChild(a); a.click(); a.remove();
+  toast('Saved '+penName());
+}
+async function penSend(){
+  var b=await penBlob();
+  var f=new File([b],penName(),{type:'image/png'});
+  try{
+    if(navigator.canShare && navigator.canShare({files:[f]})){
+      await navigator.share({files:[f],title:'Pen label'});
+      toast('Sent \u2014 pick your label app'); return;
+    }
+  }catch(e){ if(e&&e.name==='AbortError'){ toast('Cancelled'); return; } }
+  penSave();
+}
+function penSheet(){
+  var url=document.getElementById('penCv').toDataURL('image/png');
+  var w=window.open('','_blank');
+  if(!w){ toast('Allow pop-ups to print'); return; }
+  w.document.write('<!DOCTYPE html><html><head><meta charset="utf-8"><title>Pen labels</title>'
+   +'<style>@page{size:A4;margin:14mm}body{font-family:Arial;padding:10px}'
+   +'img{width:40mm;height:20mm;border:1px solid #ddd;display:block}'
+   +'.g{display:flex;flex-wrap:wrap;gap:5mm}'
+   +'@media print{.np{display:none}}'
+   +'.np{margin-top:18px;padding:13px;border:none;border-radius:8px;background:#0E7FC4;'
+   +'color:#fff;font-size:14px;font-weight:800;width:100%}</style></head><body>'
+   +'<div class="g">'+Array(10).fill('<img src="'+url+'">').join('')+'</div>'
+   +'<button class="np" onclick="window.print()">Print</button></body></html>');
+  w.document.close();
+}
+
 /* ---------- reports ---------- */
 function esc(s){ return String(s).replace(/[&<>]/g,function(x){return {'&':'&amp;','<':'&lt;','>':'&gt;'}[x];}); }
 function niceDate(k){ var a=k.split('-');
@@ -12182,6 +12633,7 @@ function runReport(which){
   if(which==='cycles')   openReport('Cycles', repCycles());
   if(which==='protocol') openReport('Full protocol', repProtocol());
   if(which==='labels')   openReport('Vial labels', repLabels());
+  if(which==='pen')      { openPenLabels(); return; }
   if(which==='all')      openReport('Everything',
       repStock()+'<div class="pb"></div>'+repToday()+'<div class="pb"></div>'+repVials()
       +'<div class="pb"></div>'+repCycles()+'<div class="pb"></div>'+repHistory(90)
@@ -12201,6 +12653,7 @@ function reportMenu(){
     ['h365','\uD83D\uDCC5','Last 12 months','The full year'],
     ['protocol','\uD83D\uDCCB','Full protocol','Mixing, doses, timing and warnings for all 18'],
     ['labels','\uD83C\uDFF7\uFE0F','Vial labels','All 18 at 40 \u00d7 20 mm \u00b7 or send them to your label app'],
+    ['pen','\uD83D\uDC89','Pen label','Make one for a syringe \u2014 units and AM or PM'],
     ['all','\uD83D\uDCC4','Everything','All of the above as one document'],
   ];
   var h='<div class="sh"><h2>Reports</h2>'
@@ -12668,11 +13121,15 @@ document.getElementById('reports').addEventListener('click',function(e){
   if(e.target.id==='reports') closeReports(); });
 document.getElementById('doseSheet').addEventListener('click',function(e){
   if(e.target.id==='doseSheet') closeDose(); });
+document.getElementById('penSheet').addEventListener('click',function(e){
+  if(e.target.id==='penSheet') closePen(); });
 document.addEventListener('click',function(e){
   if(e.target.closest('.ct') || e.target.closest('.tick')) return;
   var r=e.target.closest('.row'); if(r){ openDetail(r.dataset.sku); return; }
   var dd=e.target.closest('.dose'); if(dd){ openDetail(dd.id.replace('d-','')); }
 });
+injectExtra();
+injectExtra();
 load();
 if(new URLSearchParams(location.search).has('u')){
   const uu=new URL(location.href); uu.searchParams.delete('u');
