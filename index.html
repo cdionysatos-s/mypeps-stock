@@ -185,24 +185,6 @@ h1{font-size:27px;font-weight:800;letter-spacing:-.9px;line-height:1}
 
 /* cards */
 .card,.row,.dose,.scanbox,.mixbox{background:var(--card)}
-
-.pepFind{display:none;margin-top:9px}
-.pepFind.on{display:block}
-.pfRow{display:flex;align-items:center;gap:8px;background:var(--bg);border:1px solid var(--line);
-  border-radius:11px;padding:9px 10px;margin-bottom:6px}
-.pfSku{flex-shrink:0;width:56px;text-align:center;font-family:ui-monospace,"SF Mono",Consolas,monospace;
-  font-size:10px;font-weight:800;color:#fff;border-radius:7px;padding:4px 0}
-.pfNm{flex:1;min-width:0;font-size:14.5px;font-weight:700;cursor:pointer;letter-spacing:-.2px}
-.pfNm i{display:block;font-style:normal;font-size:10.5px;color:var(--ink3);font-weight:600;margin-top:1px}
-.pfMinus,.pfPlus{flex-shrink:0;width:32px;height:32px;border:1.5px solid var(--line2);
-  background:var(--card);border-radius:9px;font-size:17px;font-weight:800;color:var(--ink2);cursor:pointer;line-height:1}
-.pfMinus:active,.pfPlus:active{background:var(--brand);color:#fff;border-color:var(--brand)}
-.pfQty{flex-shrink:0;min-width:24px;text-align:center;font-size:17px;font-weight:800;
-  font-family:ui-monospace,"SF Mono",Consolas,monospace}
-.pfNone{background:var(--bg);border:1px dashed var(--line2);border-radius:12px;padding:14px;text-align:center}
-.pfNone b{display:block;font-size:13.5px;font-weight:700;color:var(--ink2);margin-bottom:11px}
-.pfAdd{width:100%;background:var(--brand);color:#fff;border:none;border-radius:10px;padding:12px;
-  font-size:13.5px;font-weight:800;cursor:pointer}
 .scanbox{border:1px solid var(--line);border-radius:16px;padding:13px;margin-bottom:14px;
   box-shadow:var(--shadow)}
 .dirsw{display:flex;gap:4px;margin-bottom:11px;background:var(--bg2);padding:4px;border-radius:12px}
@@ -583,12 +565,10 @@ h1{font-size:27px;font-weight:800;letter-spacing:-.9px;line-height:1}
   <label class="cam alt" for="pic">🖼 &nbsp;PICK A PICTURE</label>
   <input type="file" id="pic" accept="image/*" class="hidefile" onchange="fromPhoto(this)">
   <div class="quick">
-    <input id="code" placeholder="Search or type a code" autocomplete="off"
-      oninput="searchPeps()" onfocus="searchPeps()"
-      onkeydown="if(event.key==='Enter')take(moveDir)" onpaste="setTimeout(()=>{searchPeps();take(moveDir);},60)">
+    <input id="code" placeholder="or type a code" autocomplete="off"
+      onkeydown="if(event.key==='Enter')take(moveDir)" onpaste="setTimeout(()=>take(moveDir),60)">
     <button onclick="take(moveDir)">ADD</button>
   </div>
-  <div id="pepFind" class="pepFind"></div>
 </div>
 
 <div style="display:none"><b id="tVials"></b><b id="tKinds"></b><b id="tLow"></b></div>
@@ -11122,7 +11102,7 @@ function undoScan(sku,d){ bump(sku,d);
 function take(d){
   const el=document.getElementById('code');
   const v=(el.value||'').trim(); if(!v) return;
-  el.value=''; clearFind(); const keep=moveDir; moveDir=d; resolveCode(v); moveDir=keep; el.focus();
+  el.value=''; const keep=moveDir; moveDir=d; resolveCode(v); moveDir=keep; el.focus();
 }
 
 /* ---------- counts ---------- */
@@ -11285,102 +11265,57 @@ async function backupAs(){
 
 async function backup(){
   save();
-  /* a folder is already set on a computer — just write it */
-  if(dirHandle && dirHandle.name){
+  const name=backupName();
+  const text=payload();
+
+  /* 1. a folder is already set — drop a dated file in, no questions */
+  if(dirHandle){
     try{
       let perm=await dirHandle.queryPermission({mode:'readwrite'});
       if(perm!=='granted') perm=await dirHandle.requestPermission({mode:'readwrite'});
       if(perm==='granted'){
-        const fh=await dirHandle.getFileHandle(backupName(),{create:true});
-        const w=await fh.createWritable(); await w.write(payload()); await w.close();
-        markBackedUp(); clean(); toast('Saved into '+dirHandle.name); return;
+        const fh=await dirHandle.getFileHandle(name,{create:true});
+        const w=await fh.createWritable(); await w.write(text); await w.close();
+        markBackedUp(); clean(); toast('Saved '+name+' to '+dirHandle.name); return;
       }
     }catch(e){}
   }
-  openBackupMenu();
-}
 
-function openBackupMenu(){
-  var canFolder = !!window.showDirectoryPicker;
-  var canPick   = !!window.showSaveFilePicker;
-  var canShare  = !!(navigator.canShare && navigator.canShare({files:[new File([''],'a.json',{type:'application/json'})]}));
-  var h='<div class="sh"><h2>Back up</h2>'
-    +'<button class="shx" onclick="closeBackupMenu()">&times;</button></div>'
-    +'<div class="shfor">WHERE SHOULD IT GO</div><div class="repList">';
-
-  if(canFolder){
-    h+='<div class="repItem" onclick="bkFolder()"><span class="repIc">&#128193;</span>'
-      +'<div><b>Pick a folder once</b><i>Then every backup lands there with no questions. '
-      +'Best option on a computer.</i></div><span class="repGo">&rsaquo;</span></div>';
-  }
-  if(canPick){
-    h+='<div class="repItem" onclick="bkSaveAs()"><span class="repIc">&#128190;</span>'
-      +'<div><b>Choose where to save it</b><i>Opens the save dialog so you can navigate to OneDrive.</i></div>'
-      +'<span class="repGo">&rsaquo;</span></div>';
-  }
-  h+='<div class="repItem" onclick="bkDownload()"><span class="repIc">&#11015;</span>'
-    +'<div><b>Download it</b><i>Goes to your Downloads folder. On a phone, open the OneDrive app '
-    +'and upload it from there \u2014 this is the reliable route on Android.</i></div>'
-    +'<span class="repGo">&rsaquo;</span></div>';
-  if(canShare){
-    h+='<div class="repItem" onclick="bkShare()"><span class="repIc">&#128228;</span>'
-      +'<div><b>Share it</b><i>Opens the share sheet. OneDrive does not always accept .json files '
-      +'this way \u2014 if it is missing from the list, use Download instead.</i></div>'
-      +'<span class="repGo">&rsaquo;</span></div>';
-  }
-  h+='</div><p class="repNote">The file holds everything: stock, dose history, open vials, '
-    +'cycles and your mixing figures.</p>';
-  document.getElementById('repIn').innerHTML=h;
-  document.getElementById('reports').classList.add('on');
-}
-function closeBackupMenu(){ document.getElementById('reports').classList.remove('on'); }
-
-async function bkFolder(){
-  closeBackupMenu();
-  try{
-    dirHandle=await window.showDirectoryPicker({mode:'readwrite'});
-    await idb('putDir',dirHandle);
-    const fh=await dirHandle.getFileHandle(backupName(),{create:true});
-    const w=await fh.createWritable(); await w.write(payload()); await w.close();
-    markBackedUp(); clean(); showWhere();
-    toast('Saved into '+dirHandle.name+' \u2014 it will go there from now on');
-  }catch(e){ if(e && e.name!=='AbortError') toast('Could not use that folder'); }
-}
-async function bkSaveAs(){
-  closeBackupMenu();
-  try{
-    const fh=await window.showSaveFilePicker({suggestedName:backupName(),
-      types:[{description:'MyPeps backup',accept:{'application/json':['.json']}}]});
-    const w=await fh.createWritable(); await w.write(payload()); await w.close();
-    markBackedUp(); clean(); toast('Saved '+fh.name);
-  }catch(e){ if(e && e.name!=='AbortError') toast('Could not save there'); }
-}
-function bkDownload(){
-  closeBackupMenu();
-  var name=backupName();
-  var a=document.createElement('a');
-  a.href=URL.createObjectURL(new Blob([payload()],{type:'application/json'}));
-  a.download=name;
-  document.body.appendChild(a); a.click(); a.remove();
-  markBackedUp(); clean();
-  toast('Downloaded '+name);
-}
-async function bkShare(){
-  closeBackupMenu();
-  var name=backupName();
-  try{
-    var f=new File([payload()],name,{type:'application/json'});
-    if(navigator.canShare && navigator.canShare({files:[f]})){
-      await navigator.share({files:[f],title:name});
-      markBackedUp(); clean(); toast('Sent'); return;
+  /* 2. on a computer, ASK WHERE — this must come before anything that
+        swallows the tap, or the picker is refused for lack of a gesture */
+  if(window.showSaveFilePicker){
+    try{
+      const fh=await window.showSaveFilePicker({
+        suggestedName:name,
+        types:[{description:'MyPeps backup',accept:{'application/json':['.json']}}]
+      });
+      const w=await fh.createWritable(); await w.write(text); await w.close();
+      markBackedUp(); clean(); toast('Saved '+fh.name);
+      if(!dirHandle) toast('Tip — set a folder above and it saves there every time');
+      return;
+    }catch(e){
+      if(e && e.name==='AbortError'){ toast('Backup cancelled'); return; }
     }
-    toast('Sharing not available \u2014 use Download');
-  }catch(err){
-    if(err && err.name==='AbortError'){ toast('Cancelled'); return; }
-    toast('Share failed \u2014 use Download instead');
   }
-}
 
+  /* 3. a phone — the share sheet, so OneDrive can take it */
+  try{
+    const file=new File([text],name,{type:'application/json'});
+    if(navigator.canShare && navigator.canShare({files:[file]})){
+      await navigator.share({files:[file],title:name});
+      markBackedUp(); clean(); toast('Sent — choose OneDrive'); return;
+    }
+  }catch(err){
+    if(err && err.name==='AbortError'){ toast('Backup cancelled'); return; }
+  }
+
+  /* 4. nothing else available */
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([text],{type:'application/json'}));
+  a.download=name;
+  document.body.appendChild(a);a.click();a.remove(); markBackedUp(); clean();
+  toast('Downloaded '+name+' — move it into OneDrive');
+}
 function restore(inp){ const f=inp.files[0]; if(!f) return;
   const r=new FileReader();
   r.onload=e=>{ try{ const d=JSON.parse(e.target.result);
@@ -11438,8 +11373,8 @@ if('serviceWorker' in navigator){
     });
   }).catch(()=>{});
 }
-const APP_VERSION='2026-10-14';
-const BUILD_NO=53;
+const APP_VERSION='2026-10-13b';
+const BUILD_NO=51;
 const BUILT_AT='2026-10-12T09:00:00';
 (function(){
   var d=new Date(BUILT_AT);
@@ -11531,133 +11466,6 @@ function logSince(days){
 }
 
 
-
-
-/* ---------- search the list instead of scrolling ---------- */
-function searchPeps(){
-  var el=document.getElementById('code');
-  var box=document.getElementById('pepFind');
-  if(!el||!box) return;
-  var q=(el.value||'').trim().toLowerCase();
-  if(!q){ box.innerHTML=''; box.classList.remove('on'); return; }
-
-  var hits=[];
-  document.querySelectorAll('.row[data-sku]').forEach(function(r){
-    var sku=r.dataset.sku;
-    var nm=(DETAIL[sku]||{}).n || r.dataset.name || sku;
-    var tag=TAG[sku]||'';
-    var hay=(sku+' '+nm+' '+tag).toLowerCase();
-    if(hay.indexOf(q)>=0) hits.push({sku:sku, nm:nm, q:stock[sku]||0});
-  });
-  /* an exact code match goes to the top */
-  hits.sort(function(a,b){
-    var ae=a.sku.toLowerCase()===q?0:1, be=b.sku.toLowerCase()===q?0:1;
-    if(ae!==be) return ae-be;
-    var as=a.nm.toLowerCase().indexOf(q)===0?0:1, bs=b.nm.toLowerCase().indexOf(q)===0?0:1;
-    if(as!==bs) return as-bs;
-    return a.nm.localeCompare(b.nm);
-  });
-
-  var h='';
-  if(hits.length){
-    hits.slice(0,6).forEach(function(x){
-      var col=CATCOL[CATOF[x.sku]]||'#0E7FC4';
-      h+='<div class="pfRow">'
-        +'<span class="pfSku" style="background:'+col+'">'+x.sku+'</span>'
-        +'<span class="pfNm" onclick="jumpTo(\''+x.sku+'\')">'+esc(x.nm)
-          +'<i>'+(x.q? x.q+' in stock' : 'none in stock')+'</i></span>'
-        +'<button class="pfMinus" onclick="findBump(\''+x.sku+'\',-1)">\u2212</button>'
-        +'<span class="pfQty" id="pf-'+x.sku+'">'+x.q+'</span>'
-        +'<button class="pfPlus" onclick="findBump(\''+x.sku+'\',1)">+</button>'
-        +'</div>';
-    });
-  }else{
-    h='<div class="pfNone"><b>Nothing matches \u201c'+esc(el.value.trim())+'\u201d</b>'
-     +'<button class="pfAdd" onclick="addNewPep()">+ &nbsp;Add it as a new compound</button></div>';
-  }
-  box.innerHTML=h; box.classList.add('on');
-}
-function findBump(sku,d){
-  bump(sku,d);
-  var q=document.getElementById('pf-'+sku);
-  if(q) q.textContent=stock[sku]||0;
-  var nm=(DETAIL[sku]||{}).n||sku;
-  toast(nm+'  \u2192  '+(stock[sku]||0));
-  searchPeps();
-}
-function jumpTo(sku){
-  clearFind();
-  openDetail(sku);
-}
-function clearFind(){
-  var el=document.getElementById('code'); if(el) el.value='';
-  var box=document.getElementById('pepFind');
-  if(box){ box.innerHTML=''; box.classList.remove('on'); }
-}
-
-/* ---------- add a compound of your own ---------- */
-function loadExtra(){ try{ return JSON.parse(localStorage.getItem('mypeps-extra'))||[]; }catch(e){ return []; } }
-function saveExtra(v){ try{ localStorage.setItem('mypeps-extra',JSON.stringify(v)); }catch(e){} }
-function addNewPep(){
-  var typed=(document.getElementById('code').value||'').trim();
-  var h='<div class="sh"><h2>New compound</h2>'
-    +'<button class="shx" onclick="closeBackupMenu()">&times;</button></div>'
-    +'<div class="shfor">ADD IT TO YOUR LIST</div>'
-    +'<div class="deField"><label>Name</label>'
-      +'<div class="deIn"><input id="npName" type="text" value="'+esc(typed)+'"></div></div>'
-    +'<div class="deField"><label>Short code</label>'
-      +'<div class="deIn"><input id="npSku" type="text" placeholder="e.g. XX10" '
-      +'value="'+esc(typed.replace(/[^A-Za-z0-9]/g,'').slice(0,4).toUpperCase())+'"></div></div>'
-    +'<div class="deField"><label>Vial strength</label>'
-      +'<div class="deIn"><input id="npMg" type="number" inputmode="decimal" step="any" value="10"><span>mg</span></div></div>'
-    +'<div class="deField"><label>What it is for</label>'
-      +'<div class="deIn"><input id="npTag" type="text" placeholder="Repair, sleep, metabolic\u2026"></div></div>'
-    +'<button class="cycBtn" onclick="saveNewPep()">Add it</button>'
-    +'<p class="deNote">It joins your stock list straight away. You can set the mixing figures '
-    +'and dose afterwards by tapping its dose panel.</p>';
-  document.getElementById('repIn').innerHTML=h;
-  document.getElementById('reports').classList.add('on');
-}
-function saveNewPep(){
-  var nm=(document.getElementById('npName').value||'').trim();
-  var sku=(document.getElementById('npSku').value||'').trim().toUpperCase().replace(/[^A-Z0-9]/g,'');
-  var mg=parseFloat(document.getElementById('npMg').value)||0;
-  var tag=(document.getElementById('npTag').value||'').trim();
-  if(!nm){ toast('Give it a name'); return; }
-  if(!sku){ toast('Give it a short code'); return; }
-  if(document.querySelector('.row[data-sku="'+sku+'"]')){ toast(sku+' is already in your list'); return; }
-  var extra=loadExtra();
-  extra.push({sku:sku, n:nm, mg:mg, tag:tag});
-  saveExtra(extra);
-  closeBackupMenu(); clearFind();
-  toast(nm+' added \u2014 reloading');
-  setTimeout(function(){ location.reload(); }, 600);
-}
-/* put any of your own compounds into the list at startup */
-function injectExtra(){
-  var extra=loadExtra(); if(!extra.length) return;
-  var host=document.querySelector('.row[data-sku]'); host=host?host.parentNode:document.getElementById('viewStock');
-  if(!host) return;
-  extra.forEach(function(x){
-    if(document.querySelector('.row[data-sku="'+x.sku+'"]')) return;
-    DETAIL[x.sku]={n:x.n, "for":x.tag||'Added by you', what:'You added this compound.',
-      vial:(x.mg||10)+' mg', water:'3 mL bacteriostatic water',
-      conc:((x.mg||10)/3).toFixed(2)+' mg/mL', unit:(((x.mg||10)/3)*10).toFixed(1)+' mcg per unit',
-      dose:'', units:'', freq:'As you choose', when:'As you choose', warn:[]};
-    TAG[x.sku]=x.tag||'Added by you';
-    CATOF[x.sku]='REPAIR';
-    RECON_DEF[x.sku]=[x.mg||10,3];
-    VIAL[x.sku]={doses:20,days:30};
-    var d=document.createElement('div');
-    d.className='row'; d.dataset.sku=x.sku; d.dataset.name=x.n;
-    d.innerHTML='<div class="id"><span class="sku">'+x.sku+'</span><span class="cat">YOURS</span></div>'
-      +'<div class="nm"><b>'+x.n+'</b><i>'+(x.mg||10)+'mg</i></div>'
-      +'<div class="ct"><button onclick="bump(\''+x.sku+'\',-1)">\u2013</button>'
-      +'<span class="qty" id="q-'+x.sku+'">0</span>'
-      +'<button onclick="bump(\''+x.sku+'\',1)">+</button></div>';
-    host.appendChild(d);
-  });
-}
 
 /* ---------- reconstitution and your own doses ---------- */
 function loadMyDose(){ try{ return JSON.parse(localStorage.getItem(DKEY2))||{}; }catch(e){ return {}; } }
@@ -12865,8 +12673,6 @@ document.addEventListener('click',function(e){
   var r=e.target.closest('.row'); if(r){ openDetail(r.dataset.sku); return; }
   var dd=e.target.closest('.dose'); if(dd){ openDetail(dd.id.replace('d-','')); }
 });
-injectExtra();
-injectExtra();
 load();
 if(new URLSearchParams(location.search).has('u')){
   const uu=new URL(location.href); uu.searchParams.delete('u');
