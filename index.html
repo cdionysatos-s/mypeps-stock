@@ -192,12 +192,6 @@ h1{font-size:27px;font-weight:800;letter-spacing:-.9px;line-height:1}
 
 
 /* on a wide screen, hold everything in a phone-width column */
-@media (min-width:620px){
-  body{max-width:560px;margin:0 auto}
-  .bar{left:50%;transform:translateX(-50%);width:100%;max-width:560px}
-  .sheetIn{max-width:560px;margin:0 auto}
-  #camWrap{max-width:560px;left:50%;transform:translateX(-50%)}
-}
 /* the label images never exceed their natural size */
 .lblBox img{max-width:472px;margin-left:auto;margin-right:auto}
 .penPrev{max-width:472px;margin-left:auto;margin-right:auto}
@@ -560,6 +554,14 @@ h1{font-size:27px;font-weight:800;letter-spacing:-.9px;line-height:1}
   font-weight:800;cursor:pointer}
 .camBar .dirb{background:var(--brand);color:#fff}
 .camBar .cl{background:rgba(255,255,255,.14);color:#fff}
+
+@media (min-width:620px){
+  body{max-width:560px;margin:0 auto}
+  .bar{left:50%;right:auto;transform:translateX(-50%);width:560px;max-width:560px}
+  .toast{left:50%;right:auto;transform:translateX(-50%)}
+  .sheetIn{max-width:560px;margin:0 auto}
+  #camWrap{max-width:560px;left:50%;right:auto;transform:translateX(-50%)}
+}
 </style></head><body>
 
 <div id="scanned" class="scanned"></div>
@@ -11472,7 +11474,7 @@ if('serviceWorker' in navigator){
   }).catch(()=>{});
 }
 const APP_VERSION='2026-10-09';
-const BUILD_NO=66;
+const BUILD_NO=69;
 const BUILT_AT='2026-10-09T01:15:15Z';
 (function(){
   var d=new Date(BUILT_AT);
@@ -12104,7 +12106,7 @@ function openDetail(sku){
         +'\uD83D\uDCE4 &nbsp;Send to the printer app</button>'
       +'<div class="lblBtns">'
       +'<button class="lblBtn alt" onclick="saveLabel(\''+sku+'\')">Save the image</button>'
-      +'<button class="lblBtn alt" onclick="openLabelEditor(\''+sku+'\')">Edit the wording</button>'
+      +'<button class="lblBtn alt" onclick="openLabelEditor(\''+sku+'\')">Edit the label</button>'
       +'</div></div>';
   }
   var pw = penWhenFor(sku), pu = penUnitsFor(sku);
@@ -12112,7 +12114,8 @@ function openDetail(sku){
     +'<div class="lblBox"><img id="penImg" src="'+penDataURL(sku, pw, penNoteFor(sku))+'" alt="pen label">'
     +'<div class="deField" style="margin-top:12px;margin-bottom:10px"><label>Units to draw</label>'
       +'<div class="deIn"><input id="penQuickU" type="number" inputmode="decimal" step="any" '
-      +'value="'+pu+'" oninput="penQuickChange(\''+sku+'\')"><span>units</span></div></div>'
+      +'value="'+pu+'" oninput="penQuickChange(\''+sku+'\')"><span>units</span></div>'
+      +'<div class="deChips" id="penQuickChips">'+penChipsFor(sku)+'</div></div>'
     +'<div class="deField" style="margin-bottom:10px"><label>When</label><div class="penWhen">'
       +['AM','PM','AM + PM','ANY TIME'].map(function(w){
           return '<button class="'+(pw===w?'on':'')+'" onclick="penQuickWhen(\''+sku+'\',\''+w+'\')">'+w+'</button>';
@@ -12125,8 +12128,11 @@ function openDetail(sku){
       +'\uD83D\uDCE4 &nbsp;Send to the printer app</button>'
     +'<div class="lblBtns">'
     +'<button class="lblBtn alt" onclick="savePenFor(\''+sku+'\')">Save the image</button>'
-    +'<button class="lblBtn alt" onclick="penQuickReset(\''+sku+'\')">Reset</button>'
-    +'</div></div>';
+    +'<button class="lblBtn alt" onclick="penSheetFor(\''+sku+'\')">Print a sheet</button>'
+    +'</div>'
+    +'<button class="lblBtn alt" style="width:100%;margin-top:7px" '
+      +'onclick="penQuickReset(\''+sku+'\')">Reset to the default</button>'
+    +'</div>';
   h+=cycleBlock(sku);
   if(info) h+='<a class="shlink" href="'+info+'" target="_blank" rel="noopener">Read more about '+d.n+' &nbsp;&rarr;</a>';
   document.getElementById('sheetIn').innerHTML=h;
@@ -12241,7 +12247,7 @@ function openLabelEditor(sku){
   var f=labelFields(sku), d=DETAIL[sku]||{};
   var h='<div class="sh"><h2>'+esc(d.n||sku)+'</h2>'
     +'<button class="shx" onclick="closeLabelEd()">&times;</button></div>'
-    +'<div class="shfor">WHAT GOES ON THE VIAL LABEL</div>'
+    +'<div class="shfor">EDIT THIS LABEL</div>'
     +'<canvas id="vlCv" width="944" height="472" class="penPrev"></canvas>'
     +'<div class="deField"><label>Name</label>'
       +'<div class="deIn"><input id="vlName" type="text" value="'+esc(f.name)+'" oninput="drawVL()"></div></div>'
@@ -12318,6 +12324,38 @@ async function sendVL(sku){
 
 /* ---------- pen labels ---------- */
 
+
+
+function penChipsFor(sku){
+  var r=reconOf(sku);
+  if(!r || !r.perUnit) return '';
+  return [5,10,15,20,25,30].map(function(u){
+    return '<button onclick="penQuickSetU(\'' + sku + '\',' + u + ')">'+u+'u<i>'+fmtMcg(u*r.perUnit)+'</i></button>';
+  }).join('');
+}
+function penQuickSetU(sku,u){
+  document.getElementById('penQuickU').value=u;
+  penQuickChange(sku);
+}
+function penSheetFor(sku){
+  var img=document.getElementById('penImg');
+  var url=img ? img.src : penDataURL(sku, penWhenFor(sku), penNoteFor(sku));
+  var d=DETAIL[sku]||{};
+  var w=window.open('','_blank');
+  if(!w){ toast('Allow pop-ups to print'); return; }
+  w.document.write('<!DOCTYPE html><html><head><meta charset="utf-8"><title>'+(d.n||sku)+' pen labels</title>'
+   +'<style>@page{size:A4;margin:14mm}body{font-family:Arial;padding:10px}'
+   +'h1{font-size:19px;margin-bottom:4px}p{font-size:11px;color:#5A6B7C;margin-bottom:14px}'
+   +'img{width:40mm;height:20mm;border:1px solid #ddd;display:block}'
+   +'.g{display:flex;flex-wrap:wrap;gap:5mm}'
+   +'@media print{.np{display:none}}'
+   +'.np{margin-top:18px;padding:13px;border:none;border-radius:8px;background:#0E7FC4;'
+   +'color:#fff;font-size:14px;font-weight:800;width:100%}</style></head><body>'
+   +'<h1>'+(d.n||sku)+'</h1><p>'+penUnitsFor(sku)+' units \u00b7 '+penWhenFor(sku)+' \u00b7 40 \u00d7 20 mm</p>'
+   +'<div class="g">'+Array(10).fill('<img src="'+url+'">').join('')+'</div>'
+   +'<button class="np" onclick="window.print()">Print</button></body></html>');
+  w.document.close();
+}
 
 /* what each compound's pen label is set to, remembered per compound */
 const PKEY='mypeps-pensettings';
