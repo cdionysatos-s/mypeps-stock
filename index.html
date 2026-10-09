@@ -11449,8 +11449,8 @@ if('serviceWorker' in navigator){
     });
   }).catch(()=>{});
 }
-const APP_VERSION='2026-10-14f';
-const BUILD_NO=58;
+const APP_VERSION='2026-10-15';
+const BUILD_NO=59;
 const BUILT_AT='2026-10-12T09:00:00';
 (function(){
   var d=new Date(BUILT_AT);
@@ -12055,6 +12055,14 @@ function openDetail(sku){
       +'<button class="lblBtn alt" onclick="printLabel(\''+sku+'\')">Print a sheet</button>'
       +'</div></div>';
   }
+  h+='<div class="shgrp">PEN LABEL</div>'
+    +'<div class="lblBox"><img src="'+penDataURL(sku, defaultWhen(sku), '')+'" alt="pen label">'
+    +'<button class="lblBtn send" onclick="sendPenFor(\''+sku+'\')">'
+      +'\uD83D\uDCE4 &nbsp;Send to the printer app</button>'
+    +'<div class="lblBtns">'
+    +'<button class="lblBtn alt" onclick="savePenFor(\''+sku+'\')">Save the image</button>'
+    +'<button class="lblBtn alt" onclick="editPenFor(\''+sku+'\')">Change units or time</button>'
+    +'</div></div>';
   h+=cycleBlock(sku);
   if(info) h+='<a class="shlink" href="'+info+'" target="_blank" rel="noopener">Read more about '+d.n+' &nbsp;&rarr;</a>';
   document.getElementById('sheetIn').innerHTML=h;
@@ -12077,6 +12085,71 @@ function vialTap(sku){
 
 
 /* ---------- pen labels ---------- */
+
+/* render a pen label off-screen for any compound, at its current dose */
+function penDataURL(sku, when, note){
+  var save={sku:PEN.sku, units:PEN.units, when:PEN.when, note:PEN.note};
+  var cv=document.getElementById('penCv');
+  var temp=false;
+  if(!cv){
+    cv=document.createElement('canvas'); cv.width=944; cv.height=472; cv.id='penCv';
+    cv.style.display='none'; document.body.appendChild(cv); temp=true;
+  }
+  /* drawPen reads the form, so stand in for it while we draw */
+  var shim=document.createElement('div');
+  shim.innerHTML='<input id="penU"><input id="penNote">';
+  var hadU=document.getElementById('penU'), hadN=document.getElementById('penNote');
+  if(!hadU){ shim.style.display='none'; document.body.appendChild(shim); }
+  var r=reconOf(sku);
+  document.getElementById('penU').value = Math.round((r?r.units:0)*10)/10;
+  document.getElementById('penNote').value = note||'';
+  PEN.sku=sku; PEN.when=when||'AM';
+  drawPen();
+  var url=cv.toDataURL('image/png');
+  if(!hadU && shim.parentNode) shim.parentNode.removeChild(shim);
+  if(temp && cv.parentNode) cv.parentNode.removeChild(cv);
+  PEN=save;
+  if(document.getElementById('penU') && document.getElementById('penCv')) drawPen();
+  return url;
+}
+function defaultWhen(sku){
+  var s=SCHED.filter(function(r){ return r[0]===sku; })[0];
+  if(!s) return 'ANY TIME';
+  var w=s[2];
+  if(w==='MORNING'||w==='PRE-GYM') return 'AM';
+  if(w==='NIGHT'||w==='AFTERNOON') return 'PM';
+  return 'ANY TIME';
+}
+async function sendPenFor(sku){
+  var url=penDataURL(sku, defaultWhen(sku), '');
+  var res=await fetch(url); var blob=await res.blob();
+  var r=reconOf(sku);
+  var name='MyPeps-PEN-'+sku+'-'+(Math.round(r.units*10)/10)+'u.png';
+  var f=new File([blob],name,{type:'image/png'});
+  try{
+    if(navigator.canShare && navigator.canShare({files:[f]})){
+      await navigator.share({files:[f],title:'Pen label'});
+      toast('Sent \u2014 pick your label app'); return;
+    }
+  }catch(e){ if(e&&e.name==='AbortError'){ toast('Cancelled'); return; } }
+  var a=document.createElement('a'); a.href=url; a.download=name;
+  document.body.appendChild(a); a.click(); a.remove();
+  toast('Saved '+name);
+}
+function savePenFor(sku){
+  var url=penDataURL(sku, defaultWhen(sku), '');
+  var r=reconOf(sku);
+  var a=document.createElement('a'); a.href=url;
+  a.download='MyPeps-PEN-'+sku+'-'+(Math.round(r.units*10)/10)+'u.png';
+  document.body.appendChild(a); a.click(); a.remove();
+  toast('Pen label saved');
+}
+function editPenFor(sku){
+  closeDetail();
+  PEN.sku=sku; PEN.when=defaultWhen(sku); PEN.note='';
+  openPenLabels();
+}
+
 var PEN={sku:'KL80', units:20, when:'AM', note:''};
 
 function openPenLabels(){
@@ -12606,6 +12679,20 @@ function printLabel(sku){
    +'<button class="np" onclick="window.print()">Print</button></body></html>');
   w.document.close();
 }
+function repPenLabels(){
+  var rows='';
+  document.querySelectorAll('.row[data-sku]').forEach(function(r){
+    var s=r.dataset.sku;
+    var d=DETAIL[s]||{}, rc=reconOf(s);
+    rows+='<tr><td class="sku">'+s+'</td><td><b>'+esc(d.n||s)+'</b><br>'
+      +'<span class="muted" style="font-size:11px">'+(Math.round(rc.units*10)/10)+' units \u00b7 '
+      +esc(defaultWhen(s))+'</span></td>'
+      +'<td><img src="'+penDataURL(s, defaultWhen(s), '')+'" style="width:40mm;height:20mm;border:1px solid #ddd"></td></tr>';
+  });
+  return '<h2>PEN LABELS</h2><p style="font-size:14px;color:#5A6B7C;margin-bottom:10px">'
+    +'Units come from your own mixing figures. Change them in the app and these follow.</p>'
+    +'<div class="tw"><table><tr><th>Code</th><th>Compound</th><th>Label</th></tr>'+rows+'</table></div>';
+}
 function repLabels(){
   let rows='';
   document.querySelectorAll('.row').forEach(function(r){
@@ -12634,6 +12721,7 @@ function runReport(which){
   if(which==='protocol') openReport('Full protocol', repProtocol());
   if(which==='labels')   openReport('Vial labels', repLabels());
   if(which==='pen')      { openPenLabels(); return; }
+  if(which==='penall')   openReport('Pen labels', repPenLabels());
   if(which==='all')      openReport('Everything',
       repStock()+'<div class="pb"></div>'+repToday()+'<div class="pb"></div>'+repVials()
       +'<div class="pb"></div>'+repCycles()+'<div class="pb"></div>'+repHistory(90)
@@ -12654,6 +12742,7 @@ function reportMenu(){
     ['protocol','\uD83D\uDCCB','Full protocol','Mixing, doses, timing and warnings for all 18'],
     ['labels','\uD83C\uDFF7\uFE0F','Vial labels','All 18 at 40 \u00d7 20 mm \u00b7 or send them to your label app'],
     ['pen','\uD83D\uDC89','Pen label','Make one for a syringe \u2014 units and AM or PM'],
+    ['penall','\uD83D\uDC89','All pen labels','Every compound at its current dose'],
     ['all','\uD83D\uDCC4','Everything','All of the above as one document'],
   ];
   var h='<div class="sh"><h2>Reports</h2>'
