@@ -52,6 +52,13 @@ h1{font-size:27px;font-weight:800;letter-spacing:-.9px;line-height:1}
   border-radius:11px;padding:8px 11px;flex-shrink:0;align-self:flex-start;cursor:pointer;
   -webkit-user-select:none;user-select:none;min-width:84px}
 .heroVer:active{background:rgba(255,255,255,.34)}
+.heroVer.up{background:#17A05E;border-color:#44D492}
+.heroVer.up b{color:#fff}
+.heroVer.up i{color:rgba(255,255,255,.9)}
+.heroVer.old{background:#D98318;border-color:#FFC46B}
+.heroVer.old b{color:#fff}
+.heroVer.old i{color:rgba(255,255,255,.92)}
+.heroVer.unk{background:rgba(255,255,255,.18)}
 .heroVer b{font-size:13px;font-weight:800;letter-spacing:.2px;line-height:1.1;
   font-family:ui-monospace,"SF Mono",Consolas,monospace}
 .heroVer i{font-style:normal;font-size:10px;font-weight:700;letter-spacing:.4px;
@@ -182,6 +189,18 @@ h1{font-size:27px;font-weight:800;letter-spacing:-.9px;line-height:1}
 .sLow b{display:block;font-size:12px;font-weight:800;letter-spacing:.6px;color:var(--warn);margin-bottom:5px}
 .sLow p{font-size:12.5px;color:var(--warn);line-height:1.6;font-weight:600}
 .sFoot{font-size:11px;color:var(--ink3);text-align:center;margin-top:14px;font-weight:600}
+
+
+/* on a wide screen, hold everything in a phone-width column */
+@media (min-width:620px){
+  body{max-width:560px;margin:0 auto}
+  .bar{left:50%;transform:translateX(-50%);width:100%;max-width:560px}
+  .sheetIn{max-width:560px;margin:0 auto}
+  #camWrap{max-width:560px;left:50%;transform:translateX(-50%)}
+}
+/* the label images never exceed their natural size */
+.lblBox img{max-width:472px;margin-left:auto;margin-right:auto}
+.penPrev{max-width:472px;margin-left:auto;margin-right:auto}
 
 /* cards */
 .card,.row,.dose,.scanbox,.mixbox{background:var(--card)}
@@ -749,6 +768,7 @@ h1{font-size:27px;font-weight:800;letter-spacing:-.9px;line-height:1}
 <div id="reports" class="sheet"><div class="sheetIn" id="repIn"></div></div>
 <div id="doseSheet" class="sheet"><div class="sheetIn" id="doseIn"></div></div>
 <div id="penSheet" class="sheet"><div class="sheetIn" id="penIn"></div></div>
+<div id="lblSheet" class="sheet"><div class="sheetIn" id="lblIn"></div></div>
 
 <div id="camWrap">
   <div id="camMsg">Line the code up in the square</div>
@@ -10873,6 +10893,8 @@ const CONC={"RT30": 10.0, "TSM20": 6.67, "IPA10": 3.33, "CP10": 1.67, "TA10": 3.
 const MCGU={"RT30": 100.0, "TSM20": 66.7, "IPA10": 33.3, "CP10": 16.7, "TA10": 33.3, "MS40": 133.0, "KL80": 267.0, "XA10": 33.3, "SK10": 33.3, "DS10": 33.3, "ET50": 167.0, "KP10": 33.3, "NJ1000": 1000.0, "CU100": 333.0, "AD10": 33.3, "RA10": 33.3, "BC10": 33.3, "BB20": 33.3, "LC600": 600.0};
 const DKEY2='mypeps-mydose';
 const BKEY='mypeps-lastbackup';
+const QRIMG={"RT30": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQgAAAEIAQAAAACLjVdSAAABQ0lEQVR42u2ZQW4DMQwDySL///L0QEte5NLeuVkka9g+CeKIUoz++PzovdF74yM5K5xUsSTubl88RMJAYoCxzOwWxkO+GYGtmyg0Kwqer5cwSQ852unl6QGILA5EkJndsnhcefD1zHFXPPxQhiOYrbyl/LAsyRYSFhhb4YgL48HkibfmJlmMS+uL14OBr47c6j9YZEQ1+cm7jx9mGYpkRyoHKp16kQk20FkMRwr9B0kMmBRBQE5K/YdPkTGni/OOAOriEZlYpMLu7AMjF84/GDP2NKvXoxbWF8PxX+YJ00Ke3pS4xNChSM46+9sNC19rGvlxiTqu406Uu+cfOt99+vzHeI/Tw93iq0J+PObrqxRrxaLmebJHPRGK0tPVxsMig5BhqaXO/jadXADiKTROV1ddX/T4S2qa3N75ehct3xv/ufELXdzIx3mwbfcAAAAASUVORK5CYII=", "TSM20": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQgAAAEIAQAAAACLjVdSAAABT0lEQVR42u2ZQY7DUAxCIer9r/xmYZyfzGZmTxupjRxvgviAXaM/Ppe+Hb0dH8lzh5Hzw6n24SEkyULCMgZzVwvxkPftQTahRqqFeOT9wVJOC736cQARsowFasaD1U4PMzCn2oXHoQK/rn3chcdDKCws1mqK8wfSmIqZL+7w4bb8kRA2gGwkW7d1Xx67RkEsazMpjqyOtvTpx1JCZs7N8ATjxrw+qrHoDCSR1D5+CBAzrhDzRexNnd9ekuSx2lFTqZkfV0hiyECnZFMq84djtSFD1DS5DFPJD4TAHlCMyGBH4/6Dk70e3ruFTv2wEPYMcnbOjVypH2HDKMc9zKiSH+/59gjqwkL7/uN2WySoy2Pv/XoGXZ9i8X79Pi+rpCMrtf9YTeZgd6hU7k+fHa9zE4Ca9+tOQt+o7kK//dy7j0SRZLLslinOH2Xq8O34T8cPlgDR2vTOJosAAAAASUVORK5CYII=", "IPA10": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQgAAAEIAQAAAACLjVdSAAABTElEQVR42u2ZO27EUAwDycXe/8qTQj8jTZCaNlwsHl6zBDWiZKM/no/eG7k3vpLrF5JkjGSJPY3To5WQTAkB8p3m6dH/3iWIkMyeJurRD7bc1cJLmLIGsEjJ5GmjQsWOqhjfaZ4e64YGKoOPQD0eoDAqfxCcP0x3le2v6OwR2V+KGsjiVGm8mkR/bBI7FbxVE9dvq0CQEDB2QZVGAnk6APGgY6xhkaaHYFMYYt4uHASB+bQjqbFkSy4lTJ4/PjW/VW8pjtAzXW4eM5c3GiIHksR+u/zUE68VSyL3HzXG4TYFunQWytOrG/d8G5k/vhM0qmqY7ZjHNNHz7W2Su2JM7n69LdLlMn7J3a8XLnh+fsjzR+f1yuaFjw3sCNLy+vcXTUx3mB3ocvVwN92Jq0WUyPwxJeMe4nxfHfL48ZzuOZiUUMTmj5RqeG/848YP5LPR0VPdWd0AAAAASUVORK5CYII=", "CP10": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQgAAAEIAQAAAACLjVdSAAABSElEQVR42u2YQW7EMAwDOUX//2X2INE2emnv3GyABI4vS1BjSlh/XF/67Ojd8S0xb2MULIx8V+v0GCWQMBYyMj6rfXqIaLLOML6rxRVlLLBPDXUTZmxhhF3M04PSpahZYRr10LGCf/3yuc4f569zn1eQPn4gIZjnqiEOUgt5ipeg52RB1OYPzznrYITYZJzS6A8JS1byh7V3Xb1MQk82nVzqN7H26TGh41khmYTSvD7dCoOMeANhKKyXNciWTdrbDamV+XRvP2Vj27Lclk+/ktg93rBly2bOXCrzKTrDIDIH6s3rWy2EIJBY5k5+2D7EeLvbAUhlf5tEJgYai5PKeRDXKNypEFGkdr7OnjPT65by9JmvTwZj27ozIaqdJ29KTQwJUQr9sQC5Le64pZSnb0p/Qep579OD1Avp6nLQVM6DOmn52fGvHT/5sMnpGX6nngAAAABJRU5ErkJggg==", "TA10": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQgAAAEIAQAAAACLjVdSAAABTUlEQVR42u2aQY7DMAwDOUX+/+XpQVLiXnYfoAQoitq+dEBTlFrMP88n74m9J+IIxH7FxGfVXTyuoUAMiSESnNWNCgLqu1NYShy1uvdGmRhTFF6HSdLKkLiVxzVWmvIMIhQYt/LgFAiJ5FjdxYMzj9Fa+Vlc5x+EpG3UhLkyvbM0j1mJw3mvYrMuj90AonlIDI11PD5TS0wiGprIrK7jIZiQSNNIkDGVhXnMRGljfbKYS/N6obA8VQLxbnU31hfjU2fyfDAu9FND5dJRRYcR68Zs9A/FyqcTT280G/Pp0dMyva30zsb+hZYFBrG6ut7b6KdtqF1TPCdE++ank85bFwwKls4/uMXQGO6JMvvqC54WMk7SYMSV88Kps1VUPKZj+M6Ta5CqJY+9PLA7uJFH9Xdr5+vWr1Hjo7gxf1ynV/BjrLjQP3j/7/Ce+OP5AkcoxtP9aPoUAAAAAElFTkSuQmCC", "MS40": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQgAAAEIAQAAAACLjVdSAAABSklEQVR42u2ZQY4jMQwDWYP8/8u1B1ntntPOnQkQRHB8aYIiKTXmP5+ffG/03ohLEM83Jt5Tu/D4LApEgrc4p40MApLgwDLFnvZ2lBgMX4V5ABleSGzF47NSmjCQCNM7tuLBbRhkeUIrP34ZLgOGt2Pq9IOQBK6YTsucf+rwMAaOzbqdwghro78AOqFDjrdMGLGzX5QTSHEkZOzFWDm/+JZQ98iZZBrzmG4YW3m9+axQT+E8u765McTpwoNnfDv59KgIO9FU+ksIMTq5Qzh7kM78ccTC3Q7xDqi9/nINZhR2vKZOP55fZqJ7GDJlKz/iaRLfK9XC/ekCwiuCxGfgr8ODS4Z12rNRptJf4sYwznZ9CVI4335uf7ySel5V8Rsro0Gcys55/1ovgRc9hi+1+3VxIBgd3SjS+/5294UTQIz25tNCtfze+MONfwXsydJWuom0AAAAAElFTkSuQmCC", "KL80": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQgAAAEIAQAAAACLjVdSAAABTklEQVR42u2ZQW7DQAwDOUX+/+XpYSVnc2rvjAMYhrIXExRF0Zg/rp98T/SeeCWcJ0kSkwTf1T48BoPIeUTxqRbikQEiQmSpMdXajiLxkET5KsyBhJhzq9XT7NuLJEjwXe3D42qOyPyeahceeDWLGPxslzI8olEHAbd0/dc4b3VosVbkTBsq54sIx4wRIDp9pI36wb4+Maxt54wbO/2pwe2SJIyk9vHj8R9nzB77kd3nKvlxaajvNpLZeQv9OmeY6Bh242NPC/HA8eokhDNksoTpmy9Dhd36Z9isby/UD7ZbuEzqwlOoH5qTA2nOIjdiSqUfu+lwRaeV/Lj3W4cWI6TjRGrz9Qec8WUDUJ9+qLrhKffq36cfV77O0VIGls486HUlQ6MdM34XpuJ8HTZh3+2WUv+xmvERg1DaL/f3OHk+PgxPav1Hmzp8T/zjxC8dCbgHBdzuNgAAAABJRU5ErkJggg==", "XA10": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQgAAAEIAQAAAACLjVdSAAABU0lEQVR42u2ZwXLEMAxCIdP//+XXA5LjW3snyUx2rfUlGoyANfrjevTt6N3xIznfkJEsIUucal0/hJRGGEsy6chUCxFkW5LF3DKnWoiPvaycEwvzMUyggXwoRaX4YPHh5VW/1a5+CC503Pf+XIePlyqWNu6GlOHDKFN25ivnsbXCfrwqbITHLdEK+TTCdCXp9IUBSKX+cKCRT2Q4MqTuvBxQOIr9FWPuw4fIKAEJAVyzVtTN22de3EaWo01JJ0wfPp4dKntKPNA4mr1v3kaKTQCy4+YIkUK9ztLILBYi9Ol1TyzGWLnj486QqcyDZIZUXxZx/G6jHgt9jpdxlitYO/WY7lhsTUynf1nzRvJSX063079Mkm4sYxKisr1p9Ld5fTOkMVDBtf72xB0xuq+jozhfzx8wNka2s+zN1+fpI+ODku58XcAsJEGhXi9lh2/Hf3b8AqsQyd5ztzpFAAAAAElFTkSuQmCC", "SK10": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQgAAAEIAQAAAACLjVdSAAABTklEQVR42u2ZO5IDQQxCYcv3v/JzgPozkTdnJmrLHVEIIdrox/en90bvjY/knDA5YnGqfXgISbKwJHIwq1qIh6wwAtkgR1NSbcRjtUYahVdh8pn0SASkVk9HQIKDhR2S0IqHT8sYK8K6q114PNUiYPAo1umHZUn24UlaZv7p01PPrEXHdcgRlDY8BII1cCGV/EilcN5aCGHZLJs6cDTyQwCXLeNCo5EfyHIg4Tl9K+dL4LAdqsziwjJqff7D26EOBGfzp3HeMqTwZoeXptb6jzHqZtOEYn/qhB4mzFhiWqinIcRs+ONSVxaUY6H/GBmdHf+YkUL/8VmzJcHpWem2EanN1zcsO1E2lXnyytejJxhPwFy43175+rHqXFlIc54cP4ZnqUtOVvve4HmZ21oaltTm69c7JUnHCv3Hla9nsGxHRhxrdb7epJbvjf/c+AJgb7b8xnEV8gAAAABJRU5ErkJggg==", "DS10": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQgAAAEIAQAAAACLjVdSAAABT0lEQVR42u2ZsbLbQAwDsZn8/y9vCpKyXpqkh2WPdUddIwwJgjDmH9evfE/0nvidMCtJxJDET7QPj5gkxAFFJHjRQjzCZoRECMMpE+2tKOf99cswe4FsmhTz6RJIiMEQErxoIR5cwWCCSF7RLjzwr9123WL+ICRhb9EICfukrl4mHbz+eqmSTOE09heARcTNE++nsV7M9JZpMub52obHyi9n4c+ViTbOL+wcR8wWzE54pfrUmeAM7P7Spk9/8ADy0h88Aq2OP/SVDYk30Rmt5I91gCY1Nis+GrXQH/ODiVdBYqP+4GWO7Tg3DtkJkkr/dNwxP4PuVhGN/umxJw+n8naUK/XpIWEeabof+/SHechj/KCj2E7+eJx0rki4Yunjj59+8ppArhaj+v8GRo2dNDvjrBAPfaSYiGcGqcX++vnq3m4Yttlfr2LL74n/OPEHoG6/8v8nREcAAAAASUVORK5CYII=", "ET50": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQgAAAEIAQAAAACLjVdSAAABVElEQVR42u2ZMW7EQAwDh4f7/5cnhaRdp0p62YZtQNiKoEhKjvxxfXhP7D2BQxDnFrxVd+HxBQQIpkEwxKmyDw8CQojENEBd3dtRaiS+CtNXYrpf3IrHFx79UYAE4lQX4pFpmFjyER7VdXhcw73i4e2YdfoRAiSk3mJSXbPPbz8g5bERLy+OmmzMp/2I2r3iFPb5raSyB1ZMTWFRmGzsF1LptE1FYlpUVuppiUeIEsdqy3cX5jHCSabFkdJYXMePeBCoCbenuIbHlf1iMcGYGl2SNpyd+aNzx0wv+RVQ9/EjaUZg5Y+RjoV6mlmO0X5rJxBmFbKQH3f54ZENhjUb59uOpmQ+nGy2D4+ccb+lI9Jjriv3yUdCUhuhCSEb9eOxXz9e+9yOrf5jpTYmtQrJajxmxnVoUp+1+/WZ4dpb4lb9yPBDc36+FBxxZT5dqZbviX+c+AGkn7kMByF3/wAAAABJRU5ErkJggg==", "KP10": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQgAAAEIAQAAAACLjVdSAAABSUlEQVR42u2YMW4DQQwDOUH+/+VJodXepUp6+gwba91WBCVSxPzxfOVzo/dGXIK4PyY+Vbvw+F4kiJgYIsGtpg+PkJgwqBiGHFPt7ajTMPCZMPsMMyS24vF9mREkJMIAYyseT4OIJJJXtQsPfJ/PCH0X++YHoyzE6Bwg4bzpm6fDCzNzw2y7II3+VDOf4033NGcL+RFGUAyHHT7Q9O0vw4jdWdQXGoX7y4GDcacvqR3dLfWnaCQeU/asu3X+g+tPX9aDY886+cHs+0Cy3zgdU4eH15uu7j4NU+pPxemWy4zIaZrC/YUhhb+yoc2FCvNTj+TOnyf8aPUfAwLHcIhsftiYf3DJcBX3JMpYmSdvvn7HBgsPKc7XH79+LXt1vp6V2h2tQjMeXJ/6ioSK83WJ6Liz5Fi03nz9JIRupswoTm++3jUtPzf+c+MHAEi96Q5A9ioAAAAASUVORK5CYII=", "NJ1000": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQgAAAEIAQAAAACLjVdSAAABRUlEQVR42u2ZuQ4CMRBD/RD//8ummCOhgt4LQkLZVJavmcX68XnpuZF74y1R/4wsIVlIntM8PGRpUWk0rtNABgENAIvEnOYqCgsJzGFLon9oldI+4qJJLh4jEBuMKN04EQ/ZS4/v7zzOwuNSBhsv8nWcxw9vwHqIYc8DZ/qpxTSOzpfiSWTeWpRwQDbjHwan4XHClQ5ahib9ONBPabXg0ovXYR2qlxng0HgHEzZ5862ZVspwA62O4vAwbvdomlijGyt0vl1QJm2KH6TOc9U6djW0ppLID+xp6D6IkNnXX9K2Dl9QIJS6D8K1Pd10KST6Fz3f+vrTnhq7X5+MOUAF9tN7v04FLqbePYT2sX7pIvdIp03e1PllTHRCd1/BhO4/jqPWJGNVJUnVSxcPZFo65aYi0k/ZvN2d0FVRY/tHmjs8N/648QFJG7MKciBe3AAAAABJRU5ErkJggg==", "CU100": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQgAAAEIAQAAAACLjVdSAAABUElEQVR42u2ZMW4DQQwDh0b+/+VJodWt4Sbp6XNzWG9jQqRIOvLH8+J7o/fGD2TeJEYiBO9pHR4IEBCiBIzPaR8eBwt2NmK8p4V4PM9A4CDTqh8XDcMMhs16eshCWJrMi4144M6CH5/9uguP+CEgdvPlBYGQEIKGKGQNSJ9+GNaInflwtYRY6GA9COSs3GVMEhv5EkwUzDMtx4c06ocS3LySY1MDaJ1fvwnuqAhvVj19fv36j313ySJ2+o/Nb27Qn3WTRv14LPqq6RGTAahvv6w/jauptxIaGSn0p0mWLacFerPsffsWndX6Lq2PRW3ML5hLkONNV1H78supQOb3X296OFPbr89K8Sa5QaS2X4+zbZ8ZmfVb268LZgqQMzSdfLnd2ALCzgkW/4O3rbKT963Mt2/9+qb9HYyzbPrwyPLF49qdTrU2zzWqw/fGv278ApNGwv354aTlAAAAAElFTkSuQmCC", "AD10": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQgAAAEIAQAAAACLjVdSAAABSElEQVR42u2ZMXIFMQxCIZP7X/mlQLKdKun5LnZtrStGQog1+mN96XOj98a35OyQxZx4onV4CEmyHBQwktloIR7yYsKz2WghHrMOLOLDMBLCwxr7Vmd+TDpgXWo90T48NikQzpMb7cPjkgWnyXKjdfzhJVMLRFCxJdt1eAhCFQgGDyRgvtKFx1AFFj5Eap6eW9hvwRA6TXYEGrfyh00SRd6MwSYs0thvmSJhqTWl5Mr8SJ0c9kibmSKisb/waA6ytAqksL88Leb2nGGRUv0x2cGrSEju0DjfztwSMWZzREil/hj2jEZX5jkbJ0kq/SBkjkrdgSaM0thvZ4QxxymDKZdef31odGzl46XW+utTNWuW1fofa3TIkhwj5AkV/7Hy+duAgNL55UqzoZJQiJ1Nr7/uFWG/zpV6fUG5h5nmKv3CTrb83PjHjR9plMzYqNTzogAAAABJRU5ErkJggg==", "BC10": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQgAAAEIAQAAAACLjVdSAAABVUlEQVR42u2aQW4DMQwDh0X+/+XpQZLXubQP0Bo5GIIvISiKVBL55/zwvtj74gOpm3UzEvBU1+GBAIEgCbEQ6eo+PPrbpy+BeKob8ZhTvWIwvgoDGDRHUnbqaUsFzYrpmanuw+NmAzEHl514HKkIR1x9qvv8R3kNPTbk0GPffEFVQZoUFzUU3YVHrE9mvtSQIQeVdfN22kWJxZNgWdV1eKRnazBgEcUjsG6cL2lY5AozpSRxoz9VaIJQiQ7R6p6FeKSGipkemfC/Uk+DIWkjIokQbaFdmW/TMBQ9Ur69Ju9C/xEvIG6TujjvO00CtR/b6T8+HfRnQdgrIdIDZ6Efu+Ltk/S7g+Le/fr4j2uFutKfjiUtBE60G/asy/tPytfegswqRLfl/c+3mrQ9HVXJyt+jbraUXe3Qa1y8X/dZtFfeLZas3a+PBbkG7779ad7/O7wv/ji/lfK8+NLjt3wAAAAASUVORK5CYII=", "BB20": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQgAAAEIAQAAAACLjVdSAAABTElEQVR42u2YQW7EMAwDh4v+/8vTgyQ77WV7rjYBksDxxQRFUoq8uV58duzd8QWpL2NAgHhX9+HRGGAkQDSe1YV40LyQEDPU6NWFeNzzT83Ej8KAGITgYj1lTl+vmKKHG/FALzl+3PN7HT9ubZh5XkAW5g+rSBqL4A0f2Zg/SjEi4yudxwqjlfUiuTAwhHFfHkNBURFtdLRxWainGCaGPdL7OPAuPB6CYdWL81FA7cunIZJuWxw1WcqPV7usts2e2nFl/jie8ph5DDOqcDbOg0y3tjeWxrp36un1lQNJuu/f2O87YRQkOe6SjfqRMZT8lhF36ulzPgaVPm5kXztff/pKEWdh//IC1O5XcpLYlde18/XKqR3I8o/d4y0eMx0rOS1EJqdtnq8Hk5ywLjv1A2uorMSx3VMzC+eFlx0eA3Z4sjZ/bFOHz44/7PgGHQDB8Xjg5msAAAAASUVORK5CYII=", "RA10": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAOgAAADoAQAAAADN0pXVAAAA+klEQVR42u2YO44DMQxD+YLc/8rcQh87WCB9mMwU45ErgqIoCevN89Dv9rNvnxJ1MrKQdSKZeGUdjJLwRjLxisJsFnhHorPdBdLfom4sY+Lr1VBqLM85Fa88+evrnatIfn3pV1iXhDP5PRQ3t/2N5ZcltNmlz6H6LYL9n/dMP/KpW/aULGL9d9oquq9CjKbz8NJMysL1UxNDKN7Sr1bEtwXH6pcdFuyGnDovMG5EO5HPZOhMvC9SNsYbjt5vHA8uxMTvNzAzBRfN2fsNXGWLze/4bZ7XpHL7q+PEdJ9hYvuNa79RaY0FMuTiHb32lDB7aJTtv5kV6ctv/wD1nJGV0Dxm6AAAAABJRU5ErkJggg=="};
+const LKEY2='mypeps-labeltext';
 const PURPOSE={"RT30": "WEIGHT LOSS · APPETITE · FAT · METABOLIC", "TSM20": "VISCERAL FAT · GH AXIS · BODY COMPOSITION", "IPA10": "GH RELEASE · DEEP SLEEP · RECOVERY · REPAIR", "CP10": "GROWTH HORMONE · REPAIR · SLEEP · RECOVERY", "TA10": "IMMUNE DEFENCE · T-CELL · INFECTION SUPPORT", "MS40": "METABOLIC · ENERGY · INSULIN · ENDURANCE", "KL80": "TISSUE REPAIR · SKIN · GUT · RECOVERY", "XA10": "FOCUS · MEMORY · CLARITY · NEUROPROTECTION", "SK10": "CALM · ANXIETY · FOCUS · NO SEDATION", "DS10": "DEEP SLEEP · DELTA WAVE · NIGHT RECOVERY", "ET50": "LONGEVITY · SLEEP · TELOMERES · CIRCADIAN", "KP10": "GUT HEALTH · SKIN · INFLAMMATION · REPAIR", "NJ1000": "CELLULAR ENERGY · MITOCHONDRIA · REPAIR", "CU100": "SKIN · HAIR · COLLAGEN · TISSUE REPAIR", "AD10": "FAT BURNING · LIPOLYSIS · NO GH EFFECT", "RA10": "NERVE REPAIR · NEUROPATHY · INFLAMMATION", "BC10": "HEALING · GUT · TENDON · JOINT · VESSELS", "BB20": "INJURY REPAIR · MUSCLE · TENDON · MOBILITY", "LC600": "FAT TRANSPORT · RECOVERY · SORENESS"};
 const CYCLE={"RT30": {"on": 0, "off": 0, "label": "Continuous — no cycling", "grade": "Book + web agree", "weekly": "", "why": "A GLP-1 class drug is a long-term therapy, not a cycled compound. Your book's reference table lists it as continuous (p126).", "ifnot": "Nothing. The risk runs the other way — the book warns that stopping abruptly causes rebound weight gain, so plan a gradual exit rather than quitting.", "extra": "Escalate slowly: start at the bottom of the range and step up every 4 weeks. Nausea is the usual limiter (p115)."}, "TSM20": {"on": 84, "off": 28, "label": "12 weeks on, 4 weeks off", "grade": "Sources conflict", "weekly": "5 days on, 2 off", "why": "Honest answer: it may not need a break at all. Tesamorelin is a GHRH analogue, and the GHRH receptor does not appear to desensitise the way the ghrelin receptor does. Your book sets 8–12 weeks (p107), but the same page notes the approved clinical protocol ran 26 weeks continuously for 15–20% visceral fat reduction.", "ifnot": "On the evidence, probably nothing — the FDA-approved use was continuous. The 4-week break is the conservative reading.", "extra": "If you run it alongside Ipamorelin, the break is really for the Ipamorelin. Some protocols drop Ipamorelin for 4 weeks and keep Tesamorelin going."}, "IPA10": {"on": 84, "off": 28, "label": "12 weeks on, 4 weeks off", "grade": "Real mechanism", "weekly": "5 days on, 2 off", "why": "This is one of the few where cycling has genuine pharmacologic teeth. Ipamorelin hits the GHS-R1a ghrelin receptor, which downregulates under constant stimulation. Four weeks is roughly what the receptor needs to restore surface density. Your book says 8–12 weeks with a mandatory break (p86) but does not give the length — the 4 weeks comes from clinical practice.", "ifnot": "The same dose produces a weaker effect. Reported after 3–5 months of continuous use: sleep benefit fades, fat loss stalls, IGF-1 drifts down.", "extra": "After three consecutive cycles, extend the break to 6–8 weeks — cumulative feedback suppression of your own GHRH takes longer to reset."}, "CP10": {"on": 84, "off": 28, "label": "12 weeks on, 4 weeks off", "grade": "Real mechanism", "weekly": "5 days on, 2 off", "why": "The break is for the Ipamorelin half, not the CJC. GHRH receptors do not desensitise; ghrelin receptors do. Your book's tiers (p87): 100 mcg each for 8 weeks at basic level, 200–300 mcg for 8–12 weeks beyond that.", "ifnot": "Blunted GH pulse, and you lose the thing you are paying for. The book also flags that CJC without DAC desensitises within the week, which is what the 5-on-2-off pattern is for (p84).", "extra": "If you run this, drop standalone Ipamorelin — you would be stacking the same receptor twice."}, "TA10": {"on": 0, "off": 0, "label": "Continuous — 3 to 6 months, then review", "grade": "Web · not in your book", "weekly": "", "why": "No receptor downregulation mechanism. The original hepatitis protocols ran multi-year continuous courses without cycling. Your book does not cover this compound at all.", "ifnot": "No established consequence. This is a change from what the app said before — the 3-months-on, 1-month-off figure was convention rather than evidence.", "extra": "Review at 3 to 6 months rather than stopping to a schedule."}, "MS40": {"on": 56, "off": 28, "label": "8 weeks on, 4 weeks off", "grade": "Disputed · book caps it", "weekly": "", "why": "Your book sets a hard maximum of 8 weeks at 2–3 doses a week (p99). Web sources split three ways: run it continuously, run 8–12 weeks then break, or 4 on 4 off. One source states plainly that no rationale for the break can be reported.", "ifnot": "At low doses, probably nothing — the effect is transcriptional, not receptor-based. At higher doses the concern is AMPK–mTOR balance working against muscle.", "extra": "Worth noting: the book says 2–3 doses a week, not your 5-on-2-off. Same weekly total in fewer, larger injections."}, "KL80": {"on": 84, "off": 28, "label": "8–12 weeks on, 4 weeks off", "grade": "Set by the GHK-Cu", "weekly": "5 days on, 2 off", "why": "The GHK-Cu component decides, and the limit is copper handling rather than receptor fatigue — copper is a mineral your body clears slowly. The other three components are shorter: BPC-157 4–12 weeks, KPV 4–12, TB-500 4–8.", "ifnot": "Copper accumulation is the theoretical concern, which is why serum copper and ceruloplasmin are on your blood request.", "extra": "Peptide Hub suggests a much shorter 30 days on, 14 off for this blend. Either is defensible."}, "XA10": {"on": 21, "off": 14, "label": "2–4 weeks on, 2 weeks off", "grade": "Actually studied", "weekly": "", "why": "One of the very few where the on/off pattern appears in published work rather than convention. The effect genuinely fades with continuous use and returns after a break. Your book: 10–30 days on, 10–14 days off (p110).", "ifnot": "The focus and clarity effect tails off. It is not a safety issue, it simply stops working.", "extra": "The stroke research used courses of 5 to 10 days, in one trial repeated after a 20-day break. Never dose it at night."}, "SK10": {"on": 21, "off": 14, "label": "2–4 weeks on, 2 weeks off", "grade": "Actually studied", "weekly": "", "why": "Your book gives 14–30 days on with a 2-week break (p111), and its own table marks Selank as building no tolerance — which is why the courses are short rather than long.", "ifnot": "No tolerance mechanism is described, so this is closer to good practice than a requirement.", "extra": "Usually cycled alongside Semax. Unlike Semax it does not interfere with sleep, so evening dosing is fine."}, "DS10": {"on": 20, "off": 21, "label": "10–20 nights, then 2–4 weeks off", "grade": "Book", "weekly": "", "why": "\"Cycle: 10–20 nights | Break: 2–4 weeks\" (p94). Shorter than most people assume.", "ifnot": "No desensitisation is described in the literature. Some sources say run it continuously, or only on poor-sleep nights.", "extra": "30–60 minutes before sleep. Set here to 20 nights on, 3 weeks off — the middle of the book's range."}, "ET50": {"on": 20, "off": 150, "label": "20 days, then months off — 1 or 2 courses a year", "grade": "Clearest protocol you have", "weekly": "", "why": "\"Classic cycle: 20 consecutive days, 1–2 cycles per year\" (p98). Straight from the original Khavinson work. This is a pulse, not a maintenance compound.", "ifnot": "Not applicable — running it continuously is simply not how the compound was studied.", "extra": "Other sources say 10–20 days, two or three times a year. Either stays within the same shape."}, "KP10": {"on": 42, "off": 28, "label": "4–12 weeks, 4 weeks off", "grade": "Convention", "weekly": "", "why": "Your book gives 4–12 weeks at 150–750 mcg a day (p108). Web sources agree there is no desensitisation mechanism — KPV calms inflammation rather than driving a signal that provokes shutdown.", "ifnot": "No rationale can be given. The FDA's compounding advisory notes no human exposure data for KPV by any route.", "extra": "Best used as a course for a gut or skin flare, then stopped, rather than run indefinitely."}, "NJ1000": {"on": 0, "off": 0, "label": "Continuous — loading, then maintenance", "grade": "No protocol in your book", "weekly": "", "why": "It refills a cofactor your cells constantly consume. No receptor, so nothing to desensitise. Your book covers NAD+ biology at length but gives no injection protocol.", "ifnot": "Blood NAD+ simply falls back when you stop. That is the whole mechanism.", "extra": "Common pattern is a loading series of several weeks, then a lower maintenance frequency. Yours at twice weekly is a maintenance dose."}, "CU100": {"on": 84, "off": 35, "label": "8–12 weeks on, 4–5 weeks off", "grade": "Book · copper, not receptors", "weekly": "5 days on, 2 off", "why": "\"Cycle: 8–12 weeks\" at 1–4 mg a day (p91). The limit is copper handling, not receptor fatigue — the gene-expression mechanism does not desensitise.", "ifnot": "Theoretical copper accumulation. Some sources say no cycling is needed at all and run 3–6 months continuously.", "extra": "Check the vial has not darkened before drawing — the book flags colour change as a sign of oxidation."}, "AD10": {"on": 0, "off": 0, "label": "Can be run continuously", "grade": "Book states it plainly", "weekly": "", "why": "Your book's protocol table says \"Cycle: can be continuous\" (p93). No GH-axis involvement, so nothing to suppress — it is the fat-burning fragment with the growth signalling removed.", "ifnot": "Nothing described. Run it for the body-composition goal, then stop when the goal is met.", "extra": "The reconstitution matters more than the cycle here: 0.6% acetic acid or CAG water, never plain BAC — it forms threads and will not dissolve."}, "RA10": {"on": 28, "off": 28, "label": "4 weeks on, 4 weeks off", "grade": "Trial length, not a cycle", "weekly": "", "why": "The clinical trials ran 28-day courses. That is where the number comes from — it is a study design, not an established cycling requirement. Your book mentions ARA-290 once in passing with no protocol.", "ifnot": "Unknown. There is no long-duration human data to draw on.", "extra": "Repeat courses are judged on symptom response rather than a calendar."}, "BC10": {"on": 56, "off": 28, "label": "A course, not a cycle — 4–8 weeks", "grade": "Goal-directed", "weekly": "5 days on, 2 off", "why": "Run it until the injury resolves, then stop. Your book says 4–12 weeks with a 2–4 week break mandatory (p78), but contradicts itself on p74 saying no mandatory rest is required between short cycles. Web sources are blunter: the 8-on-4-off convention has no source and was borrowed from steroid practice, where the reasoning does not transfer.", "ifnot": "BPC-157 suppresses nothing, so the usual rationale does not apply even in principle. The genuine long-term concern is pro-angiogenic effect, not desensitisation.", "extra": "If the injury improved but is not finished, a break and a second course is defensible. Inject near the site where practical."}, "BB20": {"on": 42, "off": 28, "label": "4–8 weeks together, then stop", "grade": "Goal-directed", "weekly": "5 days on, 2 off", "why": "TB-500 is the shorter of the pair at 4–8 weeks (p89), so the stack runs to that. Your book structures it in three phases: a 2-week loading phase at 5–10 mg a week, then 4–6 weeks maintenance at 2–5 mg a week, then a completion phase at 2 mg a week.", "ifnot": "Same as BPC-157 — the concern is pro-angiogenic over long periods, not tolerance.", "extra": "The book calls this the most powerful regeneration combination it covers. BPC prepares the ground, TB-500 sends the cells."}, "LC600": {"on": 0, "off": 0, "label": "Continuous — not a peptide", "grade": "Supplement", "weekly": "", "why": "A nutrient cofactor. No cycling applies.", "ifnot": "Nothing.", "extra": "Your book only covers the oral form — 2 g of L-Carnitine L-Tartrate pre-training (p249) — and notes a synergy with AOD-9604."}};
 const CKEY='mypeps-cycles';
@@ -11445,20 +11467,49 @@ if('serviceWorker' in navigator){
     });
     setInterval(()=>reg.update().catch(()=>{}), 60000);
     document.addEventListener('visibilitychange',function(){
-      if(!document.hidden) reg.update().catch(function(){});
+      if(!document.hidden){ reg.update().catch(function(){}); checkLatest(); }
     });
   }).catch(()=>{});
 }
-const APP_VERSION='2026-10-15';
-const BUILD_NO=59;
-const BUILT_AT='2026-10-12T09:00:00';
+const APP_VERSION='2026-10-09';
+const BUILD_NO=66;
+const BUILT_AT='2026-10-09T01:15:15Z';
 (function(){
   var d=new Date(BUILT_AT);
   var p2=function(n){return String(n).padStart(2,'0');};
   var stamp=p2(d.getDate())+'/'+p2(d.getMonth()+1)+'/'+d.getFullYear();
   var tm=p2(d.getHours())+':'+p2(d.getMinutes());
-  document.getElementById('ver').innerHTML='<b>'+stamp+'</b><i>'+tm+' \u00b7 v'+BUILD_NO+'</i>';
+  var el=document.getElementById('ver');
+  el.innerHTML='<b>'+stamp+'</b><i>'+tm+' \u00b7 v'+BUILD_NO+'</i>';
+  checkLatest();
 })();
+
+/* ask the server what the newest build is, and colour the chip accordingly */
+function setChip(state){
+  var el=document.getElementById('ver'); if(!el) return;
+  el.classList.remove('up','old','unk');
+  el.classList.add(state);
+}
+async function checkLatest(){
+  setChip('unk');
+  try{
+    var res=await fetch('index.html?v='+Date.now(), {cache:'no-store'});
+    if(!res.ok) throw 0;
+    var txt=await res.text();
+    var m=txt.match(/const BUILD_NO=(\d+);/);
+    if(!m) throw 0;
+    var server=parseInt(m[1],10);
+    if(server>BUILD_NO){
+      setChip('old');
+      var el=document.getElementById('ver');
+      el.innerHTML='<b>UPDATE</b><i>v'+server+' ready \u00b7 tap</i>';
+    } else {
+      setChip('up');
+    }
+  }catch(e){
+    setChip('unk');   /* offline, or served from a file — leave it neutral */
+  }
+}
 buildSchedule();
 
 
@@ -12046,22 +12097,35 @@ function openDetail(sku){
       +d.warn.map(w=>'<li>'+w+'</li>').join('')+'</ul></div>';
   }
   if(LABEL[sku]){
+    var liveVial = vialDataURL(sku) || LABEL[sku];
     h+='<div class="shgrp">VIAL LABEL</div>'
-      +'<div class="lblBox"><img src="'+LABEL[sku]+'" alt="label">'
+      +'<div class="lblBox"><img src="'+liveVial+'" alt="label">'
       +'<button class="lblBtn send" onclick="sendLabel(\''+sku+'\')">'
         +'\uD83D\uDCE4 &nbsp;Send to the printer app</button>'
       +'<div class="lblBtns">'
       +'<button class="lblBtn alt" onclick="saveLabel(\''+sku+'\')">Save the image</button>'
-      +'<button class="lblBtn alt" onclick="printLabel(\''+sku+'\')">Print a sheet</button>'
+      +'<button class="lblBtn alt" onclick="openLabelEditor(\''+sku+'\')">Edit the wording</button>'
       +'</div></div>';
   }
+  var pw = penWhenFor(sku), pu = penUnitsFor(sku);
   h+='<div class="shgrp">PEN LABEL</div>'
-    +'<div class="lblBox"><img src="'+penDataURL(sku, defaultWhen(sku), '')+'" alt="pen label">'
+    +'<div class="lblBox"><img id="penImg" src="'+penDataURL(sku, pw, penNoteFor(sku))+'" alt="pen label">'
+    +'<div class="deField" style="margin-top:12px;margin-bottom:10px"><label>Units to draw</label>'
+      +'<div class="deIn"><input id="penQuickU" type="number" inputmode="decimal" step="any" '
+      +'value="'+pu+'" oninput="penQuickChange(\''+sku+'\')"><span>units</span></div></div>'
+    +'<div class="deField" style="margin-bottom:10px"><label>When</label><div class="penWhen">'
+      +['AM','PM','AM + PM','ANY TIME'].map(function(w){
+          return '<button class="'+(pw===w?'on':'')+'" onclick="penQuickWhen(\''+sku+'\',\''+w+'\')">'+w+'</button>';
+        }).join('')
+      +'</div></div>'
+    +'<div class="deField" style="margin-bottom:12px"><label>Extra line</label>'
+      +'<div class="deIn"><input id="penQuickN" type="text" placeholder="optional" '
+      +'value="'+esc(penNoteFor(sku))+'" oninput="penQuickChange(\''+sku+'\')"></div></div>'
     +'<button class="lblBtn send" onclick="sendPenFor(\''+sku+'\')">'
       +'\uD83D\uDCE4 &nbsp;Send to the printer app</button>'
     +'<div class="lblBtns">'
     +'<button class="lblBtn alt" onclick="savePenFor(\''+sku+'\')">Save the image</button>'
-    +'<button class="lblBtn alt" onclick="editPenFor(\''+sku+'\')">Change units or time</button>'
+    +'<button class="lblBtn alt" onclick="penQuickReset(\''+sku+'\')">Reset</button>'
     +'</div></div>';
   h+=cycleBlock(sku);
   if(info) h+='<a class="shlink" href="'+info+'" target="_blank" rel="noopener">Read more about '+d.n+' &nbsp;&rarr;</a>';
@@ -12084,7 +12148,230 @@ function vialTap(sku){
 
 
 
+
+/* ---------- the vial label, drawn live so it can be edited ---------- */
+function loadLabelText(){ try{ return JSON.parse(localStorage.getItem(LKEY2))||{}; }catch(e){ return {}; } }
+function saveLabelText(v){ try{ localStorage.setItem(LKEY2,JSON.stringify(v)); }catch(e){} }
+function labelFields(sku){
+  var my=loadLabelText()[sku]||{};
+  var d=DETAIL[sku]||{}, r=reconOf(sku);
+  return {
+    name: my.name!=null ? my.name : (d.n||sku).toUpperCase(),
+    mg:   my.mg!=null   ? my.mg   : (r.vialMg+'MG'),
+    store:my.store!=null? my.store: 'STORE AT 2\u20138 \u00B0C',
+    purpose: my.purpose!=null ? my.purpose : (PURPOSE[sku]||''),
+    custom: !!(my.name!=null||my.mg!=null||my.store!=null||my.purpose!=null)
+  };
+}
+var _qrCache={};
+function drawVialLabel(sku, cv){
+  var f=labelFields(sku);
+  var ctx=cv.getContext('2d');
+  var W=944, H=472, F='"DejaVu Sans Condensed",Arial,sans-serif';
+  ctx.fillStyle='#fff'; ctx.fillRect(0,0,W,H);
+  ctx.fillStyle='#000'; ctx.strokeStyle='#000'; ctx.textBaseline='middle';
+
+  var my='MY', pe='PEPS', ty=42;
+  ctx.font='400 40px '+F; var w1=ctx.measureText(my).width;
+  ctx.font='700 40px '+F; var w2=ctx.measureText(pe).width;
+  var tot=w1+w2, cx=W/2;
+  ctx.textAlign='left';
+  ctx.font='400 40px '+F; ctx.fillText(my, cx-tot/2, ty);
+  ctx.font='700 40px '+F; ctx.fillText(pe, cx-tot/2+w1, ty);
+  ctx.lineWidth=6;
+  ctx.beginPath(); ctx.moveTo(28,ty); ctx.lineTo(cx-tot/2-22,ty); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(cx+tot/2+22,ty); ctx.lineTo(W-28,ty); ctx.stroke();
+
+  var size=104;
+  var nameMax = W - 28 - 212 - 28 - 24;   /* stop short of the QR */
+  do { ctx.font='700 '+size+'px '+F; size-=3; } while(ctx.measureText(f.name).width>nameMax && size>26);
+  ctx.fillText(f.name, 28, 130);
+
+  size=84;
+  do { ctx.font='700 '+size+'px '+F; size-=2; } while(ctx.measureText(f.mg).width>330 && size>30);
+  ctx.fillText(f.mg, 28, 212);
+
+  size=30;
+  do { ctx.font='700 '+size+'px '+F; size-=1; } while(ctx.measureText(f.store).width>330 && size>14);
+  var fy=290, fr=15, fx=46;
+  ctx.lineWidth=5; ctx.lineCap='round';
+  for(var a=0;a<3;a++){
+    var ang=a*Math.PI/3;
+    ctx.beginPath();
+    ctx.moveTo(fx-Math.cos(ang)*fr, fy-Math.sin(ang)*fr);
+    ctx.lineTo(fx+Math.cos(ang)*fr, fy+Math.sin(ang)*fr);
+    ctx.stroke();
+  }
+  ctx.fillText(f.store, 74, fy);
+
+  drawMolecule(ctx, 430, 250, 40);
+
+  if(f.purpose){
+    size=42;
+    ctx.textAlign='left';
+    do { ctx.font='700 '+size+'px '+F; size-=1.5; } while(ctx.measureText(f.purpose).width>W-56 && size>16);
+    ctx.fillText(f.purpose, 28, 420);
+  }
+
+  var q=QRIMG[sku];
+  if(q){
+    if(!_qrCache[sku]){
+      var im=new Image();
+      im.onload=function(){ _qrCache[sku]=im; drawVialLabel(sku, cv); if(window._vialAfter) window._vialAfter(); };
+      im.src=q; return false;
+    }
+    ctx.drawImage(_qrCache[sku], W-28-212, 92, 212, 212);
+  }
+  return true;
+}
+function vialDataURL(sku){
+  var cv=document.createElement('canvas'); cv.width=944; cv.height=472;
+  var done=drawVialLabel(sku, cv);
+  return done ? cv.toDataURL('image/png') : null;
+}
+/* preload every QR once so labels draw first time */
+function warmQR(){
+  Object.keys(QRIMG).forEach(function(s){
+    if(_qrCache[s]) return;
+    var im=new Image(); im.onload=function(){ _qrCache[s]=im; }; im.src=QRIMG[s];
+  });
+}
+
+function openLabelEditor(sku){
+  var f=labelFields(sku), d=DETAIL[sku]||{};
+  var h='<div class="sh"><h2>'+esc(d.n||sku)+'</h2>'
+    +'<button class="shx" onclick="closeLabelEd()">&times;</button></div>'
+    +'<div class="shfor">WHAT GOES ON THE VIAL LABEL</div>'
+    +'<canvas id="vlCv" width="944" height="472" class="penPrev"></canvas>'
+    +'<div class="deField"><label>Name</label>'
+      +'<div class="deIn"><input id="vlName" type="text" value="'+esc(f.name)+'" oninput="drawVL()"></div></div>'
+    +'<div class="deField"><label>Strength</label>'
+      +'<div class="deIn"><input id="vlMg" type="text" value="'+esc(f.mg)+'" oninput="drawVL()"></div></div>'
+    +'<div class="deField"><label>Storage line</label>'
+      +'<div class="deIn"><input id="vlStore" type="text" value="'+esc(f.store)+'" oninput="drawVL()"></div></div>'
+    +'<div class="deField"><label>What it is for</label>'
+      +'<div class="deIn"><input id="vlPurpose" type="text" value="'+esc(f.purpose)+'" oninput="drawVL()"></div></div>'
+    +'<button class="lblBtn send" onclick="sendVL(\''+sku+'\')">&#128228; &nbsp;Send to the printer app</button>'
+    +'<div class="lblBtns"><button class="lblBtn alt" onclick="saveVL(\''+sku+'\')">Save the image</button>'
+      +'<button class="lblBtn alt" onclick="keepVL(\''+sku+'\')">Save these words</button></div>'
+    +(f.custom?'<button class="cycBtn off" style="margin-top:9px" onclick="resetVL(\''+sku+'\')">Back to the original wording</button>':'')
+    +'<p class="deNote">The QR code stays the same \u2014 it still opens Peptide Hub and still counts into your stock.</p>';
+  document.getElementById('lblIn').innerHTML=h;
+  document.getElementById('lblSheet').classList.add('on');
+  document.getElementById('lblSheet').dataset.sku=sku;
+  drawVL();
+}
+function closeLabelEd(){ document.getElementById('lblSheet').classList.remove('on'); }
+function vlFields(){
+  return {name:document.getElementById('vlName').value,
+          mg:document.getElementById('vlMg').value,
+          store:document.getElementById('vlStore').value,
+          purpose:document.getElementById('vlPurpose').value};
+}
+function drawVL(){
+  var sku=document.getElementById('lblSheet').dataset.sku;
+  var cv=document.getElementById('vlCv'); if(!cv) return;
+  var v=vlFields();
+  var all=loadLabelText(); var had=all[sku];
+  all[sku]=v; saveLabelTextTemp(all);
+  window._vialAfter=function(){ window._vialAfter=null; };
+  drawVialLabel(sku, cv);
+  if(had===undefined) delete all[sku]; else all[sku]=had;
+  _tempText=null;
+}
+var _tempText=null;
+function saveLabelTextTemp(v){ _tempText=v; }
+var _origLoad=loadLabelText;
+loadLabelText=function(){ return _tempText || _origLoad(); };
+
+function keepVL(sku){
+  var all=_origLoad(); all[sku]=vlFields(); saveLabelText(all);
+  closeLabelEd();
+  if(document.getElementById('sheet').classList.contains('on')) openDetail(sku);
+  toast('Label wording saved');
+}
+function resetVL(sku){
+  var all=_origLoad(); delete all[sku]; saveLabelText(all);
+  closeLabelEd();
+  if(document.getElementById('sheet').classList.contains('on')) openDetail(sku);
+  toast('Back to the original wording');
+}
+function saveVL(sku){
+  var cv=document.getElementById('vlCv');
+  var a=document.createElement('a'); a.href=cv.toDataURL('image/png');
+  a.download='MyPeps-'+sku+'-label.png';
+  document.body.appendChild(a); a.click(); a.remove();
+  toast('Label saved');
+}
+async function sendVL(sku){
+  var cv=document.getElementById('vlCv');
+  var blob=await new Promise(function(r){ cv.toBlob(r,'image/png'); });
+  var f=new File([blob],'MyPeps-'+sku+'-40x20mm.png',{type:'image/png'});
+  try{
+    if(navigator.canShare && navigator.canShare({files:[f]})){
+      await navigator.share({files:[f],title:'Vial label'});
+      toast('Sent \u2014 pick your label app'); return;
+    }
+  }catch(e){ if(e&&e.name==='AbortError'){ toast('Cancelled'); return; } }
+  saveVL(sku);
+}
+
 /* ---------- pen labels ---------- */
+
+
+/* what each compound's pen label is set to, remembered per compound */
+const PKEY='mypeps-pensettings';
+function loadPenSet(){ try{ return JSON.parse(localStorage.getItem(PKEY))||{}; }catch(e){ return {}; } }
+function savePenSet(v){ try{ localStorage.setItem(PKEY,JSON.stringify(v)); }catch(e){} }
+function penWhenFor(sku){ var s=loadPenSet()[sku]; return (s&&s.when)||defaultWhen(sku); }
+function penUnitsFor(sku){
+  var s=loadPenSet()[sku];
+  if(s && s.units!=null) return s.units;
+  var r=reconOf(sku); return Math.round(r.units*10)/10;
+}
+function penNoteFor(sku){ var s=loadPenSet()[sku]; return (s&&s.note)||''; }
+function penQuickRedraw(sku){
+  var img=document.getElementById('penImg'); if(!img) return;
+  var u=parseFloat(document.getElementById('penQuickU').value);
+  var n=document.getElementById('penQuickN').value||'';
+  var w=penWhenFor(sku);
+  var save={sku:PEN.sku,units:PEN.units,when:PEN.when,note:PEN.note};
+  var cv=document.createElement('canvas'); cv.width=944; cv.height=472; cv.id='penCv';
+  cv.style.display='none'; document.body.appendChild(cv);
+  var shim=document.createElement('div'); shim.style.display='none';
+  shim.innerHTML='<input id="penU"><input id="penNote">'; document.body.appendChild(shim);
+  document.getElementById('penU').value = isNaN(u)?0:u;
+  document.getElementById('penNote').value = n;
+  PEN.sku=sku; PEN.when=w;
+  drawPen();
+  img.src=cv.toDataURL('image/png');
+  shim.remove(); cv.remove(); PEN=save;
+}
+function penQuickChange(sku){
+  var all=loadPenSet();
+  all[sku]=all[sku]||{};
+  var u=parseFloat(document.getElementById('penQuickU').value);
+  all[sku].units = isNaN(u)?null:u;
+  all[sku].note  = document.getElementById('penQuickN').value||'';
+  all[sku].when  = penWhenFor(sku);
+  savePenSet(all);
+  penQuickRedraw(sku);
+}
+function penQuickWhen(sku,w){
+  var all=loadPenSet(); all[sku]=all[sku]||{}; all[sku].when=w;
+  var u=parseFloat(document.getElementById('penQuickU').value);
+  all[sku].units = isNaN(u)?null:u;
+  all[sku].note  = document.getElementById('penQuickN').value||'';
+  savePenSet(all);
+  document.querySelectorAll('.penWhen button').forEach(function(b){
+    b.classList.toggle('on', b.textContent===w); });
+  penQuickRedraw(sku);
+}
+function penQuickReset(sku){
+  var all=loadPenSet(); delete all[sku]; savePenSet(all);
+  openDetail(sku);
+  toast('Back to the default');
+}
 
 /* render a pen label off-screen for any compound, at its current dose */
 function penDataURL(sku, when, note){
@@ -12121,7 +12408,8 @@ function defaultWhen(sku){
   return 'ANY TIME';
 }
 async function sendPenFor(sku){
-  var url=penDataURL(sku, defaultWhen(sku), '');
+  var img=document.getElementById('penImg');
+  var url=img ? img.src : penDataURL(sku, penWhenFor(sku), penNoteFor(sku));
   var res=await fetch(url); var blob=await res.blob();
   var r=reconOf(sku);
   var name='MyPeps-PEN-'+sku+'-'+(Math.round(r.units*10)/10)+'u.png';
@@ -12137,10 +12425,10 @@ async function sendPenFor(sku){
   toast('Saved '+name);
 }
 function savePenFor(sku){
-  var url=penDataURL(sku, defaultWhen(sku), '');
-  var r=reconOf(sku);
+  var img=document.getElementById('penImg');
+  var url=img ? img.src : penDataURL(sku, penWhenFor(sku), penNoteFor(sku));
   var a=document.createElement('a'); a.href=url;
-  a.download='MyPeps-PEN-'+sku+'-'+(Math.round(r.units*10)/10)+'u.png';
+  a.download='MyPeps-PEN-'+sku+'-'+penUnitsFor(sku)+'u.png';
   document.body.appendChild(a); a.click(); a.remove();
   toast('Pen label saved');
 }
@@ -12685,9 +12973,9 @@ function repPenLabels(){
     var s=r.dataset.sku;
     var d=DETAIL[s]||{}, rc=reconOf(s);
     rows+='<tr><td class="sku">'+s+'</td><td><b>'+esc(d.n||s)+'</b><br>'
-      +'<span class="muted" style="font-size:11px">'+(Math.round(rc.units*10)/10)+' units \u00b7 '
-      +esc(defaultWhen(s))+'</span></td>'
-      +'<td><img src="'+penDataURL(s, defaultWhen(s), '')+'" style="width:40mm;height:20mm;border:1px solid #ddd"></td></tr>';
+      +'<span class="muted" style="font-size:11px">'+penUnitsFor(s)+' units \u00b7 '
+      +esc(penWhenFor(s))+'</span></td>'
+      +'<td><img src="'+penDataURL(s, penWhenFor(s), penNoteFor(s))+'" style="width:40mm;height:20mm;border:1px solid #ddd"></td></tr>';
   });
   return '<h2>PEN LABELS</h2><p style="font-size:14px;color:#5A6B7C;margin-bottom:10px">'
     +'Units come from your own mixing figures. Change them in the app and these follow.</p>'
@@ -13212,6 +13500,8 @@ document.getElementById('doseSheet').addEventListener('click',function(e){
   if(e.target.id==='doseSheet') closeDose(); });
 document.getElementById('penSheet').addEventListener('click',function(e){
   if(e.target.id==='penSheet') closePen(); });
+document.getElementById('lblSheet').addEventListener('click',function(e){
+  if(e.target.id==='lblSheet') closeLabelEd(); });
 document.addEventListener('click',function(e){
   if(e.target.closest('.ct') || e.target.closest('.tick')) return;
   var r=e.target.closest('.row'); if(r){ openDetail(r.dataset.sku); return; }
@@ -13219,6 +13509,7 @@ document.addEventListener('click',function(e){
 });
 injectExtra();
 injectExtra();
+warmQR();
 load();
 if(new URLSearchParams(location.search).has('u')){
   const uu=new URL(location.href); uu.searchParams.delete('u');
