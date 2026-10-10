@@ -604,7 +604,8 @@ h1{font-size:27px;font-weight:800;letter-spacing:-.9px;line-height:1}
 <div class="store">
   <div class="lbl">BACKUP</div>
   <div class="where" id="where">Checking&hellip;</div>
-  <button onclick="pickFolder()" id="pickBtn">&#128193; &nbsp;Choose your OneDrive folder</button>
+  <button id="odBtn" onclick="odConnect()">&#9729; &nbsp;Connect OneDrive</button>
+  <button onclick="pickFolder()" id="pickBtn" style="display:none">&#128193; &nbsp;Choose a folder on this computer</button>
   <label class="sec" for="restoreFile">Restore from a backup file</label>
 </div>
 
@@ -11276,6 +11277,7 @@ async function writeFile(){ if(!fileHandle) return false;
 function showWhere(){
   const el=document.getElementById('where'); if(!el) return;
   const btn=document.getElementById('pickBtn');
+  const od=document.getElementById('odBtn');
   var dn=daysSinceBackup();
   var age = dn===null ? '<b class="bad">You have never backed up.</b> Everything lives only on this phone.'
     : dn===0 ? '<b class="good">Backed up today.</b>'
@@ -11286,34 +11288,41 @@ function showWhere(){
     +'your cycles and your own mixing figures. One file restores all of it on a new phone.</div>';
   if(odConnected()){
     el.innerHTML=age+'<br>Connected to <b>OneDrive / '+esc(odFolder())+'</b>. '
-      +'Backing up uploads straight there.'+what;
-    if(btn){ btn.textContent='\u2601  Change the OneDrive folder'; btn.style.display='';
-      btn.setAttribute('onclick','odSetFolder()'); }
+      +'Pressing BACK UP uploads straight there.'+what;
+    if(od){ od.innerHTML='\u2601 &nbsp;Change the OneDrive folder';
+      od.setAttribute('onclick','odSetFolder()'); od.style.display=''; }
+    if(btn) btn.style.display='none';
     var ex=document.getElementById('odOff');
-    if(!ex && btn){
+    if(!ex && od){
       var d2=document.createElement('button');
       d2.id='odOff'; d2.className='sec'; d2.textContent='Disconnect OneDrive';
       d2.style.cssText='background:transparent;border:1.5px solid #44566A;color:#CFDAE6;margin-top:8px;font-size:12.5px';
       d2.onclick=odDisconnect;
-      btn.parentNode.insertBefore(d2, btn.nextSibling);
+      od.parentNode.insertBefore(d2, od.nextSibling);
     }
     return;
   }
   var off=document.getElementById('odOff'); if(off) off.remove();
-  if(btn) btn.setAttribute('onclick','pickFolder()');
+  if(od){ od.innerHTML='\u2601 &nbsp;Connect OneDrive';
+    od.setAttribute('onclick','odConnect()'); od.style.display=''; }
   if(dirHandle && dirHandle.name){
-    el.innerHTML=age+'<br>Backups land in <b>'+dirHandle.name+'</b>, a new dated file each time.'+what;
+    el.innerHTML=age+'<br>Backups land in <b>'+dirHandle.name+'</b>, a new dated file each time.<br>'
+      +'<b>Connect OneDrive above</b> to upload instead, from any device.'+what;
+    if(btn){ btn.textContent='\uD83D\uDCC1  Change that folder'; btn.style.display=''; }
     if(btn){ btn.textContent='\uD83D\uDCC1  Change the folder'; btn.style.display=''; }
     return;
   }
   if(window.showDirectoryPicker){
-    el.innerHTML=age+'<br>Pick your OneDrive folder once and every backup lands there, dated.'+what;
+    el.innerHTML=age+'<br><b>Connect OneDrive</b> and every backup uploads itself. '
+      +'Or pick a folder on this computer.'+what;
     if(btn) btn.style.display='';
   }else if(navigator.canShare){
-    el.innerHTML=age+'<br><b>Backing up opens your share sheet.</b> Choose OneDrive, then your Peptide folder.'+what;
+    el.innerHTML=age+'<br><b>Connect OneDrive</b> and backing up uploads itself \u2014 '
+      +'no share sheet, no files to move.'+what;
     if(btn) btn.style.display='none';
   }else{
-    el.innerHTML=age+'<br>Backing up downloads a dated file \u2014 move it into your OneDrive Peptide folder.'+what;
+    el.innerHTML=age+'<br><b>Connect OneDrive</b> and backing up uploads itself. '
+      +'Otherwise it downloads a dated file you move across.'+what;
     if(btn) btn.style.display='none';
   }
 }
@@ -11506,7 +11515,7 @@ if('serviceWorker' in navigator){
   }).catch(()=>{});
 }
 const APP_VERSION='2026-10-09';
-const BUILD_NO=72;
+const BUILD_NO=73;
 const BUILT_AT='2026-10-09T01:15:15Z';
 (function(){
   var d=new Date(BUILT_AT);
