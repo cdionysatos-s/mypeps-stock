@@ -515,6 +515,13 @@ h1{font-size:27px;font-weight:800;letter-spacing:-.9px;line-height:1}
 .odGo{font-size:22px;color:var(--ink3);line-height:1}
 .odMsg{padding:22px;text-align:center;font-size:13.5px;color:var(--ink3);font-weight:600}
 .odMsg.bad{color:var(--warn)}
+
+.savedLine{font-size:12px;font-weight:700;color:var(--ink3);text-align:center;
+  padding:9px 6px;border-radius:9px;background:var(--bg);margin-top:4px;transition:all .2s}
+.savedLine.on,.savedLine.kept{background:var(--goodSoft,#E4F5EC);color:var(--good)}
+@media (prefers-color-scheme: dark){
+  .savedLine.on,.savedLine.kept{background:rgba(23,160,94,.18);color:#6FD7A3}
+}
 .cycbox{border:1px solid var(--line);border-radius:14px;padding:14px}
 .cycTop b{font-size:17px;font-weight:800}
 .grade{display:inline-block;font-size:10px;font-weight:800;letter-spacing:.9px;
@@ -11305,19 +11312,13 @@ function showWhere(){
   var what='<div class="bkWhat">A backup holds your stock counts, every dose logged, which vials are open, '
     +'your cycles and your own mixing figures. One file restores all of it on a new phone.</div>';
   if(odConnected()){
-    el.innerHTML=age+'<br>Connected to <b>OneDrive / '+esc(odFolder())+'</b>. '
-      +'Pressing BACK UP uploads straight there.'+what;
-    if(od){ od.innerHTML='\u2601 &nbsp;Change the OneDrive folder';
-      od.setAttribute('onclick','openOdBrowser()'); od.style.display=''; }
+    el.innerHTML=age+'<br>Going to <b>OneDrive / '+esc(odFolder())+'</b> \u2014 '
+      +'<a href="#" onclick="openOdBrowser();return false" style="color:#5FB3F0">change</a>'
+      +' &middot; <a href="#" onclick="odDisconnect();return false" style="color:#5FB3F0">disconnect</a>'
+      +what;
+    if(od) od.style.display='none';
     if(btn) btn.style.display='none';
-    var ex=document.getElementById('odOff');
-    if(!ex && od){
-      var d2=document.createElement('button');
-      d2.id='odOff'; d2.className='sec'; d2.textContent='Disconnect OneDrive';
-      d2.style.cssText='background:transparent;border:1.5px solid #44566A;color:#CFDAE6;margin-top:8px;font-size:12.5px';
-      d2.onclick=odDisconnect;
-      od.parentNode.insertBefore(d2, od.nextSibling);
-    }
+    var off0=document.getElementById('odOff'); if(off0) off0.remove();
     return;
   }
   var off=document.getElementById('odOff'); if(off) off.remove();
@@ -11497,9 +11498,18 @@ if('serviceWorker' in navigator){
   navigator.serviceWorker.register('sw.js').then(reg=>{
     /* look for a newer build every time the app opens, and take it without asking */
     reg.update().catch(()=>{});
-    navigator.serviceWorker.addEventListener('controllerchange', function(){
+    navigator.serviceWorker.addEventListener('controllerchange', async function(){
       if(sessionStorage.getItem('mypeps-reloaded')==='1') return;   /* never loop */
       sessionStorage.setItem('mypeps-reloaded','1');
+      /* never update over unsaved work — back up first if we can */
+      try{
+        if(odConnected() && daysSinceBackup()!==0){
+          toast('Backing up before the update\u2026');
+          await odUpload(backupName(), payload());
+          markBackedUp();
+          await new Promise(function(r){ setTimeout(r,700); });
+        }
+      }catch(e){}
       location.reload();
     });
     reg.addEventListener('updatefound',()=>{
@@ -11507,7 +11517,13 @@ if('serviceWorker' in navigator){
       if(!w) return;
       w.addEventListener('statechange',()=>{
         if(w.state==='installed' && navigator.serviceWorker.controller){
-          /* a newer build is ready — switch to it straight away */
+          /* a newer build is ready */
+          if(!odConnected() && daysSinceBackup()===null){
+            /* nothing has ever been backed up — ask before replacing the app */
+            if(!confirm('A newer version of MyPeps is ready.\n\n'
+              +'You have never backed up. Updating is safe \u2014 your data stays \u2014 '
+              +'but connecting OneDrive first is wise.\n\nUpdate now?')) return;
+          }
           w.postMessage('skipWaiting');
           return;
         }
@@ -11533,7 +11549,7 @@ if('serviceWorker' in navigator){
   }).catch(()=>{});
 }
 const APP_VERSION='2026-10-09';
-const BUILD_NO=76;
+const BUILD_NO=79;
 const BUILT_AT='2026-10-09T01:15:15Z';
 (function(){
   var d=new Date(BUILT_AT);
@@ -12425,7 +12441,9 @@ function openDetail(sku){
       +'<div class="lblBtns">'
       +'<button class="lblBtn alt" onclick="saveLabel(\''+sku+'\')">Save the image</button>'
       +'<button class="lblBtn alt" onclick="openLabelEditor(\''+sku+'\')">Edit the label</button>'
-      +'</div></div>';
+      +'</div>'
+      +(labelFields(sku).custom?'<div class="savedLine kept">\u2713 &nbsp;You have edited this label</div>':'')
+      +'</div>';
   }
   var pw = penWhenFor(sku), pu = penUnitsFor(sku);
   h+='<div class="shgrp">PEN LABEL</div>'
@@ -12439,9 +12457,12 @@ function openDetail(sku){
           return '<button class="'+(pw===w?'on':'')+'" onclick="penQuickWhen(\''+sku+'\',\''+w+'\')">'+w+'</button>';
         }).join('')
       +'</div></div>'
-    +'<div class="deField" style="margin-bottom:12px"><label>Extra line</label>'
+    +'<div class="deField" style="margin-bottom:8px"><label>Extra line</label>'
       +'<div class="deIn"><input id="penQuickN" type="text" placeholder="optional" '
       +'value="'+esc(penNoteFor(sku))+'" oninput="penQuickChange(\''+sku+'\')"></div></div>'
+    +'<div class="savedLine" id="penSaved">'
+      +(loadPenSet()[sku] ? '\u2713 &nbsp;Your settings \u2014 kept for next time'
+                          : 'Change anything above and it is kept automatically')+'</div>'
     +'<button class="lblBtn send" onclick="sendPenFor(\''+sku+'\')">'
       +'\uD83D\uDCE4 &nbsp;Send to the printer app</button>'
     +'<div class="lblBtns">'
@@ -12577,8 +12598,10 @@ function openLabelEditor(sku){
       +'<div class="deIn"><input id="vlPurpose" type="text" value="'+esc(f.purpose)+'" oninput="drawVL()"></div></div>'
     +'<button class="lblBtn send" onclick="sendVL(\''+sku+'\')">&#128228; &nbsp;Send to the printer app</button>'
     +'<div class="lblBtns"><button class="lblBtn alt" onclick="saveVL(\''+sku+'\')">Save the image</button>'
-      +'<button class="lblBtn alt" onclick="keepVL(\''+sku+'\')">Save these words</button></div>'
+      +'<button class="lblBtn alt" onclick="keepVL(\''+sku+'\')">Save these changes</button></div>'
     +(f.custom?'<button class="cycBtn off" style="margin-top:9px" onclick="resetVL(\''+sku+'\')">Back to the original wording</button>':'')
+    +'<div class="savedLine'+(f.custom?' kept':'')+'">'
+      +(f.custom?'\u2713 &nbsp;Your wording is saved':'Press <b>Save these changes</b> to keep this wording')+'</div>'
     +'<p class="deNote">The QR code stays the same \u2014 it still opens Peptide Hub and still counts into your stock.</p>';
   document.getElementById('lblIn').innerHTML=h;
   document.getElementById('lblSheet').classList.add('on');
@@ -12612,7 +12635,7 @@ function keepVL(sku){
   var all=_origLoad(); all[sku]=vlFields(); saveLabelText(all);
   closeLabelEd();
   if(document.getElementById('sheet').classList.contains('on')) openDetail(sku);
-  toast('Label wording saved');
+  toast('\u2713  Saved \u2014 this is your label now');
 }
 function resetVL(sku){
   var all=_origLoad(); delete all[sku]; saveLabelText(all);
@@ -12681,8 +12704,6 @@ function loadPenSet(){ try{ return JSON.parse(localStorage.getItem(PKEY))||{}; }
 function savePenSet(v){ try{ localStorage.setItem(PKEY,JSON.stringify(v)); }catch(e){} }
 function penWhenFor(sku){ var s=loadPenSet()[sku]; return (s&&s.when)||defaultWhen(sku); }
 function penUnitsFor(sku){
-  var s=loadPenSet()[sku];
-  if(s && s.units!=null) return s.units;
   var r=reconOf(sku); return Math.round(r.units*10)/10;
 }
 function penNoteFor(sku){ var s=loadPenSet()[sku]; return (s&&s.note)||''; }
@@ -12706,12 +12727,64 @@ function penQuickRedraw(sku){
 function penQuickChange(sku){
   var all=loadPenSet();
   all[sku]=all[sku]||{};
-  var u=parseFloat(document.getElementById('penQuickU').value);
-  all[sku].units = isNaN(u)?null:u;
-  all[sku].note  = document.getElementById('penQuickN').value||'';
-  all[sku].when  = penWhenFor(sku);
+  all[sku].note = document.getElementById('penQuickN').value||'';
+  all[sku].when = penWhenFor(sku);
   savePenSet(all);
+  var u=parseFloat(document.getElementById('penQuickU').value);
+  if(!isNaN(u) && u>0){
+    var r=reconOf(sku);
+    if(r && r.perUnit>0){
+      var my=loadMyDose();
+      my[sku]=my[sku]||{};
+      my[sku].vialMg=r.vialMg; my[sku].waterMl=r.waterMl;
+      my[sku].doseMcg=u*r.perUnit; my[sku].set=isoToday();
+      saveMyDose(my);
+      refreshDoseEverywhere(sku);
+      penSaved(sku);
+    }
+  }
   penQuickRedraw(sku);
+}
+function refreshDoseEverywhere(sku){
+  var sd=shownDose(sku), r=reconOf(sku);
+  var bd=document.querySelector('#sheetIn .bigdose');
+  if(bd){
+    var b1=bd.querySelector('.bd1 b'), s1=bd.querySelector('.bd1 span'), b2=bd.querySelector('.bd2 b');
+    if(b1) b1.textContent=sd.dose;
+    if(s1) s1.textContent='YOUR DOSE \u00b7 TAP TO CHANGE';
+    if(b2) b2.textContent=sd.units.replace(' units','');
+  }
+  var rows=document.querySelectorAll('#sheetIn .mixbox .mixrow b');
+  if(rows.length>=4){
+    rows[2].textContent=(Math.round(r.conc*100)/100)+' mg/mL';
+    rows[3].textContent=(Math.round(r.perUnit*10)/10)+' mcg';
+  }
+  var vi=document.querySelector('#sheetIn .lblBox img');
+  if(vi){ var u2=vialDataURL(sku); if(u2) vi.src=u2; }
+  save();
+}
+function penSaved(sku){
+  var el=document.getElementById('penSavedNote');
+  if(!el){
+    var host=document.getElementById('penQuickChips');
+    if(!host) return;
+    el=document.createElement('div'); el.id='penSavedNote';
+    el.style.cssText='font-size:12px;font-weight:800;color:var(--good);margin-top:9px;line-height:1.4';
+    host.parentNode.appendChild(el);
+  }
+  el.textContent='\u2713  Saved \u2014 '+fmtMcg(reconOf(sku).doseMcg)+' is now your dose everywhere';
+  el.style.display='';
+}
+
+function penSavedFlash(){
+  var el=document.getElementById('penSaved'); if(!el) return;
+  el.innerHTML='\u2713 &nbsp;Saved';
+  el.classList.add('on');
+  clearTimeout(window.__pf);
+  window.__pf=setTimeout(function(){
+    el.innerHTML='\u2713 &nbsp;Your settings \u2014 kept for next time';
+    el.classList.remove('on');
+  },1600);
 }
 function penQuickWhen(sku,w){
   var all=loadPenSet(); all[sku]=all[sku]||{}; all[sku].when=w;
@@ -12722,12 +12795,15 @@ function penQuickWhen(sku,w){
   document.querySelectorAll('.penWhen button').forEach(function(b){
     b.classList.toggle('on', b.textContent===w); });
   penQuickRedraw(sku);
+  penSavedFlash();
 }
 function penQuickReset(sku){
   var all=loadPenSet(); delete all[sku]; savePenSet(all);
-  openDetail(sku);
-  toast('Back to the default');
+  var my=loadMyDose(); delete my[sku]; saveMyDose(my);
+  refreshAll(); openDetail(sku);
+  toast('Back to the book dose and timing');
 }
+
 
 /* render a pen label off-screen for any compound, at its current dose */
 function penDataURL(sku, when, note){
