@@ -498,6 +498,23 @@ h1{font-size:27px;font-weight:800;letter-spacing:-.9px;line-height:1}
 .penWhen button{flex:1;padding:12px 2px;border-radius:10px;border:1.5px solid var(--line2);
   background:var(--card);color:var(--ink2);font-size:12px;font-weight:800;cursor:pointer}
 .penWhen button.on{background:var(--brand);border-color:var(--brand);color:#fff}
+
+.odCrumb{display:flex;flex-wrap:wrap;align-items:center;gap:3px;margin-bottom:11px;
+  background:var(--bg2);border-radius:10px;padding:9px 11px}
+.odCrumb button{background:none;border:none;color:var(--brand);font-size:13px;font-weight:800;
+  cursor:pointer;padding:2px 3px}
+.odCrumb span{color:var(--ink3);font-size:13px;font-weight:700}
+.odList{border:1px solid var(--line);border-radius:13px;overflow:hidden;margin-bottom:14px;
+  max-height:46vh;overflow-y:auto}
+.odRow{display:flex;align-items:center;gap:11px;padding:14px 13px;cursor:pointer;
+  border-bottom:1px solid var(--line)}
+.odRow:last-child{border-bottom:none}
+.odRow:active{background:var(--brandSoft)}
+.odIc{font-size:19px;flex-shrink:0}
+.odNm{flex:1;min-width:0;font-size:15px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.odGo{font-size:22px;color:var(--ink3);line-height:1}
+.odMsg{padding:22px;text-align:center;font-size:13.5px;color:var(--ink3);font-weight:600}
+.odMsg.bad{color:var(--warn)}
 .cycbox{border:1px solid var(--line);border-radius:14px;padding:14px}
 .cycTop b{font-size:17px;font-weight:800}
 .grade{display:inline-block;font-size:10px;font-weight:800;letter-spacing:.9px;
@@ -776,6 +793,7 @@ h1{font-size:27px;font-weight:800;letter-spacing:-.9px;line-height:1}
 <div id="doseSheet" class="sheet"><div class="sheetIn" id="doseIn"></div></div>
 <div id="penSheet" class="sheet"><div class="sheetIn" id="penIn"></div></div>
 <div id="lblSheet" class="sheet"><div class="sheetIn" id="lblIn"></div></div>
+<div id="odSheet" class="sheet"><div class="sheetIn" id="odIn"></div></div>
 
 <div id="camWrap">
   <div id="camMsg">Line the code up in the square</div>
@@ -11290,7 +11308,7 @@ function showWhere(){
     el.innerHTML=age+'<br>Connected to <b>OneDrive / '+esc(odFolder())+'</b>. '
       +'Pressing BACK UP uploads straight there.'+what;
     if(od){ od.innerHTML='\u2601 &nbsp;Change the OneDrive folder';
-      od.setAttribute('onclick','odSetFolder()'); od.style.display=''; }
+      od.setAttribute('onclick','openOdBrowser()'); od.style.display=''; }
     if(btn) btn.style.display='none';
     var ex=document.getElementById('odOff');
     if(!ex && od){
@@ -11515,7 +11533,7 @@ if('serviceWorker' in navigator){
   }).catch(()=>{});
 }
 const APP_VERSION='2026-10-09';
-const BUILD_NO=75;
+const BUILD_NO=76;
 const BUILT_AT='2026-10-09T01:15:15Z';
 (function(){
   var d=new Date(BUILT_AT);
@@ -11936,6 +11954,91 @@ function odNote(msg){
   }
   el.textContent=msg||'';
   el.style.display=msg?'':'none';
+}
+
+
+/* ---------- browse OneDrive for a folder ---------- */
+var OD_BROWSE='';
+async function odList(path){
+  var tok=await odToken();
+  var url = path
+    ? 'https://graph.microsoft.com/v1.0/me/drive/root:/'
+        +path.split('/').filter(Boolean).map(encodeURIComponent).join('/')+':/children'
+    : 'https://graph.microsoft.com/v1.0/me/drive/root/children';
+  url += '?$select=name,folder,id&$top=200&$orderby=name';
+  var r=await fetch(url,{headers:{'Authorization':'Bearer '+tok}});
+  if(!r.ok){
+    if(r.status===401||r.status===403){ odSave({}); throw new Error('Sign-in expired \u2014 connect again'); }
+    throw new Error('Could not read that folder ('+r.status+')');
+  }
+  var j=await r.json();
+  return (j.value||[]).filter(function(x){ return x.folder; });
+}
+function openOdBrowser(){
+  OD_BROWSE = odFolder();
+  document.getElementById('odIn').innerHTML=
+      '<div class="sh"><h2>Choose a folder</h2>'
+     +'<button class="shx" onclick="closeOdBrowser()">&times;</button></div>'
+     +'<div class="shfor">IN YOUR ONEDRIVE</div>'
+     +'<div id="odCrumb" class="odCrumb"></div>'
+     +'<div id="odList" class="odList"><div class="odMsg">Loading\u2026</div></div>'
+     +'<button class="cycBtn" id="odUse" onclick="odUseThis()">Use this folder</button>'
+     +'<button class="cycBtn off" style="margin-top:8px" onclick="odNewFolder()">'
+       +'+ &nbsp;Make a new folder here</button>';
+  document.getElementById('odSheet').classList.add('on');
+  odDraw();
+}
+function closeOdBrowser(){ document.getElementById('odSheet').classList.remove('on'); }
+async function odDraw(){
+  var crumb=document.getElementById('odCrumb');
+  var list=document.getElementById('odList');
+  var use=document.getElementById('odUse');
+  if(!crumb) return;
+  var parts=OD_BROWSE.split('/').filter(Boolean);
+  var h='<button onclick="odGo(\'\')">OneDrive</button>';
+  var acc='';
+  parts.forEach(function(p2){
+    acc = acc ? acc+'/'+p2 : p2;
+    h+='<span>/</span><button onclick="odGo(\''+acc.replace(/'/g,"\\'")+'\')">'+esc(p2)+'</button>';
+  });
+  crumb.innerHTML=h;
+  use.textContent = OD_BROWSE ? 'Use  OneDrive / '+OD_BROWSE : 'Use the top of OneDrive';
+  list.innerHTML='<div class="odMsg">Loading\u2026</div>';
+  try{
+    var folders=await odList(OD_BROWSE);
+    if(!folders.length){ list.innerHTML='<div class="odMsg">No folders in here.</div>'; return; }
+    list.innerHTML=folders.map(function(f){
+      var next = OD_BROWSE ? OD_BROWSE+'/'+f.name : f.name;
+      return '<div class="odRow" onclick="odGo(\''+next.replace(/'/g,"\\'")+'\')">'
+        +'<span class="odIc">&#128193;</span><span class="odNm">'+esc(f.name)+'</span>'
+        +'<span class="odGo">&rsaquo;</span></div>';
+    }).join('');
+  }catch(err){
+    list.innerHTML='<div class="odMsg bad">'+esc(err.message||'Could not read OneDrive')+'</div>';
+  }
+}
+function odGo(path){ OD_BROWSE=path; odDraw(); }
+function odUseThis(){
+  var s=odState(); s.folder = OD_BROWSE || 'Peptide'; odSave(s);
+  closeOdBrowser(); showWhere();
+  toast('Backups will go to OneDrive / '+s.folder);
+}
+async function odNewFolder(){
+  var name=prompt('Name the new folder');
+  if(!name) return;
+  name=name.trim(); if(!name) return;
+  try{
+    var tok=await odToken();
+    var parent = OD_BROWSE
+      ? '/me/drive/root:/'+OD_BROWSE.split('/').filter(Boolean).map(encodeURIComponent).join('/')+':/children'
+      : '/me/drive/root/children';
+    var r=await fetch('https://graph.microsoft.com/v1.0'+parent,{method:'POST',
+      headers:{'Authorization':'Bearer '+tok,'Content-Type':'application/json'},
+      body:JSON.stringify({name:name, folder:{}, '@microsoft.graph.conflictBehavior':'fail'})});
+    if(!r.ok && r.status!==409) throw new Error('Could not make that folder');
+    toast(r.status===409 ? 'That folder is already there' : 'Folder made');
+    odDraw();
+  }catch(err){ toast(err.message||'Could not make that folder'); }
 }
 
 /* ---------- reconstitution and your own doses ---------- */
@@ -13755,6 +13858,8 @@ document.getElementById('penSheet').addEventListener('click',function(e){
   if(e.target.id==='penSheet') closePen(); });
 document.getElementById('lblSheet').addEventListener('click',function(e){
   if(e.target.id==='lblSheet') closeLabelEd(); });
+document.getElementById('odSheet').addEventListener('click',function(e){
+  if(e.target.id==='odSheet') closeOdBrowser(); });
 document.addEventListener('click',function(e){
   if(e.target.closest('.ct') || e.target.closest('.tick')) return;
   var r=e.target.closest('.row'); if(r){ openDetail(r.dataset.sku); return; }
