@@ -11515,7 +11515,7 @@ if('serviceWorker' in navigator){
   }).catch(()=>{});
 }
 const APP_VERSION='2026-10-09';
-const BUILD_NO=73;
+const BUILD_NO=75;
 const BUILT_AT='2026-10-09T01:15:15Z';
 (function(){
   var d=new Date(BUILT_AT);
@@ -11781,11 +11781,14 @@ function b64url(buf){
     .replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
 }
 async function odConnect(){
-  if(!window.crypto || !crypto.subtle){ toast('This browser cannot sign in securely'); return; }
+  if(!window.isSecureContext){ alert('Sign-in needs the https address.\n\nOpen '+OD_REDIRECT); return; }
+  if(!window.crypto || !crypto.subtle){ alert('This browser cannot sign in securely.'); return; }
+  odNote('Opening Microsoft sign-in\u2026');
   var verifier=b64url(crypto.getRandomValues(new Uint8Array(48)));
   var digest=await crypto.subtle.digest('SHA-256', new TextEncoder().encode(verifier));
   var challenge=b64url(digest);
-  sessionStorage.setItem('od_verifier', verifier);
+  try{ localStorage.setItem('od_verifier', verifier); }catch(e){}
+  try{ sessionStorage.setItem('od_verifier', verifier); }catch(e){}
   var u='https://login.microsoftonline.com/consumers/oauth2/v2.0/authorize'
     +'?client_id='+encodeURIComponent(OD_CLIENT)
     +'&response_type=code'
@@ -11797,7 +11800,7 @@ async function odConnect(){
   location.href=u;
 }
 async function odExchange(code){
-  var verifier=sessionStorage.getItem('od_verifier')||'';
+  var verifier=localStorage.getItem('od_verifier')||sessionStorage.getItem('od_verifier')||'';
   var body=new URLSearchParams({
     client_id:OD_CLIENT, grant_type:'authorization_code', code:code,
     redirect_uri:OD_REDIRECT, code_verifier:verifier, scope:OD_SCOPE});
@@ -11809,7 +11812,8 @@ async function odExchange(code){
   s.access_token=j.access_token; s.refresh_token=j.refresh_token;
   s.expires=Date.now()+(j.expires_in||3600)*1000;
   odSave(s);
-  sessionStorage.removeItem('od_verifier');
+  try{ localStorage.removeItem('od_verifier'); }catch(e){}
+  try{ sessionStorage.removeItem('od_verifier'); }catch(e){}
 }
 async function odToken(){
   var s=odState();
@@ -11838,10 +11842,30 @@ async function odUpload(name, text){
     body:text});
   if(!r.ok){
     if(r.status===401||r.status===403){ odSave({}); throw new Error('Sign-in expired \u2014 connect OneDrive again'); }
-    if(r.status===404) throw new Error('Folder not found \u2014 check the folder name');
+    if(r.status===404){
+      await odMakeFolder(path, tok);
+      var r2=await fetch(url,{method:'PUT',
+        headers:{'Authorization':'Bearer '+tok,'Content-Type':'application/json'}, body:text});
+      if(r2.ok) return await r2.json();
+      throw new Error('Could not create that folder in OneDrive');
+    }
     throw new Error('OneDrive refused it ('+r.status+')');
   }
   return await r.json();
+}
+/* make each level of the folder path if it is missing */
+async function odMakeFolder(path, tok){
+  var parts=path.split('/').filter(Boolean), sofar='';
+  for(var i=0;i<parts.length;i++){
+    var parent = sofar ? '/me/drive/root:/'+sofar.split('/').map(encodeURIComponent).join('/')+':/children'
+                       : '/me/drive/root/children';
+    var r=await fetch('https://graph.microsoft.com/v1.0'+parent,{method:'POST',
+      headers:{'Authorization':'Bearer '+tok,'Content-Type':'application/json'},
+      body:JSON.stringify({name:parts[i], folder:{}, '@microsoft.graph.conflictBehavior':'replace'})});
+    /* 409 just means it already exists */
+    if(!r.ok && r.status!==409){ var t=await r.text(); }
+    sofar = sofar ? sofar+'/'+parts[i] : parts[i];
+  }
 }
 async function odBackup(){
   var name=backupName();
@@ -11872,21 +11896,46 @@ function odSetFolder(){
 /* catch the return from the Microsoft sign-in */
 async function odCatchRedirect(){
   var q=new URLSearchParams(location.search);
+  /* some flows come back on the hash instead */
+  if(!q.get('code') && location.hash.indexOf('code=')>=0){
+    q=new URLSearchParams(location.hash.replace(/^#/,''));
+  }
   if(q.get('error')){
-    toast('Sign-in cancelled');
-    history.replaceState(null,'',location.pathname); return;
+    var ed=q.get('error_description')||q.get('error');
+    history.replaceState(null,'',location.pathname);
+    setTimeout(function(){ alert('Microsoft would not sign you in.\n\n'+ed); },300);
+    return;
   }
   var code=q.get('code');
   if(!code) return;
   history.replaceState(null,'',location.pathname);
+  odNote('Finishing sign-in\u2026');
   try{
     await odExchange(code);
-    toast('OneDrive connected');
+    odNote('');
     showWhere();
+    toast('OneDrive connected');
     setTimeout(function(){
       if(confirm('OneDrive is connected.\n\nBack up now to OneDrive / '+odFolder()+'?')) odBackup();
-    },400);
-  }catch(err){ alert('Could not finish signing in.\n\n'+err.message); }
+    },500);
+  }catch(err){
+    odNote('');
+    alert('Signed in, but the last step failed.\n\n'+(err.message||err)
+      +'\n\nIf this keeps happening, tell Claude exactly what this says.');
+  }
+}
+/* a visible line in the backup panel, so nothing fails quietly */
+function odNote(msg){
+  var el=document.getElementById('odNote');
+  if(!el){
+    var host=document.getElementById('where');
+    if(!host) return;
+    el=document.createElement('div'); el.id='odNote';
+    el.style.cssText='margin-top:9px;font-size:12px;font-weight:700;color:#FFCF8F';
+    host.parentNode.insertBefore(el, host.nextSibling);
+  }
+  el.textContent=msg||'';
+  el.style.display=msg?'':'none';
 }
 
 /* ---------- reconstitution and your own doses ---------- */
@@ -13719,6 +13768,7 @@ function syncScrollbar(){
 syncScrollbar();
 window.addEventListener('resize', syncScrollbar);
 setInterval(syncScrollbar, 1200);
+odCatchRedirect();
 injectExtra();
 warmQR();
 load();
