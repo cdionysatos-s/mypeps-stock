@@ -555,12 +555,16 @@ h1{font-size:27px;font-weight:800;letter-spacing:-.9px;line-height:1}
 .camBar .dirb{background:var(--brand);color:#fff}
 .camBar .cl{background:rgba(255,255,255,.14);color:#fff}
 
+:root{--sbw:0px}
 @media (min-width:620px){
   body{max-width:560px;margin:0 auto}
-  .bar{left:50%;right:auto;transform:translateX(-50%);width:560px;max-width:560px}
-  .toast{left:50%;right:auto;transform:translateX(-50%)}
+  .bar{left:50%;right:auto;width:560px;max-width:560px;
+    transform:translateX(calc(-50% - (var(--sbw) / 2)))}
+  .toast{left:50%;right:auto;transform:translateX(calc(-50% - (var(--sbw) / 2)))}
   .sheetIn{max-width:560px;margin:0 auto}
-  #camWrap{max-width:560px;left:50%;right:auto;transform:translateX(-50%)}
+  .sheet{padding-right:var(--sbw)}
+  #camWrap{max-width:560px;left:50%;right:auto;
+    transform:translateX(calc(-50% - (var(--sbw) / 2)))}
 }
 </style></head><body>
 
@@ -11280,6 +11284,23 @@ function showWhere(){
     : '<b class="bad">Last backed up '+dn+' days ago.</b>';
   var what='<div class="bkWhat">A backup holds your stock counts, every dose logged, which vials are open, '
     +'your cycles and your own mixing figures. One file restores all of it on a new phone.</div>';
+  if(odConnected()){
+    el.innerHTML=age+'<br>Connected to <b>OneDrive / '+esc(odFolder())+'</b>. '
+      +'Backing up uploads straight there.'+what;
+    if(btn){ btn.textContent='\u2601  Change the OneDrive folder'; btn.style.display='';
+      btn.setAttribute('onclick','odSetFolder()'); }
+    var ex=document.getElementById('odOff');
+    if(!ex && btn){
+      var d2=document.createElement('button');
+      d2.id='odOff'; d2.className='sec'; d2.textContent='Disconnect OneDrive';
+      d2.style.cssText='background:transparent;border:1.5px solid #44566A;color:#CFDAE6;margin-top:8px;font-size:12.5px';
+      d2.onclick=odDisconnect;
+      btn.parentNode.insertBefore(d2, btn.nextSibling);
+    }
+    return;
+  }
+  var off=document.getElementById('odOff'); if(off) off.remove();
+  if(btn) btn.setAttribute('onclick','pickFolder()');
   if(dirHandle && dirHandle.name){
     el.innerHTML=age+'<br>Backups land in <b>'+dirHandle.name+'</b>, a new dated file each time.'+what;
     if(btn){ btn.textContent='\uD83D\uDCC1  Change the folder'; btn.style.display=''; }
@@ -11320,6 +11341,7 @@ async function backupAs(){
 
 async function backup(){
   save();
+  if(odConnected()){ await odBackup(); return; }
   /* a folder is already set on a computer — just write it */
   if(dirHandle && dirHandle.name){
     try{
@@ -11342,6 +11364,16 @@ function openBackupMenu(){
   var h='<div class="sh"><h2>Back up</h2>'
     +'<button class="shx" onclick="closeBackupMenu()">&times;</button></div>'
     +'<div class="shfor">WHERE SHOULD IT GO</div><div class="repList">';
+  if(odConnected()){
+    h+='<div class="repItem" onclick="closeBackupMenu();odBackup()"><span class="repIc">&#9729;</span>'
+      +'<div><b>OneDrive</b><i>Straight into OneDrive / '+esc(odFolder())+'. No files to move.</i></div>'
+      +'<span class="repGo">&rsaquo;</span></div>';
+  } else {
+    h+='<div class="repItem" onclick="closeBackupMenu();odConnect()"><span class="repIc">&#9729;</span>'
+      +'<div><b>Connect OneDrive</b><i>Sign in once, then every backup uploads itself. '
+      +'Works the same on your phone and your laptop.</i></div>'
+      +'<span class="repGo">&rsaquo;</span></div>';
+  }
 
   if(canFolder){
     h+='<div class="repItem" onclick="bkFolder()"><span class="repIc">&#128193;</span>'
@@ -11474,7 +11506,7 @@ if('serviceWorker' in navigator){
   }).catch(()=>{});
 }
 const APP_VERSION='2026-10-09';
-const BUILD_NO=69;
+const BUILD_NO=72;
 const BUILT_AT='2026-10-09T01:15:15Z';
 (function(){
   var d=new Date(BUILT_AT);
@@ -11721,6 +11753,131 @@ function injectExtra(){
       +'<button onclick="bump(\''+x.sku+'\',1)">+</button></div>';
     host.appendChild(d);
   });
+}
+
+
+/* ---------- OneDrive ---------- */
+const OD_CLIENT='be5bdbef-6a44-4ca4-83a5-9a8ad4102a40';
+const OD_REDIRECT='https://cdionysatos-s.github.io/mypeps-stock/';
+const OD_SCOPE='Files.ReadWrite offline_access';
+const OKEY='mypeps-onedrive';
+
+function odState(){ try{ return JSON.parse(localStorage.getItem(OKEY))||{}; }catch(e){ return {}; } }
+function odSave(v){ try{ localStorage.setItem(OKEY,JSON.stringify(v)); }catch(e){} }
+function odConnected(){ var s=odState(); return !!(s.refresh_token); }
+function odFolder(){ var s=odState(); return s.folder || 'Peptide'; }
+
+function b64url(buf){
+  return btoa(String.fromCharCode.apply(null,new Uint8Array(buf)))
+    .replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+}
+async function odConnect(){
+  if(!window.crypto || !crypto.subtle){ toast('This browser cannot sign in securely'); return; }
+  var verifier=b64url(crypto.getRandomValues(new Uint8Array(48)));
+  var digest=await crypto.subtle.digest('SHA-256', new TextEncoder().encode(verifier));
+  var challenge=b64url(digest);
+  sessionStorage.setItem('od_verifier', verifier);
+  var u='https://login.microsoftonline.com/consumers/oauth2/v2.0/authorize'
+    +'?client_id='+encodeURIComponent(OD_CLIENT)
+    +'&response_type=code'
+    +'&redirect_uri='+encodeURIComponent(OD_REDIRECT)
+    +'&scope='+encodeURIComponent(OD_SCOPE)
+    +'&code_challenge='+challenge
+    +'&code_challenge_method=S256'
+    +'&prompt=select_account';
+  location.href=u;
+}
+async function odExchange(code){
+  var verifier=sessionStorage.getItem('od_verifier')||'';
+  var body=new URLSearchParams({
+    client_id:OD_CLIENT, grant_type:'authorization_code', code:code,
+    redirect_uri:OD_REDIRECT, code_verifier:verifier, scope:OD_SCOPE});
+  var r=await fetch('https://login.microsoftonline.com/consumers/oauth2/v2.0/token',
+    {method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:body});
+  var j=await r.json();
+  if(!j.access_token) throw new Error(j.error_description||j.error||'sign-in failed');
+  var s=odState();
+  s.access_token=j.access_token; s.refresh_token=j.refresh_token;
+  s.expires=Date.now()+(j.expires_in||3600)*1000;
+  odSave(s);
+  sessionStorage.removeItem('od_verifier');
+}
+async function odToken(){
+  var s=odState();
+  if(!s.refresh_token) throw new Error('not connected');
+  if(s.access_token && s.expires && Date.now()<s.expires-60000) return s.access_token;
+  var body=new URLSearchParams({
+    client_id:OD_CLIENT, grant_type:'refresh_token',
+    refresh_token:s.refresh_token, scope:OD_SCOPE});
+  var r=await fetch('https://login.microsoftonline.com/consumers/oauth2/v2.0/token',
+    {method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:body});
+  var j=await r.json();
+  if(!j.access_token){ odSave({}); throw new Error('sign-in expired \u2014 connect again'); }
+  s.access_token=j.access_token;
+  if(j.refresh_token) s.refresh_token=j.refresh_token;
+  s.expires=Date.now()+(j.expires_in||3600)*1000;
+  odSave(s);
+  return s.access_token;
+}
+async function odUpload(name, text){
+  var tok=await odToken();
+  var path=odFolder().replace(/^\/+|\/+$/g,'');
+  var url='https://graph.microsoft.com/v1.0/me/drive/root:/'
+    +path.split('/').map(encodeURIComponent).join('/')+'/'+encodeURIComponent(name)+':/content';
+  var r=await fetch(url,{method:'PUT',
+    headers:{'Authorization':'Bearer '+tok,'Content-Type':'application/json'},
+    body:text});
+  if(!r.ok){
+    if(r.status===401||r.status===403){ odSave({}); throw new Error('Sign-in expired \u2014 connect OneDrive again'); }
+    if(r.status===404) throw new Error('Folder not found \u2014 check the folder name');
+    throw new Error('OneDrive refused it ('+r.status+')');
+  }
+  return await r.json();
+}
+async function odBackup(){
+  var name=backupName();
+  try{
+    toast('Uploading to OneDrive\u2026');
+    await odUpload(name, payload());
+    markBackedUp(); clean();
+    toast('Saved to OneDrive / '+odFolder());
+  }catch(err){
+    var m=String(err.message||'');
+    if(m.indexOf('Failed to fetch')>=0) m='No connection \u2014 try again when you are online';
+    else if(m.indexOf('not connected')>=0) m='Connect OneDrive first';
+    toast(m||'Upload failed');
+  }
+}
+function odDisconnect(){
+  if(!confirm('Disconnect OneDrive? Your backups already there stay where they are.')) return;
+  odSave({}); showWhere(); closeBackupMenu();
+  toast('OneDrive disconnected');
+}
+function odSetFolder(){
+  var cur=odFolder();
+  var v=prompt('Which folder inside OneDrive?\n\nUse a path like  Peptide  or  Claude/Peps/Backups',cur);
+  if(v===null) return;
+  var s=odState(); s.folder=v.trim().replace(/^\/+|\/+$/g,'')||'Peptide'; odSave(s);
+  showWhere(); toast('Backups will go to OneDrive / '+s.folder);
+}
+/* catch the return from the Microsoft sign-in */
+async function odCatchRedirect(){
+  var q=new URLSearchParams(location.search);
+  if(q.get('error')){
+    toast('Sign-in cancelled');
+    history.replaceState(null,'',location.pathname); return;
+  }
+  var code=q.get('code');
+  if(!code) return;
+  history.replaceState(null,'',location.pathname);
+  try{
+    await odExchange(code);
+    toast('OneDrive connected');
+    showWhere();
+    setTimeout(function(){
+      if(confirm('OneDrive is connected.\n\nBack up now to OneDrive / '+odFolder()+'?')) odBackup();
+    },400);
+  }catch(err){ alert('Could not finish signing in.\n\n'+err.message); }
 }
 
 /* ---------- reconstitution and your own doses ---------- */
@@ -13546,6 +13703,13 @@ document.addEventListener('click',function(e){
   var dd=e.target.closest('.dose'); if(dd){ openDetail(dd.id.replace('d-','')); }
 });
 injectExtra();
+function syncScrollbar(){
+  var sb = window.innerWidth - document.documentElement.clientWidth;
+  document.documentElement.style.setProperty('--sbw', (sb>0?sb:0)+'px');
+}
+syncScrollbar();
+window.addEventListener('resize', syncScrollbar);
+setInterval(syncScrollbar, 1200);
 injectExtra();
 warmQR();
 load();
