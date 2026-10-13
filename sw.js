@@ -1,4 +1,4 @@
-const CACHE='mypeps-v88';
+const CACHE='mypeps-v89';
 const SHELL=['./','./index.html','./manifest.json'];
 
 self.addEventListener('install',e=>{
