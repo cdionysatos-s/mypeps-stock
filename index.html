@@ -11592,7 +11592,7 @@ if('serviceWorker' in navigator){
   }).catch(()=>{});
 }
 const APP_VERSION='2026-10-09';
-const BUILD_NO=97;
+const BUILD_NO=100;
 const BUILT_AT='2026-10-09T01:15:15Z';
 (function(){
   var d=new Date(BUILT_AT);
@@ -12906,6 +12906,48 @@ async function sendVL(sku){
 
 
 /* ---------- a shareable one-pager for a compound ---------- */
+/* the practical steps, worked out from this compound's own numbers */
+function mixSteps(sku){
+  var r=reconOf(sku), d=DETAIL[sku]||{};
+  var waterUnits=Math.round(r.waterMl*100);
+  var s=[];
+  s.push('Take the vial out of the fridge and let it reach room temperature. Ten to fifteen minutes.');
+  s.push('Wipe the rubber top of both the powder vial and the bacteriostatic water with an alcohol swab.');
+  s.push('Draw '+r.waterMl+' mL of bacteriostatic water. On a 1 mL insulin syringe that is '
+         +(waterUnits>100 ? Math.round(r.waterMl*10)/10+' full syringes' : waterUnits+' units')+'.');
+  s.push('Push the needle through the rubber top at an angle and let the water run slowly down the '
+         +'inside wall of the glass. Never squirt it straight onto the powder.');
+  s.push('Leave it to dissolve on its own. Two to three minutes. Roll it gently between your palms if '
+         +'it needs help \u2014 never shake it, that breaks the peptide.');
+  s.push('Once clear, it is ready. Write the mixing date on the label and put it back in the fridge.');
+  return s;
+}
+function doseSteps(sku){
+  var r=reconOf(sku), d=DETAIL[sku]||{};
+  var u=Math.round(r.units*10)/10;
+  var s=[];
+  s.push('Swab the vial top, then draw to <b>'+u+' units</b> on a 1 mL insulin syringe. '
+         +'That is '+fmtMcg(r.doseMcg)+'.');
+  s.push('Flick out any air bubbles and push the plunger until a drop appears at the tip.');
+  s.push('Pinch a fold of skin on the belly, at least 5 cm from the navel, or the outer thigh.');
+  s.push('Go in at 45 to 90 degrees and push the plunger slowly, over about five seconds.');
+  s.push('Hold for five seconds before pulling out, so none leaks back.');
+  s.push('Rotate the site each time. Same spot repeatedly builds up scar tissue and absorption drops.');
+  if(/nad/i.test(d.n||'')) s[3]='Push very slowly \u2014 twenty to thirty seconds. NAD+ stings if rushed.';
+  return s;
+}
+function storeSteps(sku){
+  var r=reconOf(sku);
+  var doses = r.doseMcg>0 ? Math.floor(r.vialMg*1000/r.doseMcg) : 0;
+  var s=[];
+  s.push('Unmixed powder keeps for years in the fridge, and months at room temperature.');
+  s.push('Once mixed, it lives in the fridge at 2 to 8 \u00b0C. Not the freezer, not the door.');
+  s.push('Use it within about 30 days of mixing. Write the date on the vial.');
+  if(doses) s.push('This vial gives you roughly <b>'+doses+' doses</b> at your current dose.');
+  s.push('If it goes cloudy, changes colour or you see floating bits, throw it out.');
+  return s;
+}
+
 /* draw a 1 mL syringe with the fill point marked */
 function drawSyringe(ctx, x, y, w, units){
   var h=72, barrelX=x+54, barrelW=w-110;
@@ -13028,12 +13070,18 @@ function shareCardCanvas(sku){
       var wi=wrap(cy.ifnot||'', W-M*2, '400 24px '+F); h+=40+wi.length*36+18;
       if(cy.extra){ var we=wrap(cy.extra, W-M*2, '400 24px '+F); h+=40+we.length*36+18; }
     }
+    /* the protocol steps */
+    [mixSteps(sku), doseSteps(sku), storeSteps(sku)].forEach(function(list){
+      h+=52;
+      list.forEach(function(t){ h+=wrap(String(t).replace(/<\/?b>/g,''), W-M*2-56, '400 24px '+F).length*37+16; });
+      h+=14;
+    });
     if((d.warn||[]).length){
       h+=52;
       (d.warn||[]).forEach(function(t){ h+=wrap(t, W-M*2-40, '600 24px '+F).length*36+14; });
       h+=16;
     }
-    h+=142;                                              /* footer */
+    h+=230;                                              /* footer with the code */
     return h;
   }
   cv.width=W; cv.height=plan();
@@ -13050,6 +13098,18 @@ function shareCardCanvas(sku){
     return yy+lines.length*lh;
   }
   function rule(yy,col){ ctx.fillStyle=col||'#E7EEF5'; ctx.fillRect(M,yy,W-M*2,2); }
+
+  function stepList(items, yy){
+    items.forEach(function(t, i){
+      ctx.fillStyle='#0E7FC4';
+      ctx.beginPath(); ctx.arc(M+16, yy+15, 15, 0, Math.PI*2); ctx.fill();
+      ctx.font='800 19px '+F; ctx.fillStyle='#fff'; ctx.textAlign='center';
+      ctx.fillText(String(i+1), M+16, yy+8); ctx.textAlign='left';
+      var plain=String(t).replace(/<\/?b>/g,'');
+      yy=text(plain, M+46, yy, '400 24px '+F, '#33414F', W-M*2-56)+16;
+    });
+    return yy;
+  }
   function heading(t,yy){
     ctx.font='800 20px '+F; ctx.fillStyle='#5A6B7C';
     ctx.fillText(t.toUpperCase(),M,yy);
@@ -13131,6 +13191,13 @@ function shareCardCanvas(sku){
     }
   }
 
+  y=heading('How to mix it \u2014 step by step',y);
+  y=stepList(mixSteps(sku), y)+14;
+  y=heading('How to take it',y);
+  y=stepList(doseSteps(sku), y)+14;
+  y=heading('Keeping it',y);
+  y=stepList(storeSteps(sku), y)+14;
+
   if((d.warn||[]).length){
     y=heading('Watch for',y);
     (d.warn||[]).forEach(function(t){
@@ -13140,20 +13207,52 @@ function shareCardCanvas(sku){
     y+=16;
   }
 
-  rule(y); y+=22;
+  rule(y); y+=24;
   var dt=new Date();
-  ctx.font='400 20px '+F; ctx.fillStyle='#93A4B5';
+  var qrImg=_qrCache[sku];
+  var qs=128;
+  if(qrImg){
+    ctx.drawImage(qrImg, M, y, qs, qs);
+  }
+  var tx = qrImg ? M+qs+26 : M;
+  ctx.font='800 23px '+F; ctx.fillStyle='#0E1A26';
+  ctx.fillText('Scan for the full detail', tx, y+8);
+  ctx.font='400 19px '+F; ctx.fillStyle='#5A6B7C';
+  var lines=wrap('Opens '+(d.n||sku)+' in MyPeps \u2014 mixing, dose, cycle and warnings, kept up to date.',
+                 W-tx-M, '400 19px '+F);
+  lines.forEach(function(l,i){ ctx.fillText(l, tx, y+44+i*28); });
+  ctx.font='600 18px '+F; ctx.fillStyle='#1F6A98';
+  ctx.fillText((LABELURL[sku]||'').replace(/^https:\/\//,''), tx, y+44+lines.length*28+8);
+  y+=qs+22;
+  ctx.font='400 19px '+F; ctx.fillStyle='#93A4B5';
   ctx.fillText('MyPeps \u00b7 '+dt.getDate()+'/'+(dt.getMonth()+1)+'/'+dt.getFullYear()
     +' \u00b7 your own figures, not medical advice', M, y);
-  y+=30;
-  ctx.font='600 19px '+F; ctx.fillStyle='#1F6A98';
-  ctx.fillText((LABELURL[sku]||'').replace(/^https:\/\//,''), M, y);
+  y+=M;
+  /* trim the canvas to what we actually drew */
+  if(y < cv.height - 8){
+    var out=document.createElement('canvas');
+    out.width=W; out.height=Math.ceil(y);
+    var o=out.getContext('2d');
+    o.fillStyle='#fff'; o.fillRect(0,0,W,out.height);
+    o.drawImage(cv, 0, 0);
+    return out;
+  }
   return cv;
+}
+function ensureQR(sku){
+  return new Promise(function(res){
+    if(_qrCache[sku] || !QRIMG[sku]) return res();
+    var im=new Image();
+    im.onload=function(){ _qrCache[sku]=im; res(); };
+    im.onerror=function(){ res(); };
+    im.src=QRIMG[sku];
+  });
 }
 function shareCardName(sku){
   return 'MyPeps-'+((DETAIL[sku]||{}).n||sku).replace(/[^A-Za-z0-9]+/g,'-')+'.png';
 }
 async function shareCompound(sku){
+  await ensureQR(sku);
   var cv=shareCardCanvas(sku);
   var blob=await new Promise(function(res){ cv.toBlob(res,'image/png'); });
   var f=new File([blob],shareCardName(sku),{type:'image/png'});
@@ -13168,7 +13267,8 @@ async function shareCompound(sku){
   document.body.appendChild(a); a.click(); a.remove();
   toast('Saved \u2014 share it from your gallery');
 }
-function pdfCompound(sku){
+async function pdfCompound(sku){
+  await ensureQR(sku);
   var cv=shareCardCanvas(sku);
   var url=cv.toDataURL('image/png');
   var d=DETAIL[sku]||{};
@@ -13189,7 +13289,8 @@ function pdfCompound(sku){
 }
 
 
-function previewCard(sku){
+async function previewCard(sku){
+  await ensureQR(sku);
   var cv=shareCardCanvas(sku);
   document.getElementById('bkIn').innerHTML=
       '<div class="sh"><h2>'+esc((DETAIL[sku]||{}).n||sku)+'</h2>'
