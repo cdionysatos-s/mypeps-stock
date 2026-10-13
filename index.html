@@ -11592,7 +11592,7 @@ if('serviceWorker' in navigator){
   }).catch(()=>{});
 }
 const APP_VERSION='2026-10-09';
-const BUILD_NO=105;
+const BUILD_NO=109;
 const BUILT_AT='2026-10-09T01:15:15Z';
 (function(){
   var d=new Date(BUILT_AT);
@@ -11975,7 +11975,7 @@ function odDisconnect(){
 }
 function odSetFolder(){
   var cur=odFolder();
-  var v=prompt('Which folder inside OneDrive?\n\nUse a path like  Peptide  or  Claude/Peps/Backups',cur);
+  var v=prompt('Which folder inside OneDrive?\n\nUse a path like  Peptide  or  Peps/Backups',cur);
   if(v===null) return;
   var s=odState(); s.folder=v.trim().replace(/^\/+|\/+$/g,'')||'Peptide'; odSave(s);
   showWhere(); toast('Backups will go to OneDrive / '+s.folder);
@@ -12036,7 +12036,7 @@ async function odCatchRedirect(){
   }catch(err){
     odNote('');
     alert('Signed in, but the last step failed.\n\n'+(err.message||err)
-      +'\n\nIf this keeps happening, tell Claude exactly what this says.');
+      +'');
   }
 }
 /* a visible line in the backup panel, so nothing fails quietly */
@@ -13787,7 +13787,73 @@ function reportCss(){
      +'.foot{font-size:10px;margin-top:26px}}'
    +'</style>'; }
 
+var _lastReport={title:'',html:''};
+/* turn the last report into a picture that can be sent to someone */
+async function shareReport(){
+  if(!_lastReport.html){ toast('Open a report first'); return; }
+  toast('Making the picture\u2026');
+  var W=1000, pad=46;
+  var holder=document.createElement('div');
+  holder.style.cssText='position:fixed;left:-99999px;top:0;width:'+W+'px;background:#fff;'
+    +'padding:'+pad+'px;font-family:Arial,Helvetica,sans-serif;color:#0E1A26;box-sizing:content-box';
+  holder.innerHTML='<div style="font-size:34px;font-weight:800;margin:0 0 4px">'+esc(_lastReport.title)+'</div>'
+    +'<div style="font-size:16px;color:#5A6B7C;font-weight:600;margin-bottom:20px">MyPeps \u00b7 '
+    + new Date().toLocaleDateString('en-AU') + '</div>'
+    + _lastReport.html
+    +'<div style="margin-top:24px;padding-top:14px;border-top:1px solid #E7EEF5;'
+    +'font-size:15px;color:#93A4B5">MyPeps \u00b7 not medical advice</div>';
+  holder.querySelectorAll('table').forEach(function(t){
+    t.style.cssText='width:100%;border-collapse:collapse;font-size:17px'; });
+  holder.querySelectorAll('th').forEach(function(t){
+    t.style.cssText='text-align:left;font-size:13px;font-weight:800;color:#5A6B7C;'
+      +'padding:10px 8px;border-bottom:2px solid #C6D4E2'; });
+  holder.querySelectorAll('td').forEach(function(t){
+    t.style.cssText='padding:11px 8px;border-bottom:1px solid #E7EEF5;vertical-align:top'; });
+  holder.querySelectorAll('h2').forEach(function(t){
+    t.style.cssText='font-size:15px;font-weight:800;color:#5A6B7C;margin:24px 0 9px;'
+      +'border-bottom:2px solid #0E1A26;padding-bottom:6px'; });
+  holder.querySelectorAll('.tw').forEach(function(t){ t.style.overflow='visible'; });
+  holder.querySelectorAll('img').forEach(function(t){ t.style.maxWidth='240px'; });
+  document.body.appendChild(holder);
+  try{
+    var cv=await domToCanvas(holder, W+pad*2);
+    var blob=await new Promise(function(r){ cv.toBlob(r,'image/png'); });
+    var name='MyPeps-'+_lastReport.title.replace(/[^A-Za-z0-9]+/g,'-')+'.png';
+    var f=new File([blob],name,{type:'image/png'});
+    if(navigator.canShare && navigator.canShare({files:[f]})){
+      await navigator.share({files:[f], title:_lastReport.title});
+      toast('Sent');
+    } else {
+      var a=document.createElement('a'); a.href=cv.toDataURL('image/png'); a.download=name;
+      document.body.appendChild(a); a.click(); a.remove();
+      toast('Saved \u2014 share it from your gallery');
+    }
+  }catch(err){ toast('Could not make the picture'); }
+  holder.remove();
+}
+function domToCanvas(el, width){
+  return new Promise(function(res, rej){
+    var h=el.scrollHeight;
+    var ser=new XMLSerializer().serializeToString(el.cloneNode(true));
+    var svg='<svg xmlns="http://www.w3.org/2000/svg" width="'+width+'" height="'+h+'">'
+      +'<foreignObject width="100%" height="100%">'
+      +'<div xmlns="http://www.w3.org/1999/xhtml">'+ser+'</div>'
+      +'</foreignObject></svg>';
+    var img=new Image();
+    img.onload=function(){
+      var cv=document.createElement('canvas');
+      cv.width=width; cv.height=h;
+      var ctx=cv.getContext('2d');
+      ctx.fillStyle='#fff'; ctx.fillRect(0,0,width,h);
+      ctx.drawImage(img,0,0); res(cv);
+    };
+    img.onerror=function(){ rej(new Error('render failed')); };
+    img.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg);
+  });
+}
+
 function openReport(title, html){
+  _lastReport={title:title, html:html};
   var w=window.open('','_blank');
   if(!w){ toast('Allow pop-ups to see reports'); return; }
   w.document.write('<!DOCTYPE html><html><head><meta charset="utf-8">'
@@ -13926,27 +13992,86 @@ function repCycles(){
     +'DISPUTED means sources genuinely disagree. GOAL-BASED means run it until the job is done, then stop.</div>';
 }
 function repProtocol(){
-  var rows='', warns='';
-  document.querySelectorAll('.row').forEach(function(r){
+  var rows='', warns='', cyc='', stockRows='';
+  var totalVials=0, totalDoses=0, lowCount=0;
+
+  document.querySelectorAll('.row[data-sku]').forEach(function(r){
     var s=r.dataset.sku, d=DETAIL[s]||{}, spec=CYCLE[s]||{};
-    rows+='<tr><td class="sku">'+s+'</td><td><b>'+esc(d.n||s)+'</b><br>'
-      +'<span class="muted" style="font-size:10px">'+esc(TAG[s]||'')+'</span></td>'
-      +'<td>'+esc(d.vial||'')+'<br><span class="muted" style="font-size:10px">'+esc(d.water||'')+'</span></td>'
-      +'<td>'+esc(d.conc||'')+'<br><span class="muted" style="font-size:10px">'+esc(d.unit||'')+'</span></td>'
-      +(function(){var sd=shownDose(s);
-         return '<td><b>'+esc(sd.dose||d.dose||'')+'</b><br><span style="font-size:10px">'
-           +esc(sd.units||d.units||'')+(sd.custom?' \u00b7 yours':'')+'</span></td>';})()
-      +'<td>'+esc(d.freq||'')+'<br><span class="muted" style="font-size:10px">'+esc(d.when||'')+'</span></td>'
-      +'<td style="font-size:10px">'+esc(spec.label||'')+'</td></tr>';
+    var rc=reconOf(s), sd=shownDose(s);
+    var held=stock[s]||0;
+    var dosesPerVial = rc.doseMcg>0 ? Math.floor(rc.vialMg*1000/rc.doseMcg) : 0;
+    var dosesHeld = held*dosesPerVial;
+    totalVials+=held; totalDoses+=dosesHeld;
+    if(held<=1) lowCount++;
+
+    /* how many weeks that stock lasts, from the schedule */
+    var sched=SCHED.filter(function(x){ return x[0]===s; })[0];
+    var perWeek = sched ? sched[5].filter(Boolean).length : 0;
+    var weeksLeft = perWeek && dosesHeld ? Math.floor(dosesHeld/perWeek) : 0;
+
+    rows+='<tr><td class="sku">'+s+'</td>'
+      +'<td><b>'+esc(d.n||s)+'</b><br><span class="muted" style="font-size:11px">'+esc(PURPOSE[s]||'')+'</span></td>'
+      +'<td>'+rc.vialMg+' mg<br><span class="muted" style="font-size:11px">+ '+rc.waterMl+' mL water</span></td>'
+      +'<td>'+(Math.round(rc.conc*100)/100)+' mg/mL<br><span class="muted" style="font-size:11px">'
+        +(Math.round(rc.perUnit*10)/10)+' mcg per unit</span></td>'
+      +'<td><b>'+esc(sd.dose)+'</b><br><span style="font-size:11px">'+esc(sd.units)
+        +(sd.custom?' <span class="warn">yours</span>':'')+'</span></td>'
+      +'<td>'+esc(d.freq||'')+'<br><span class="muted" style="font-size:11px">'+esc(d.when||'')+'</span></td>'
+      +'<td class="num">'+(dosesPerVial||'\u2014')+'</td>'
+      +'</tr>';
+
+    stockRows+='<tr><td class="sku">'+s+'</td><td><b>'+esc(d.n||s)+'</b></td>'
+      +'<td class="num '+(held===0?'muted':(held<=1?'warn':''))+'">'+held+'</td>'
+      +'<td class="num">'+(dosesHeld||'\u2014')+'</td>'
+      +'<td>'+(perWeek? perWeek+' a week' : '<span class="muted">not scheduled</span>')+'</td>'
+      +'<td class="num">'+(weeksLeft? weeksLeft+' wk' : '\u2014')+'</td></tr>';
+
+    if(spec.label){
+      var st=cycleState(s);
+      cyc+='<tr><td class="sku">'+s+'</td><td><b>'+esc(d.n||s)+'</b></td>'
+        +'<td><b>'+esc(spec.label)+'</b><br><span class="muted" style="font-size:11px">'+esc(spec.grade||'')+'</span></td>'
+        +'<td style="font-size:12px">'+esc(spec.why||'')+'</td>'
+        +'<td>'+(st&&st.tracking
+            ? (st.onPhase?'<b class="ok">ON</b>':'<b class="warn">BREAK</b>')
+              +'<br><span class="muted" style="font-size:11px">day '+st.dayIn+' of '+st.phaseLen+'</span>'
+            : '<span class="muted">not tracked</span>')+'</td></tr>';
+    }
     if(d.warn&&d.warn.length){
       warns+='<tr><td class="sku">'+s+'</td><td><b>'+esc(d.n||s)+'</b></td><td>'
         +d.warn.map(function(w){return '&bull; '+esc(w);}).join('<br>')+'</td></tr>';
     }
   });
-  return '<h2>MIXING AND DOSING</h2><div class="tw"><table><tr><th>Code</th><th>Compound</th><th>Vial / water</th>'
-    +'<th>Gives</th><th>Dose</th><th>When</th><th>Cycle</th></tr>'+rows+'</table></div></div>'
+
+  /* the week at a glance */
+  var DAYS=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  var week='<tr><th>Day</th><th>Doses</th><th>What</th></tr>';
+  DAYS.forEach(function(dn,i){
+    var due=SCHED.filter(function(x){ return x[5][i]; });
+    week+='<tr><td><b>'+dn+'</b></td><td class="num">'+due.length+'</td><td style="font-size:12px">'
+      +due.map(function(x){
+          var sd=shownDose(x[0]);
+          return esc(x[1])+' <span class="muted">'+esc(sd.units||'')+'</span>';
+        }).join(' &middot; ')+'</td></tr>';
+  });
+
+  var sum='<div class="sum">'
+    +'<div><b>'+document.querySelectorAll('.row[data-sku]').length+'</b><span>COMPOUNDS</span></div>'
+    +'<div><b>'+totalVials+'</b><span>VIALS HELD</span></div>'
+    +'<div><b>'+totalDoses+'</b><span>DOSES IN HAND</span></div>'
+    +'<div><b>'+lowCount+'</b><span>LOW OR OUT</span></div>'
+    +'</div>';
+
+  return sum
+    +'<h2>MIXING AND DOSING</h2><div class="tw"><table><tr><th>Code</th><th>Compound</th>'
+      +'<th>Vial</th><th>Gives</th><th>Dose</th><th>When</th><th>Doses<br>per vial</th></tr>'+rows+'</table></div>'
+    +'<h2>YOUR WEEK</h2><div class="tw"><table>'+week+'</table></div>'
+    +'<h2 class="pb">WHAT YOU HOLD, AND HOW LONG IT LASTS</h2><div class="tw"><table>'
+      +'<tr><th>Code</th><th>Compound</th><th>Vials</th><th>Doses</th><th>Using</th><th>Lasts</th></tr>'
+      +stockRows+'</table></div>'
+    +'<h2>CYCLES</h2><div class="tw"><table><tr><th>Code</th><th>Compound</th><th>Pattern</th>'
+      +'<th>Why the break</th><th>Where you are</th></tr>'+cyc+'</table></div>'
     +'<h2 class="pb">THINGS TO WATCH</h2><div class="tw"><table><tr><th>Code</th><th>Compound</th><th>Notes</th></tr>'
-    +warns+'</table></div></div>';
+      +warns+'</table></div>';
 }
 
 
