@@ -11592,7 +11592,7 @@ if('serviceWorker' in navigator){
   }).catch(()=>{});
 }
 const APP_VERSION='2026-10-09';
-const BUILD_NO=101;
+const BUILD_NO=102;
 const BUILT_AT='2026-10-09T01:15:15Z';
 (function(){
   var d=new Date(BUILT_AT);
@@ -13212,8 +13212,12 @@ function shareCardCanvas(sku){
   var qs=118;
   if(qrImg) ctx.drawImage(qrImg, M, y, qs, qs);
   var tx = qrImg ? M+qs+24 : M;
-  ctx.font='600 20px '+F; ctx.fillStyle='#1F6A98';
-  ctx.fillText((LABELURL[sku]||'').replace(/^https:\/\//,''), tx, y+qs/2-10);
+  ctx.font='400 24px '+F; ctx.fillStyle='#5A6B7C';
+  ctx.fillText('Scan for the live version', tx, y+qs/2-22);
+  ctx.font='400 21px '+F; ctx.fillStyle='#93A4B5';
+  ctx.fillText('MY', tx, y+qs/2+12);
+  var mw=ctx.measureText('MY').width;
+  ctx.font='700 21px '+F; ctx.fillText('PEPS', tx+mw, y+qs/2+12);
   y+=qs+M;
   if(y < cv.height - 8){
     var out=document.createElement('canvas');
