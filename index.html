@@ -11570,7 +11570,7 @@ if('serviceWorker' in navigator){
   }).catch(()=>{});
 }
 const APP_VERSION='2026-10-09';
-const BUILD_NO=83;
+const BUILD_NO=85;
 const BUILT_AT='2026-10-09T01:15:15Z';
 (function(){
   var d=new Date(BUILT_AT);
@@ -12543,6 +12543,16 @@ function openDetail(sku){
       +'onclick="penQuickReset(\''+sku+'\')">Reset to the default</button>'
     +'</div>';
   h+=cycleBlock(sku);
+  h+='<div class="shgrp">SHARE THIS</div>'
+    +'<div class="lblBox">'
+    +'<button class="lblBtn send" onclick="shareCompound(\''+sku+'\')">'
+      +'\uD83D\uDCE4 &nbsp;Send to someone</button>'
+    +'<div class="lblBtns">'
+    +'<button class="lblBtn alt" onclick="pdfCompound(\''+sku+'\')">Make a PDF</button>'
+    +'<button class="lblBtn alt" onclick="previewCard(\''+sku+'\')">See it first</button>'
+    +'</div>'
+    +'<p class="deNote" style="margin-top:10px">One page with the mixing, the dose and the cycle. '
+      +'Shares straight into WhatsApp.</p></div>';
   if(info) h+='<a class="shlink" href="'+info+'" target="_blank" rel="noopener">Read more about '+d.n+' &nbsp;&rarr;</a>';
   document.getElementById('sheetIn').innerHTML=h;
   document.getElementById('sheet').classList.add('on');
@@ -12731,6 +12741,207 @@ async function sendVL(sku){
     }
   }catch(e){ if(e&&e.name==='AbortError'){ toast('Cancelled'); return; } }
   saveVL(sku);
+}
+
+
+/* ---------- a shareable one-pager for a compound ---------- */
+function shareCardCanvas(sku){
+  var d=DETAIL[sku]||{}, r=reconOf(sku), cy=CYCLE[sku]||{}, st=cycleState(sku);
+  var W=1000, cv=document.createElement('canvas');
+  var ctx=cv.getContext('2d');
+  var F='-apple-system,"Helvetica Neue",Arial,sans-serif';
+  var M=56;                      /* margin */
+  var y=0;
+
+  /* measure first so the canvas is exactly tall enough */
+  function fsize(font){ var m=String(font).match(/(\d+(?:\.\d+)?)px/); return m?parseFloat(m[1]):16; }
+  function wrap(text, maxW, font){
+    ctx.font=font;
+    var words=String(text).split(' '), lines=[], line='';
+    words.forEach(function(w){
+      var t=line?line+' '+w:w;
+      if(ctx.measureText(t).width>maxW && line){ lines.push(line); line=w; }
+      else line=t;
+    });
+    if(line) lines.push(line);
+    return lines;
+  }
+  function plan(){
+    var h=0;
+    h+=150;                                              /* header */
+    h+=58;                                               /* purpose strip */
+    h+=28;
+    var wl=wrap(d.what||'', W-M*2, '400 27px '+F);
+    h+=wl.length*40+26;
+    h+=52+ (4*54) + 30;                                  /* mixing table */
+    h+=130;                                              /* dose block */
+    h+=52+ (2*54) + 30;                                  /* when */
+    if(cy.label){ h+=52+92; 
+      var wy=wrap(cy.why||'', W-M*2, '400 24px '+F); h+=wy.length*36+18;
+      var wi=wrap(cy.ifnot||'', W-M*2, '400 24px '+F); h+=40+wi.length*36+18;
+      if(cy.extra){ var we=wrap(cy.extra, W-M*2, '400 24px '+F); h+=40+we.length*36+18; }
+    }
+    if((d.warn||[]).length){
+      h+=52;
+      (d.warn||[]).forEach(function(t){ h+=wrap(t, W-M*2-40, '600 24px '+F).length*36+14; });
+      h+=16;
+    }
+    h+=110;                                              /* footer */
+    return h;
+  }
+  cv.width=W; cv.height=plan();
+  ctx=cv.getContext('2d');
+  ctx.fillStyle='#fff'; ctx.fillRect(0,0,W,cv.height);
+  ctx.textBaseline='top';
+
+  function text(t,x,yy,font,col,maxW){
+    ctx.font=font; ctx.fillStyle=col||'#0E1A26';
+    if(!maxW){ ctx.fillText(t,x,yy); return yy+fsize(font)+6; }
+    var lines=wrap(t,maxW,font);
+    var lh=fsize(font)+13;
+    lines.forEach(function(l,i){ ctx.fillText(l,x,yy+i*lh); });
+    return yy+lines.length*lh;
+  }
+  function rule(yy,col){ ctx.fillStyle=col||'#E7EEF5'; ctx.fillRect(M,yy,W-M*2,2); }
+  function heading(t,yy){
+    ctx.font='800 20px '+F; ctx.fillStyle='#5A6B7C';
+    ctx.fillText(t.toUpperCase(),M,yy);
+    return yy+34;
+  }
+  function row(label,val,yy){
+    ctx.font='400 25px '+F; ctx.fillStyle='#44566A'; ctx.fillText(label,M+4,yy+14);
+    ctx.font='700 25px '+F; ctx.fillStyle='#0E1A26';
+    ctx.textAlign='right'; ctx.fillText(val,W-M-4,yy+14); ctx.textAlign='left';
+    ctx.fillStyle='#EDF2F7'; ctx.fillRect(M,yy+52,W-M*2,1);
+    return yy+54;
+  }
+
+  /* header */
+  var g=ctx.createLinearGradient(0,0,W,150);
+  g.addColorStop(0,'#0E1A26'); g.addColorStop(1,'#1F6A98');
+  ctx.fillStyle=g; ctx.fillRect(0,0,W,150);
+  ctx.font='400 22px '+F; ctx.fillStyle='rgba(255,255,255,.65)';
+  ctx.fillText('MY PEPS',M,34);
+  ctx.font='800 46px '+F; ctx.fillStyle='#fff';
+  ctx.fillText(d.n||sku,M,66);
+  ctx.font='700 23px '+F; ctx.fillStyle='rgba(255,255,255,.8)';
+  ctx.textAlign='right'; ctx.fillText(r.vialMg+' mg vial',W-M,76); ctx.textAlign='left';
+  y=150;
+
+  ctx.fillStyle='#EDF5FB'; ctx.fillRect(0,y,W,58);
+  ctx.font='800 22px '+F; ctx.fillStyle='#1F6A98';
+  ctx.fillText((PURPOSE[sku]||d['for']||'').toUpperCase(),M,y+18);
+  y+=58+28;
+
+  y=text(d.what||'', M, y, '400 27px '+F, '#33414F', W-M*2)+26;
+
+  y=heading('How to mix it',y);
+  y=row('Vial', r.vialMg+' mg', y);
+  y=row('Add', r.waterMl+' mL bacteriostatic water', y);
+  y=row('Gives', (Math.round(r.conc*100)/100)+' mg/mL', y);
+  y=row('So one unit is', (Math.round(r.perUnit*10)/10)+' mcg', y);
+  y+=30;
+
+  var g2=ctx.createLinearGradient(M,y,W-M,y+110);
+  g2.addColorStop(0,'#0E1A26'); g2.addColorStop(1,'#1F6A98');
+  ctx.fillStyle=g2; roundRect(ctx,M,y,W-M*2,110,16); ctx.fill();
+  ctx.font='800 18px '+F; ctx.fillStyle='rgba(255,255,255,.7)';
+  ctx.fillText('THE DOSE',M+26,y+22);
+  ctx.font='800 40px '+F; ctx.fillStyle='#fff';
+  ctx.fillText(fmtMcg(r.doseMcg),M+26,y+48);
+  ctx.textAlign='right';
+  ctx.font='800 46px '+F; ctx.fillText((Math.round(r.units*10)/10)+'',W-M-26,y+36);
+  ctx.font='800 17px '+F; ctx.fillStyle='rgba(255,255,255,.7)';
+  ctx.fillText('UNITS',W-M-26,y+82); ctx.textAlign='left';
+  y+=130;
+
+  y=heading('When',y);
+  y=row('How often', d.freq||'', y);
+  y=row('Time of day', d.when||'', y);
+  y+=30;
+
+  if(cy.label){
+    y=heading('The cycle',y);
+    ctx.font='800 32px '+F; ctx.fillStyle='#0E1A26';
+    ctx.fillText(cy.label,M,y);
+    y+=44;
+    ctx.font='700 20px '+F; ctx.fillStyle='#8A5A1E';
+    ctx.fillText(cy.grade||'',M,y); y+=48;
+    ctx.font='800 19px '+F; ctx.fillStyle='#5A6B7C'; ctx.fillText('WHY THE BREAK EXISTS',M,y); y+=30;
+    y=text(cy.why||'', M, y, '400 24px '+F, '#33414F', W-M*2)+18;
+    ctx.font='800 19px '+F; ctx.fillStyle='#5A6B7C'; ctx.fillText('IF YOU SKIP IT',M,y); y+=30;
+    y=text(cy.ifnot||'', M, y, '400 24px '+F, '#33414F', W-M*2)+18;
+    if(cy.extra){
+      ctx.font='800 19px '+F; ctx.fillStyle='#5A6B7C'; ctx.fillText('WORTH KNOWING',M,y); y+=30;
+      y=text(cy.extra, M, y, '400 24px '+F, '#33414F', W-M*2)+18;
+    }
+  }
+
+  if((d.warn||[]).length){
+    y=heading('Watch for',y);
+    (d.warn||[]).forEach(function(t){
+      ctx.fillStyle='#B45309'; ctx.beginPath(); ctx.arc(M+7,y+12,5,0,Math.PI*2); ctx.fill();
+      y=text(t, M+28, y, '600 24px '+F, '#8A5A1E', W-M*2-40)+14;
+    });
+    y+=16;
+  }
+
+  rule(y); y+=22;
+  var dt=new Date();
+  ctx.font='400 20px '+F; ctx.fillStyle='#93A4B5';
+  ctx.fillText('MyPeps \u00b7 '+dt.getDate()+'/'+(dt.getMonth()+1)+'/'+dt.getFullYear()
+    +' \u00b7 your own figures, not medical advice', M, y);
+  return cv;
+}
+function shareCardName(sku){
+  return 'MyPeps-'+((DETAIL[sku]||{}).n||sku).replace(/[^A-Za-z0-9]+/g,'-')+'.png';
+}
+async function shareCompound(sku){
+  var cv=shareCardCanvas(sku);
+  var blob=await new Promise(function(res){ cv.toBlob(res,'image/png'); });
+  var f=new File([blob],shareCardName(sku),{type:'image/png'});
+  try{
+    if(navigator.canShare && navigator.canShare({files:[f]})){
+      await navigator.share({files:[f], title:(DETAIL[sku]||{}).n||sku});
+      toast('Sent'); return;
+    }
+  }catch(err){ if(err&&err.name==='AbortError'){ toast('Cancelled'); return; } }
+  var a=document.createElement('a'); a.href=cv.toDataURL('image/png');
+  a.download=shareCardName(sku);
+  document.body.appendChild(a); a.click(); a.remove();
+  toast('Saved \u2014 share it from your gallery');
+}
+function pdfCompound(sku){
+  var cv=shareCardCanvas(sku);
+  var url=cv.toDataURL('image/png');
+  var d=DETAIL[sku]||{};
+  var w=window.open('','_blank');
+  if(!w){ toast('Allow pop-ups to make the PDF'); return; }
+  w.document.write('<!DOCTYPE html><html><head><meta charset="utf-8"><title>'+esc(d.n||sku)+'</title>'
+   +'<style>@page{size:A4;margin:10mm}*{margin:0;padding:0}'
+   +'body{font-family:Arial;background:#fff}'
+   +'img{width:100%;display:block}'
+   +'@media print{.np{display:none}}'
+   +'.np{position:fixed;left:14px;right:14px;bottom:14px;padding:15px;border:none;'
+   +'border-radius:10px;background:#0E7FC4;color:#fff;font-size:15px;font-weight:800;'
+   +'width:calc(100% - 28px);cursor:pointer}</style></head><body>'
+   +'<img src="'+url+'">'
+   +'<button class="np" onclick="window.print()">Save as PDF or print</button>'
+   +'</body></html>');
+  w.document.close();
+}
+
+
+function previewCard(sku){
+  var cv=shareCardCanvas(sku);
+  document.getElementById('bkIn').innerHTML=
+      '<div class="sh"><h2>'+esc((DETAIL[sku]||{}).n||sku)+'</h2>'
+     +'<button class="shx" onclick="closeBackedUp()">&times;</button></div>'
+     +'<img src="'+cv.toDataURL('image/png')+'" style="width:100%;border:1px solid var(--line2);border-radius:10px">'
+     +'<button class="lblBtn send" style="margin-top:12px" onclick="closeBackedUp();shareCompound(\'' + sku + '\')">'
+       +'\uD83D\uDCE4 &nbsp;Send to someone</button>'
+     +'<button class="cycBtn off" style="margin-top:8px" onclick="closeBackedUp()">Close</button>';
+  document.getElementById('bkSheet').classList.add('on');
 }
 
 /* ---------- pen labels ---------- */
