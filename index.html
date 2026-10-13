@@ -207,6 +207,7 @@ h1{font-size:27px;font-weight:800;letter-spacing:-.9px;line-height:1}
   font-size:10px;font-weight:800;color:#fff;border-radius:7px;padding:4px 0}
 .pfNm{flex:1;min-width:0;font-size:14.5px;font-weight:700;cursor:pointer;letter-spacing:-.2px}
 .pfNm i{display:block;font-style:normal;font-size:10.5px;color:var(--ink3);font-weight:600;margin-top:1px}
+.pfMg{font-size:12px;font-weight:800;color:var(--brand);margin-left:5px}
 .pfMinus,.pfPlus{flex-shrink:0;width:32px;height:32px;border:1.5px solid var(--line2);
   background:var(--card);border-radius:9px;font-size:17px;font-weight:800;color:var(--ink2);cursor:pointer;line-height:1}
 .pfMinus:active,.pfPlus:active{background:var(--brand);color:#fff;border-color:var(--brand)}
@@ -541,6 +542,13 @@ h1{font-size:27px;font-weight:800;letter-spacing:-.9px;line-height:1}
 .bkStats b{display:block;font-size:22px;font-weight:800;letter-spacing:-.6px;line-height:1;color:var(--brand)}
 .bkStats span{display:block;font-size:8px;font-weight:800;letter-spacing:.9px;color:var(--ink3);margin-top:5px}
 .bkWhen{font-size:12.5px;color:var(--ink3);text-align:center;margin-bottom:16px;font-weight:600}
+.stRow{display:flex;align-items:center;gap:10px;background:var(--bg);
+  border:1px solid var(--line);border-radius:11px;padding:11px 12px;margin-bottom:7px}
+.stSku{font-family:ui-monospace,"SF Mono",Consolas,monospace;font-size:12px;font-weight:800;
+  background:var(--brand);color:#fff;border-radius:6px;padding:4px 8px}
+.stMg{flex:1;font-size:14.5px;font-weight:700}
+.stRow button{background:none;border:1.5px solid var(--line2);border-radius:8px;
+  padding:7px 12px;font-size:12px;font-weight:700;color:var(--warn);cursor:pointer}
 .cycbox{border:1px solid var(--line);border-radius:14px;padding:14px}
 .cycTop b{font-size:17px;font-weight:800}
 .grade{display:inline-block;font-size:10px;font-weight:800;letter-spacing:.9px;
@@ -835,6 +843,7 @@ h1{font-size:27px;font-weight:800;letter-spacing:-.9px;line-height:1}
 <div id="lblSheet" class="sheet"><div class="sheetIn" id="lblIn"></div></div>
 <div id="odSheet" class="sheet"><div class="sheetIn" id="odIn"></div></div>
 <div id="bkSheet" class="sheet"><div class="sheetIn" id="bkIn"></div></div>
+<div id="stSheet" class="sheet"><div class="sheetIn" id="stIn"></div></div>
 
 <div id="camWrap">
   <div id="camMsg">Line the code up in the square</div>
@@ -11583,7 +11592,7 @@ if('serviceWorker' in navigator){
   }).catch(()=>{});
 }
 const APP_VERSION='2026-10-09';
-const BUILD_NO=89;
+const BUILD_NO=92;
 const BUILT_AT='2026-10-09T01:15:15Z';
 (function(){
   var d=new Date(BUILT_AT);
@@ -11720,7 +11729,8 @@ function searchPeps(){
     var nm=(DETAIL[sku]||{}).n || r.dataset.name || sku;
     var tag=TAG[sku]||'';
     var hay=(sku+' '+nm+' '+tag).toLowerCase();
-    if(hay.indexOf(q)>=0) hits.push({sku:sku, nm:nm, q:stock[sku]||0});
+    var mgTxt=(DETAIL[sku]||{}).vial||'';
+    if(hay.indexOf(q)>=0) hits.push({sku:sku, nm:nm, q:stock[sku]||0, mg:mgTxt});
   });
   /* an exact code match goes to the top */
   hits.sort(function(a,b){
@@ -11738,6 +11748,7 @@ function searchPeps(){
       h+='<div class="pfRow">'
         +'<span class="pfSku" style="background:'+col+'">'+x.sku+'</span>'
         +'<span class="pfNm" onclick="jumpTo(\''+x.sku+'\')">'+esc(x.nm)
+          +(x.mg?' <b class="pfMg">'+x.mg+'</b>':'')
           +'<i>'+(x.q? x.q+' in stock' : 'none in stock')+'</i></span>'
         +'<button class="pfMinus" onclick="findBump(\''+x.sku+'\',-1)">\u2212</button>'
         +'<span class="pfQty" id="pf-'+x.sku+'">'+x.q+'</span>'
@@ -12147,6 +12158,104 @@ async function odNewFolder(){
   }catch(err){ toast(err.message||'Could not make that folder'); }
 }
 
+
+/* ---------- another strength of something you already have ---------- */
+const VKEY2='mypeps-variants';
+function loadVariants(){ try{ return JSON.parse(localStorage.getItem(VKEY2))||[]; }catch(e){ return []; } }
+function saveVariants(v){ try{ localStorage.setItem(VKEY2,JSON.stringify(v)); }catch(e){} }
+
+function openStrengthAdder(baseSku){
+  var d=DETAIL[baseSku]||{}, r=reconOf(baseSku);
+  var base=baseSku.replace(/[0-9.]+$/,'') || baseSku;
+  var existing=loadVariants().filter(function(v){ return v.base===baseSku; });
+  var h='<div class="sh"><h2>'+esc(d.n||baseSku)+'</h2>'
+    +'<button class="shx" onclick="closeStrength()">&times;</button></div>'
+    +'<div class="shfor">ANOTHER STRENGTH</div>'
+    +'<p class="deNote" style="text-align:left;margin-bottom:15px">You already track '
+      +'<b>'+r.vialMg+' mg</b>. Add another vial size and it gets its own count, its own label '
+      +'and its own mixing figures, but keeps everything else about '+esc(d.n||baseSku)+'.</p>'
+    +'<div class="deField"><label>Vial strength</label>'
+      +'<div class="deIn"><input id="stMg" type="number" inputmode="decimal" step="any" '
+      +'placeholder="e.g. 20"><span>mg</span></div></div>'
+    +'<div class="deField"><label>Short code</label>'
+      +'<div class="deIn"><input id="stSku" type="text" placeholder="'+esc(base)+'20"></div>'
+      +'<div class="deNote" style="text-align:left;margin-top:6px">Left blank, it makes one for you.</div></div>'
+    +'<button class="cycBtn" onclick="saveStrength(\''+baseSku+'\')">Add this strength</button>';
+  if(existing.length){
+    h+='<div class="shgrp" style="margin-top:22px">ALREADY ADDED</div>';
+    existing.forEach(function(v){
+      h+='<div class="stRow"><span class="stSku">'+esc(v.sku)+'</span>'
+        +'<span class="stMg">'+v.mg+' mg</span>'
+        +'<button onclick="removeStrength(\''+v.sku+'\')">Remove</button></div>';
+    });
+  }
+  document.getElementById('stIn').innerHTML=h;
+  document.getElementById('stSheet').classList.add('on');
+  var mg=document.getElementById('stMg');
+  mg.addEventListener('input', function(){
+    var s=document.getElementById('stSku');
+    if(!s.dataset.touched) s.placeholder = base + (mg.value||'');
+  });
+  document.getElementById('stSku').addEventListener('input', function(){ this.dataset.touched='1'; });
+}
+function closeStrength(){ document.getElementById('stSheet').classList.remove('on'); }
+function saveStrength(baseSku){
+  var mg=parseFloat(document.getElementById('stMg').value);
+  if(!(mg>0)){ toast('Enter the vial strength'); return; }
+  var base=baseSku.replace(/[0-9.]+$/,'') || baseSku;
+  var sku=(document.getElementById('stSku').value||'').trim().toUpperCase().replace(/[^A-Z0-9]/g,'')
+          || (base+String(mg).replace('.',''));
+  if(document.querySelector('.row[data-sku="'+sku+'"]')){ toast(sku+' is already in your list'); return; }
+  var all=loadVariants();
+  all.push({sku:sku, base:baseSku, mg:mg});
+  saveVariants(all);
+  closeStrength();
+  toast((DETAIL[baseSku]||{}).n+' '+mg+' mg added \u2014 reloading');
+  setTimeout(function(){ location.reload(); }, 700);
+}
+function removeStrength(sku){
+  var nm=(DETAIL[sku]||{}).n||sku;
+  if(!confirm('Remove '+nm+'?\n\nAny count against it is lost. The other strengths stay.')) return;
+  saveVariants(loadVariants().filter(function(v){ return v.sku!==sku; }));
+  try{ delete stock[sku]; save(); }catch(e){}
+  toast('Removed \u2014 reloading');
+  setTimeout(function(){ location.reload(); }, 600);
+}
+/* build the variant rows at startup */
+function injectVariants(){
+  var all=loadVariants(); if(!all.length) return;
+  all.forEach(function(v){
+    var bd=DETAIL[v.base]; if(!bd) return;
+    if(document.querySelector('.row[data-sku="'+v.sku+'"]')) return;
+    var water = Math.max(1, Math.round((v.mg / (RECON_DEF[v.base]? RECON_DEF[v.base][0]/RECON_DEF[v.base][1] : 3.33))*10)/10);
+    DETAIL[v.sku]=Object.assign({}, bd, {
+      vial: v.mg+' mg',
+      conc: (Math.round((v.mg/water)*100)/100)+' mg/mL',
+      unit: (Math.round((v.mg/water)*10*10)/10)+' mcg per unit'
+    });
+    PURPOSE[v.sku]=PURPOSE[v.base]||'';
+    TAG[v.sku]=TAG[v.base]||'';
+    CATOF[v.sku]=CATOF[v.base]||'REPAIR';
+    CYCLE[v.sku]=CYCLE[v.base];
+    RECON_DEF[v.sku]=[v.mg, water];
+    QRIMG[v.sku]=QRIMG[v.base];
+    LABEL[v.sku]=LABEL[v.base];
+    VIAL[v.sku]=VIAL[v.base]||{doses:20,days:30};
+
+    var baseRow=document.querySelector('.row[data-sku="'+v.base+'"]');
+    var host=baseRow?baseRow.parentNode:document.getElementById('viewStock');
+    var d=document.createElement('div');
+    d.className='row'; d.dataset.sku=v.sku; d.dataset.name=(bd.n||v.base);
+    d.innerHTML='<div class="id"><span class="sku">'+v.sku+'</span><span class="cat">'+(CATOF[v.sku]||'')+'</span></div>'
+      +'<div class="nm"><b>'+esc(bd.n||v.base)+'</b><i>'+v.mg+'mg</i></div>'
+      +'<div class="ct"><button onclick="bump(\''+v.sku+'\',-1)">\u2013</button>'
+      +'<span class="qty" id="q-'+v.sku+'">0</span>'
+      +'<button onclick="bump(\''+v.sku+'\',1)">+</button></div>';
+    if(baseRow && baseRow.nextSibling) host.insertBefore(d, baseRow.nextSibling);
+    else host.appendChild(d);
+  });
+}
+
 /* ---------- reconstitution and your own doses ---------- */
 function loadMyDose(){ try{ return JSON.parse(localStorage.getItem(DKEY2))||{}; }catch(e){ return {}; } }
 function saveMyDose(v){ try{ localStorage.setItem(DKEY2,JSON.stringify(v)); }catch(e){} }
@@ -12506,7 +12615,9 @@ function openDetail(sku){
       +'<div class="mixrow"><span>Add</span><b>'+r.waterMl+' mL'+(r.custom?'':' '+esc(String(d.water||'').replace(/^[\d.]+\s*mL\s*/,'')))+'</b></div>'
       +'<div class="mixrow"><span>Gives</span><b>'+(Math.round(r.conc*100)/100)+' mg/mL</b></div>'
       +'<div class="mixrow"><span>So one unit is</span><b>'+(Math.round(r.perUnit*10)/10)+' mcg</b></div>'
-      +'</div>'; })()
+      +'</div>'
+      +'<button class="lblBtn alt" style="width:100%;margin-top:9px" '
+        +'onclick="openStrengthAdder(\''+sku+'\')">+ &nbsp;I also have another strength</button>'; })()
     +(function(){ var sd=shownDose(sku);
         return '<div class="bigdose tap" onclick="openDoseEditor(\''+sku+'\')">'
           +'<div class="bd1"><span>'+(sd.custom?'YOUR DOSE \u00b7 TAP TO CHANGE':'DOSE \u00b7 TAP TO CHANGE')+'</span>'
@@ -12767,6 +12878,91 @@ async function sendVL(sku){
 
 
 /* ---------- a shareable one-pager for a compound ---------- */
+/* draw a 1 mL syringe with the fill point marked */
+function drawSyringe(ctx, x, y, w, units){
+  var h=72, barrelX=x+54, barrelW=w-110;
+  ctx.save();
+  /* plunger end */
+  ctx.fillStyle='#CBD6E2';
+  roundRect(ctx, x, y+18, 48, 36, 6); ctx.fill();
+  ctx.fillRect(x+44, y+28, 14, 16);
+  /* barrel */
+  ctx.fillStyle='#fff'; ctx.strokeStyle='#44566A'; ctx.lineWidth=3;
+  roundRect(ctx, barrelX, y+10, barrelW, 52, 8); ctx.fill(); ctx.stroke();
+  /* fill */
+  var frac=Math.max(0, Math.min(1, units/100));
+  var g=ctx.createLinearGradient(barrelX,0,barrelX+barrelW*frac,0);
+  g.addColorStop(0,'#1F6A98'); g.addColorStop(1,'#0E7FC4');
+  ctx.fillStyle=g;
+  roundRect(ctx, barrelX+2, y+12, Math.max(6,(barrelW-4)*frac), 48, 7); ctx.fill();
+  /* graduations every 10 units */
+  ctx.strokeStyle='#8FA3B8'; ctx.lineWidth=1.5;
+  ctx.font='600 15px -apple-system,Arial'; ctx.fillStyle='#5A6B7C'; ctx.textAlign='center';
+  for(var u=0; u<=100; u+=10){
+    var gx=barrelX+(barrelW*u/100);
+    ctx.beginPath(); ctx.moveTo(gx, y+62); ctx.lineTo(gx, y+72); ctx.stroke();
+    if(u%20===0) ctx.fillText(String(u), gx, y+78);
+  }
+  /* needle */
+  ctx.strokeStyle='#8FA3B8'; ctx.lineWidth=4;
+  ctx.beginPath(); ctx.moveTo(barrelX+barrelW, y+36); ctx.lineTo(barrelX+barrelW+52, y+36); ctx.stroke();
+  /* the marker */
+  var mx=barrelX+(barrelW*frac);
+  ctx.strokeStyle='#B45309'; ctx.lineWidth=4;
+  ctx.beginPath(); ctx.moveTo(mx, y-6); ctx.lineTo(mx, y+66); ctx.stroke();
+  ctx.fillStyle='#B45309';
+  ctx.beginPath(); ctx.moveTo(mx,y-10); ctx.lineTo(mx-9,y-24); ctx.lineTo(mx+9,y-24); ctx.closePath(); ctx.fill();
+  ctx.font='800 20px -apple-system,Arial'; ctx.textAlign='center';
+  var lbl=(Math.round(units*10)/10)+' units';
+  var lw=ctx.measureText(lbl).width;
+  var lx=Math.max(x+lw/2, Math.min(mx, x+w-lw/2));
+  roundRect(ctx, lx-lw/2-10, y-56, lw+20, 28, 7); ctx.fill();
+  ctx.fillStyle='#fff'; ctx.fillText(lbl, lx, y-50);
+  ctx.textAlign='left';
+  ctx.restore();
+  return y+96;
+}
+/* a year of this cycle, on and off blocks */
+function drawCycleBar(ctx, x, y, w, onD, offD){
+  if(!onD) return y;
+  var total=onD+offD, weeks=52, pxPerDay=w/365;
+  ctx.save();
+  var cur=0, i=0;
+  while(cur<365 && i<40){
+    var onW=Math.min(onD, 365-cur)*pxPerDay;
+    if(onW>0){
+      ctx.fillStyle='#157A4A';
+      roundRect(ctx, x+cur*pxPerDay, y, Math.max(2,onW-2), 34, 5); ctx.fill();
+    }
+    cur+=onD;
+    var offW=Math.min(offD, Math.max(0,365-cur))*pxPerDay;
+    if(offW>0){
+      ctx.fillStyle='#E8A046';
+      roundRect(ctx, x+cur*pxPerDay, y, Math.max(2,offW-2), 34, 5); ctx.fill();
+    }
+    cur+=offD; i++;
+  }
+  /* month ticks */
+  ctx.strokeStyle='#D8E1EA'; ctx.lineWidth=1;
+  ctx.font='600 14px -apple-system,Arial'; ctx.fillStyle='#93A4B5'; ctx.textAlign='center';
+  var MN=['J','F','M','A','M','J','J','A','S','O','N','D'];
+  for(var m2=0;m2<12;m2++){
+    var mx2=x+(w*m2/12)+(w/24);
+    ctx.fillText(MN[m2], mx2, y+42);
+  }
+  /* key */
+  ctx.textAlign='left';
+  ctx.fillStyle='#157A4A'; roundRect(ctx,x,y+64,16,16,4); ctx.fill();
+  ctx.fillStyle='#33414F'; ctx.font='600 18px -apple-system,Arial';
+  ctx.fillText('taking it \u2014 '+Math.round(onD/7)+' weeks', x+24, y+66);
+  var kx=x+Math.max(230, ctx.measureText('taking it \u2014 '+Math.round(onD/7)+' weeks').width+56);
+  ctx.fillStyle='#E8A046'; roundRect(ctx,kx,y+64,16,16,4); ctx.fill();
+  ctx.fillStyle='#33414F';
+  ctx.fillText('on a break \u2014 '+Math.round(offD/7)+' weeks', kx+24, y+66);
+  ctx.restore();
+  return y+96;
+}
+
 function shareCardCanvas(sku){
   var d=DETAIL[sku]||{}, r=reconOf(sku), cy=CYCLE[sku]||{}, st=cycleState(sku);
   var W=1000, cv=document.createElement('canvas');
@@ -12797,8 +12993,9 @@ function shareCardCanvas(sku){
     h+=wl.length*40+26;
     h+=52+ (4*54) + 30;                                  /* mixing table */
     h+=130;                                              /* dose block */
+    h+=160;                                              /* syringe */
     h+=52+ (2*54) + 30;                                  /* when */
-    if(cy.label){ h+=52+92; 
+    if(cy.label){ h+=52+92; if(cy.on) h+=110; 
       var wy=wrap(cy.why||'', W-M*2, '400 24px '+F); h+=wy.length*36+18;
       var wi=wrap(cy.ifnot||'', W-M*2, '400 24px '+F); h+=40+wi.length*36+18;
       if(cy.extra){ var we=wrap(cy.extra, W-M*2, '400 24px '+F); h+=40+we.length*36+18; }
@@ -12877,6 +13074,11 @@ function shareCardCanvas(sku){
   ctx.fillText('UNITS',W-M-26,y+82); ctx.textAlign='left';
   y+=130;
 
+  /* how far to draw */
+  y+=66;
+  y=drawSyringe(ctx, M, y, W-M*2, r.units);
+  y+=10;
+
   y=heading('When',y);
   y=row('How often', d.freq||'', y);
   y=row('Time of day', d.when||'', y);
@@ -12888,7 +13090,9 @@ function shareCardCanvas(sku){
     ctx.fillText(cy.label,M,y);
     y+=44;
     ctx.font='700 20px '+F; ctx.fillStyle='#8A5A1E';
-    ctx.fillText(cy.grade||'',M,y); y+=48;
+    ctx.fillText(cy.grade||'',M,y); y+=42;
+    if(cy.on){ y=drawCycleBar(ctx, M, y, W-M*2, cy.on, cy.off)+6; }
+    else y+=6;
     ctx.font='800 19px '+F; ctx.fillStyle='#5A6B7C'; ctx.fillText('WHY THE BREAK EXISTS',M,y); y+=30;
     y=text(cy.why||'', M, y, '400 24px '+F, '#33414F', W-M*2)+18;
     ctx.font='800 19px '+F; ctx.fillStyle='#5A6B7C'; ctx.fillText('IF YOU SKIP IT',M,y); y+=30;
@@ -14242,6 +14446,8 @@ document.getElementById('odSheet').addEventListener('click',function(e){
   if(e.target.id==='odSheet') closeOdBrowser(); });
 document.getElementById('bkSheet').addEventListener('click',function(e){
   if(e.target.id==='bkSheet') closeBackedUp(); });
+document.getElementById('stSheet').addEventListener('click',function(e){
+  if(e.target.id==='stSheet') closeStrength(); });
 document.addEventListener('click',function(e){
   if(e.target.closest('.ct') || e.target.closest('.tick')) return;
   var r=e.target.closest('.row'); if(r){ openDetail(r.dataset.sku); return; }
@@ -14256,6 +14462,7 @@ syncScrollbar();
 window.addEventListener('resize', syncScrollbar);
 setInterval(syncScrollbar, 1200);
 odCatchRedirect();
+injectVariants();
 injectExtra();
 warmQR();
 load();
