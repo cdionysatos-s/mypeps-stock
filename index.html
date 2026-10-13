@@ -11592,7 +11592,7 @@ if('serviceWorker' in navigator){
   }).catch(()=>{});
 }
 const APP_VERSION='2026-10-09';
-const BUILD_NO=100;
+const BUILD_NO=101;
 const BUILT_AT='2026-10-09T01:15:15Z';
 (function(){
   var d=new Date(BUILT_AT);
@@ -13207,28 +13207,14 @@ function shareCardCanvas(sku){
     y+=16;
   }
 
-  rule(y); y+=24;
-  var dt=new Date();
+  rule(y); y+=26;
   var qrImg=_qrCache[sku];
-  var qs=128;
-  if(qrImg){
-    ctx.drawImage(qrImg, M, y, qs, qs);
-  }
-  var tx = qrImg ? M+qs+26 : M;
-  ctx.font='800 23px '+F; ctx.fillStyle='#0E1A26';
-  ctx.fillText('Scan for the full detail', tx, y+8);
-  ctx.font='400 19px '+F; ctx.fillStyle='#5A6B7C';
-  var lines=wrap('Opens '+(d.n||sku)+' in MyPeps \u2014 mixing, dose, cycle and warnings, kept up to date.',
-                 W-tx-M, '400 19px '+F);
-  lines.forEach(function(l,i){ ctx.fillText(l, tx, y+44+i*28); });
-  ctx.font='600 18px '+F; ctx.fillStyle='#1F6A98';
-  ctx.fillText((LABELURL[sku]||'').replace(/^https:\/\//,''), tx, y+44+lines.length*28+8);
-  y+=qs+22;
-  ctx.font='400 19px '+F; ctx.fillStyle='#93A4B5';
-  ctx.fillText('MyPeps \u00b7 '+dt.getDate()+'/'+(dt.getMonth()+1)+'/'+dt.getFullYear()
-    +' \u00b7 your own figures, not medical advice', M, y);
-  y+=M;
-  /* trim the canvas to what we actually drew */
+  var qs=118;
+  if(qrImg) ctx.drawImage(qrImg, M, y, qs, qs);
+  var tx = qrImg ? M+qs+24 : M;
+  ctx.font='600 20px '+F; ctx.fillStyle='#1F6A98';
+  ctx.fillText((LABELURL[sku]||'').replace(/^https:\/\//,''), tx, y+qs/2-10);
+  y+=qs+M;
   if(y < cv.height - 8){
     var out=document.createElement('canvas');
     out.width=W; out.height=Math.ceil(y);
