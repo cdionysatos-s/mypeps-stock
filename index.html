@@ -11592,7 +11592,7 @@ if('serviceWorker' in navigator){
   }).catch(()=>{});
 }
 const APP_VERSION='2026-10-09';
-const BUILD_NO=109;
+const BUILD_NO=110;
 const BUILT_AT='2026-10-09T01:15:15Z';
 (function(){
   var d=new Date(BUILT_AT);
@@ -13992,22 +13992,12 @@ function repCycles(){
     +'DISPUTED means sources genuinely disagree. GOAL-BASED means run it until the job is done, then stop.</div>';
 }
 function repProtocol(){
-  var rows='', warns='', cyc='', stockRows='';
-  var totalVials=0, totalDoses=0, lowCount=0;
+  var rows='', warns='', cyc='';
 
   document.querySelectorAll('.row[data-sku]').forEach(function(r){
     var s=r.dataset.sku, d=DETAIL[s]||{}, spec=CYCLE[s]||{};
     var rc=reconOf(s), sd=shownDose(s);
-    var held=stock[s]||0;
     var dosesPerVial = rc.doseMcg>0 ? Math.floor(rc.vialMg*1000/rc.doseMcg) : 0;
-    var dosesHeld = held*dosesPerVial;
-    totalVials+=held; totalDoses+=dosesHeld;
-    if(held<=1) lowCount++;
-
-    /* how many weeks that stock lasts, from the schedule */
-    var sched=SCHED.filter(function(x){ return x[0]===s; })[0];
-    var perWeek = sched ? sched[5].filter(Boolean).length : 0;
-    var weeksLeft = perWeek && dosesHeld ? Math.floor(dosesHeld/perWeek) : 0;
 
     rows+='<tr><td class="sku">'+s+'</td>'
       +'<td><b>'+esc(d.n||s)+'</b><br><span class="muted" style="font-size:11px">'+esc(PURPOSE[s]||'')+'</span></td>'
@@ -14020,11 +14010,6 @@ function repProtocol(){
       +'<td class="num">'+(dosesPerVial||'\u2014')+'</td>'
       +'</tr>';
 
-    stockRows+='<tr><td class="sku">'+s+'</td><td><b>'+esc(d.n||s)+'</b></td>'
-      +'<td class="num '+(held===0?'muted':(held<=1?'warn':''))+'">'+held+'</td>'
-      +'<td class="num">'+(dosesHeld||'\u2014')+'</td>'
-      +'<td>'+(perWeek? perWeek+' a week' : '<span class="muted">not scheduled</span>')+'</td>'
-      +'<td class="num">'+(weeksLeft? weeksLeft+' wk' : '\u2014')+'</td></tr>';
 
     if(spec.label){
       var st=cycleState(s);
@@ -14056,19 +14041,13 @@ function repProtocol(){
 
   var sum='<div class="sum">'
     +'<div><b>'+document.querySelectorAll('.row[data-sku]').length+'</b><span>COMPOUNDS</span></div>'
-    +'<div><b>'+totalVials+'</b><span>VIALS HELD</span></div>'
-    +'<div><b>'+totalDoses+'</b><span>DOSES IN HAND</span></div>'
-    +'<div><b>'+lowCount+'</b><span>LOW OR OUT</span></div>'
     +'</div>';
 
   return sum
     +'<h2>MIXING AND DOSING</h2><div class="tw"><table><tr><th>Code</th><th>Compound</th>'
       +'<th>Vial</th><th>Gives</th><th>Dose</th><th>When</th><th>Doses<br>per vial</th></tr>'+rows+'</table></div>'
     +'<h2>YOUR WEEK</h2><div class="tw"><table>'+week+'</table></div>'
-    +'<h2 class="pb">WHAT YOU HOLD, AND HOW LONG IT LASTS</h2><div class="tw"><table>'
-      +'<tr><th>Code</th><th>Compound</th><th>Vials</th><th>Doses</th><th>Using</th><th>Lasts</th></tr>'
-      +stockRows+'</table></div>'
-    +'<h2>CYCLES</h2><div class="tw"><table><tr><th>Code</th><th>Compound</th><th>Pattern</th>'
+    +'<h2 class="pb">CYCLES</h2><div class="tw"><table><tr><th>Code</th><th>Compound</th><th>Pattern</th>'
       +'<th>Why the break</th><th>Where you are</th></tr>'+cyc+'</table></div>'
     +'<h2 class="pb">THINGS TO WATCH</h2><div class="tw"><table><tr><th>Code</th><th>Compound</th><th>Notes</th></tr>'
       +warns+'</table></div>';
