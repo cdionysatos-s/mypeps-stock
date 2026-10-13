@@ -11592,7 +11592,7 @@ if('serviceWorker' in navigator){
   }).catch(()=>{});
 }
 const APP_VERSION='2026-10-09';
-const BUILD_NO=104;
+const BUILD_NO=105;
 const BUILT_AT='2026-10-09T01:15:15Z';
 (function(){
   var d=new Date(BUILT_AT);
@@ -13207,13 +13207,10 @@ function shareCardCanvas(sku){
     y+=16;
   }
 
-  rule(y); y+=26;
-  var qrImg=_qrCache[sku];
-  var qs=118;
-  if(qrImg) ctx.drawImage(qrImg, M, y, qs, qs);
+  rule(y); y+=24;
   ctx.font='400 20px '+F; ctx.fillStyle='#93A4B5';
-  ctx.fillText('MyPeps \u00b7 not medical advice', qrImg ? M+qs+24 : M, y+(qrImg?qs/2-8:0));
-  y+=(qrImg?qs:34)+M;
+  ctx.fillText('MyPeps \u00b7 not medical advice', M, y);
+  y+=34+M;
   if(y < cv.height - 8){
     var out=document.createElement('canvas');
     out.width=W; out.height=Math.ceil(y);
@@ -13237,7 +13234,6 @@ function shareCardName(sku){
   return 'MyPeps-'+((DETAIL[sku]||{}).n||sku).replace(/[^A-Za-z0-9]+/g,'-')+'.png';
 }
 async function shareCompound(sku){
-  await ensureQR(sku);
   var cv=shareCardCanvas(sku);
   var blob=await new Promise(function(res){ cv.toBlob(res,'image/png'); });
   var f=new File([blob],shareCardName(sku),{type:'image/png'});
@@ -13252,8 +13248,7 @@ async function shareCompound(sku){
   document.body.appendChild(a); a.click(); a.remove();
   toast('Saved \u2014 share it from your gallery');
 }
-async function pdfCompound(sku){
-  await ensureQR(sku);
+function pdfCompound(sku){
   var cv=shareCardCanvas(sku);
   var url=cv.toDataURL('image/png');
   var d=DETAIL[sku]||{};
@@ -13274,8 +13269,7 @@ async function pdfCompound(sku){
 }
 
 
-async function previewCard(sku){
-  await ensureQR(sku);
+function previewCard(sku){
   var cv=shareCardCanvas(sku);
   document.getElementById('bkIn').innerHTML=
       '<div class="sh"><h2>'+esc((DETAIL[sku]||{}).n||sku)+'</h2>'
